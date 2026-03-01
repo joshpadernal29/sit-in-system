@@ -14,7 +14,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="index.html">
                 <img src="uclogo.png" class="rounded" style="width: 100px;">
-                CCS Sit-in-System
+                <span class="fw-bolder">CCS Sit-in-monitoring System</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@
     </nav>
     <!--end of navbar-->
     <!--main content-->
-    <br>
+    
     <main>
         <div class="container-fluid">
             <div class="row">
@@ -42,8 +42,8 @@
                     <img src="ccsmainlogo.png" style="width: 80%;" class="d-block mx-auto">
                 </div>
                 <div class="col-sm-9 col-md-6 p-5">
-                    <div class="card p-4 shadow">
-                        <div class="card-body p-2">
+                    <div class="card p-3 shadow">
+                        <div class="card-body p-3">
                             <h3 class="text-center">Register Account</h3>
                             <form action="#">
                                 <div class="form-floating mb-3 mt-3">
@@ -62,12 +62,46 @@
                                     <label for="lname" class="form-label text-secondary">Lastname</label>
                                 </div>
                                 <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="Mname" placeholder="Middlename"
+                                        name="regPass" required>
+                                    <label for="regPass" class="form-label text-secondary">Middlename</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="regCourseLvl" name="regCourseLvl">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                    <label for="regCourseLvl" class="form-label text-secondary">Course level</label>
+                                </div>
+                                <div class="form-floating mb-3">
                                     <input type="password" class="form-control" id="regPass" placeholder="Password"
                                         name="regPass" required>
                                     <label for="regPass" class="form-label text-secondary">Password</label>
                                 </div>
+                                <div class="form-floating mb-3">
+                                    <input type="password" class="form-control" id="confPass" placeholder="Confirm Password"
+                                        name="regPass" required>
+                                    <label for="confPass" class="form-label text-secondary">Confirm Password</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="regEmail" placeholder="Email"
+                                        name="regPass" required>
+                                    <label for="regEmail" class="form-label text-secondary">Email</label>
+                                </div>
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="regCourse" placeholder="Course"
+                                        name="regCourse" required>
+                                    <label for="regCourse" class="form-label text-secondary">Course</label>
+                                </div>
+                                 <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="regAddress" placeholder="Address"
+                                        name="regAddress" required>
+                                    <label for="regAddress" class="form-label text-secondary">Address</label>
+                                </div>
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary ">Submit</button>
+                                    <button type="submit" class="btn btn-success ">Register</button>
                                 </div>
                             </form>
                         </div>
