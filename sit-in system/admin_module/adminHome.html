@@ -10,58 +10,72 @@
 <body>
     <!--header-->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
-            <div class="container-fluid px-4">
-                <!-- Brand Name -->
-                <a class="navbar-brand fw-bold text-uppercase tracking-wider" href="#">
-                    <i class="bi bi-cpu-fill me-2"></i>CCS Admin
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-2 sticky-top">
+            <div class="container">
+                <!-- Brand Section (Matches your provided design exactly) -->
+                <a class="navbar-brand d-flex align-items-center" href="#">
+                    <div class="bg-white rounded-circle shadow d-flex align-items-center justify-content-center p-1 me-3"
+                        style="width: 65px; height: 65px; border: 2px solid rgba(255,255,255,0.3);">
+                        <!-- UC Logo -->
+                        <img src="../assets/uclogo2.png" class="rounded-circle"
+                            style="width: 100%; height: 100%; object-fit: contain;" alt="UC Logo">
+                    </div>
+
+                    <div class="lh-1">
+                        <span class="fw-bold d-block mb-0 h6 text-white" style="letter-spacing: 0.5px;">
+                            CCS ADMIN PANEL
+                        </span>
+                        <small class="text-white-50 text-uppercase fw-semibold"
+                            style="font-size: 0.65rem; letter-spacing: 1px;">
+                            University of Cebu Main-Campus
+                        </small>
+                    </div>
                 </a>
 
                 <!-- Mobile Toggle -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Navigation Links -->
-                <div class="collapse navbar-collapse" id="adminNavbar">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center nav-underline">
-                        <li class="nav-item px-2">
-                            <a class="nav-link" href="#"><i class="bi bi-house-door me-1"></i> Home</a>
+                <!-- Navigation Links (Centered Layout) -->
+                <div class="collapse navbar-collapse" id="adminNav">
+                    <ul class="navbar-nav mx-auto nav-underline mb-3 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-3 text-white" href="#">Home</a>
                         </li>
-                        <li class="nav-item px-2">
-                            <a class="nav-link" href="#"><i class="bi bi-search me-1"></i> Search</a>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-3 text-white" href="#">Search</a>
                         </li>
-                        <li class="nav-item px-2">
-                            <a class="nav-link" href="#"><i class="bi bi-people me-1"></i> Students</a>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-3 text-white" href="#">Students</a>
                         </li>
-                        <li class="nav-item px-2">
-                            <a class="nav-link" href="#"><i class="bi bi-person-video3 me-1"></i> Sit-in</a>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-3 text-white" href="#">Sit-in</a>
                         </li>
                         
-                        <!-- Dropdown for Reports (Organizes the long list) -->
-                        <li class="nav-item dropdown px-2">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-file-earmark-bar-graph me-1"></i> Reports
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="#">Sit-in Records</a></li>
-                                <li><a class="dropdown-item" href="#">Sit-in Reports</a></li>
+                        <!-- Reports Dropdown (Matches your "Community" dropdown style) -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link fw-medium px-3 text-white dropdown-toggle" href="#" data-bs-toggle="dropdown">Reports</a>
+                            <ul class="dropdown-menu border-0 shadow-sm mt-2">
+                                <li><a class="dropdown-item py-2" href="#">Sit-in Records</a></li>
+                                <li><a class="dropdown-item py-2" href="#">Sit-in Reports</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Feedback Reports</a></li>
+                                <li><a class="dropdown-item py-2" href="#">Feedback Reports</a></li>
                             </ul>
                         </li>
 
-                        <li class="nav-item px-2">
-                            <a class="nav-link" href="#"><i class="bi bi-calendar-check me-1"></i> Reservation</a>
-                        </li>
-
-                        <!-- Logout Button -->
-                        <li class="nav-item ms-lg-3">
-                            <a class="btn btn-warning fw-bold px-4 rounded-pill shadow-sm" href="#">
-                                <i class="bi bi-box-arrow-right me-1"></i> Log out
-                            </a>
+                        <li class="nav-item">
+                            <a class="nav-link fw-medium px-3 text-white" href="#">Reservation</a>
                         </li>
                     </ul>
+
+                    <!-- Action Section (Matches your Login/Register layout) -->
+                    <div class="d-grid d-lg-flex align-items-center gap-2 pb-3 pb-lg-0">
+                        <span class="text-white-50 me-2 d-none d-lg-block small">Admin User</span>
+                        <a href="logout.php" class="btn btn-light text-primary fw-bold px-4 rounded-pill shadow-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i> Log out
+                        </a>
+                    </div>
                 </div>
             </div>
         </nav>
