@@ -1,0 +1,255 @@
+<?php
+include("register_logic.php")
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Register Account</title>
+</head>
+
+<body>
+    <!--navbar-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-2 sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <div class="bg-white rounded-circle shadow d-flex align-items-center justify-content-center p-1 me-3"
+                    style="width: 65px; height: 65px; border: 2px solid rgba(255,255,255,0.3);">
+                    <img src="assets/uclogo2.png" class="rounded-circle"
+                        style="width: 100%; height: 100%; object-fit: contain;" alt="UC Logo">
+                </div>
+
+                <div class="lh-1">
+                    <span class="fw-bold d-block mb-0 h6 text-white" style="letter-spacing: 0.5px;">
+                        SIT-IN MONITORING SYSTEM
+                    </span>
+                    <small class="text-white-50 text-uppercase fw-semibold"
+                        style="font-size: 0.65rem; letter-spacing: 1px;">
+                        University of Cebu Main-Campus
+                    </small>
+                </div>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav mx-auto nav-underline mb-3 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link fw-medium px-3 text-white" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium px-3 text-white" href="#">About</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link fw-medium px-3 text-white dropdown-toggle" href="#"
+                            data-bs-toggle="dropdown">Community</a>
+                        <ul class="dropdown-menu border-0 shadow-sm mt-2">
+                            <li><a class="dropdown-item py-2" href="#">Announcements</a></li>
+                            <li><a class="dropdown-item py-2" href="#">Lab Guidelines</a></li>
+                            <li><a class="dropdown-item py-2" href="#">Student Hub</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="d-grid d-lg-flex align-items-center gap-2 pb-3 pb-lg-0">
+                    <a href="login.html"
+                        class="btn btn-link text-white text-decoration-none fw-medium px-3 text-center">Login</a>
+                    <a href="register.html"
+                        class="btn btn-light text-primary fw-bold px-4 rounded-pill shadow-sm">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!--end of navbar-->
+    <!--main content-->
+    <main>
+        <div class="container mt-3">
+            <div class="container-fluid min-vh-100 d-flex align-items-center">
+                <div class="container">
+                    <div class="row align-items-center justify-content-center g-4 g-lg-5">
+
+                        <div class="col-12 col-lg-5 text-center">
+                            <img src="assets/ccsmainlogo2.png" alt="Logo" class="img-fluid mb-4"
+                                style="max-width: 220px;">
+                            <h2 class="fw-bold">CCS Lab Registration</h2>
+                            <p class="text-muted d-none d-sm-block">Provide your university credentials to set up your
+                                monitoring profile
+                                and access laboratory resources.</p>
+                        </div>
+
+                        <div class="col-12 col-lg-7">
+                            <div class="card border-0 shadow-lg p-4">
+                                <div class="card-body">
+                                    <div class="mb-4">
+                                        <h3 class="fw-bold mb-1">Register Account</h3>
+                                        <p class="text-secondary small" id="step-indicator">Step 1 of 4: Personal Info
+                                        </p>
+                                        <div class="progress" style="height: 6px;">
+                                            <div id="form-progress" class="progress-bar bg-success" style="width: 25%;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--register form-->
+                                    <form id="multiStepForm" action="register_logic.php" method="post">
+                                        <div class="form-step" id="step-1">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="student-id" placeholder="ID"
+                                                    required>
+                                                <label>Student ID Number</label>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-12 col-md-4">
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" id="fname"
+                                                            placeholder="First" required>
+                                                        <label>Firstname</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-3">
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" id="mname"
+                                                            placeholder="M">
+                                                        <label class="text-nowrap">M.I. <span
+                                                                class="small opacity-50">(Optional)</span></label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-5">
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" id="lname"
+                                                            placeholder="Last" required>
+                                                        <label>Lastname</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-primary btn-lg"
+                                                    onclick="goToStep(2)">Continue</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-step d-none" id="step-2">
+                                            <div class="form-floating mb-3">
+                                                <input type="text" class="form-control" id="regCourse"
+                                                    placeholder="Course" required>
+                                                <label>Course / Program</label>
+                                            </div>
+                                            <div class="form-floating mb-3">
+                                                <select class="form-select" id="regCourseLvl">
+                                                    <option value="1">First Year</option>
+                                                    <option value="2">Second Year</option>
+                                                    <option value="3">Third Year</option>
+                                                    <option value="4">Fourth Year</option>
+                                                </select>
+                                                <label>Year Level</label>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary w-50"
+                                                    onclick="goToStep(1)">Back</button>
+                                                <button type="button" class="btn btn-primary w-50"
+                                                    onclick="goToStep(3)">Next</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-step d-none" id="step-3">
+                                            <div class="form-floating mb-3">
+                                                <input type="email" class="form-control" id="regEmail"
+                                                    placeholder="Email" required>
+                                                <label>School Email Address</label>
+                                            </div>
+                                            <div class="form-floating mb-3">
+                                                <textarea class="form-control" id="regAddress" style="height: 100px"
+                                                    placeholder="Address"></textarea>
+                                                <label>Home Address</label>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary w-50"
+                                                    onclick="goToStep(2)">Back</button>
+                                                <button type="button" class="btn btn-primary w-50"
+                                                    onclick="goToStep(4)">Next</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-step d-none" id="step-4">
+                                            <div class="form-floating mb-3">
+                                                <input type="password" class="form-control" id="regPass"
+                                                    placeholder="Password" required>
+                                                <label>Create Password</label>
+                                            </div>
+                                            <div class="form-floating mb-4">
+                                                <input type="password" class="form-control" id="confPass"
+                                                    placeholder="Confirm" required>
+                                                <label>Confirm Password</label>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" class="btn btn-outline-secondary w-50"
+                                                    onclick="goToStep(3)">Back</button>
+                                                <button type="submit" class="btn btn-success w-50">Finish
+                                                    Registration</button>
+                                            </div>
+                                        </div>
+                                        <div class="text-center mt-4">
+                                            <p class="small text-muted">Already have an account? <a href="login.html"
+                                                    class="text-primary fw-bold text-decoration-none">Login</a></p>
+                                        </div>
+                                    </form>
+                                    <!--register form end-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!--end of main content-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function goToStep(stepNumber) {
+            const currentStepNum = stepNumber > 1 ? stepNumber - 1 : 1;
+            const currentStepEl = document.getElementById('step-' + currentStepNum);
+
+            // 1. Get all required inputs in the CURRENT step
+            const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+
+            // 2. Check validity (only if moving forward)
+            let allValid = true;
+            if (stepNumber > currentStepNum) {
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        input.reportValidity(); // Shows the "Please fill out this field" bubble
+                        allValid = false;
+                    }
+                });
+            }
+
+            // 3. If valid (or moving backward), proceed
+            if (allValid || stepNumber < currentStepNum) {
+                // Hide all steps
+                document.querySelectorAll('.form-step').forEach(step => step.classList.add('d-none'));
+
+                // Show target step
+                document.getElementById('step-' + stepNumber).classList.remove('d-none');
+
+                // Update Progress Bar
+                const progress = (stepNumber / 4) * 100;
+                const progressBar = document.getElementById('form-progress');
+                progressBar.style.width = progress + '%';
+
+                // Change color based on completion
+                if (stepNumber === 4) {
+                    progressBar.classList.replace('bg-success', 'bg-info');
+                } else {
+                    progressBar.classList.replace('bg-info', 'bg-success');
+                }
+
+                // Update Text
+                const titles = ["Personal Identity", "Academic Details", "Contact Information", "Security"];
+                document.getElementById('step-indicator').innerText = `Step ${stepNumber} of 4: ${titles[stepNumber - 1]}`;
+            }
+        }
+    </script>
+</body>
+
+</html>
