@@ -1,3 +1,7 @@
+<?php
+include("../login_logic.php");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
