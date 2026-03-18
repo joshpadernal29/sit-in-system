@@ -1,5 +1,5 @@
 <?php
-include("../login_logic.php");
+include("../login_logic.php"); 
 ?>
 
 <!DOCTYPE html>
