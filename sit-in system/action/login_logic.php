@@ -1,44 +1,14 @@
 <?php
-session_start();
+// databse connection
+require __DIR__ . "/../config/database.php";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+// admin credentials (hard coded)
+$adminID = "a-01";
+$adminPass = "admin123";
 
-    $student_id = $_POST['student_id'];
-    $password = $_POST['password'];
-
-    // Hardcoded Admin
-    $admin_id = "admin";
-    $admin_pass = "admin123";
-
-    // Hardcoded Student
-    $student_user = "1010";
-    $student_pass = "student123";
-
-    // ADMIN LOGIN
-    if ($student_id === $admin_id && $password === $admin_pass) {
-
-        $_SESSION['role'] = "admin";
-        $_SESSION['user'] = "Administrator";
-
-        header("Location: admin/dashboard.php");
-        exit();
-    }
-
-    // STUDENT LOGIN
-    elseif ($student_id === $student_user && $password === $student_pass) {
-
-        $_SESSION['role'] = "student";
-        $_SESSION['user'] = $student_user;
-
-        header("Location: dashboard.php");
-        exit();
-    }
-
-    else {
-        echo "<script>
-                alert('Invalid Login Credentials');
-                window.location.href='login.php';
-              </script>";
+if (isset($_POST['user_login'])) {
+    // check admin credentials
+    if ($_POST['user_id'] && $_POST['user_password']) {
+        header("Location:  ../dashboard.php");
     }
 }
-?>

@@ -1,5 +1,5 @@
 <?php
-include("../login_logic.php"); 
+include("action/login_logic.php"); 
 ?>
 
 <!DOCTYPE html>
@@ -37,16 +37,14 @@ include("../login_logic.php");
                                 <p class="text-muted small">Please enter your credentials to access the system.</p>
                             </div>
                             <!--login form-->
-                            <form action="login_logic.php" method="POST">
+                            <form action="action/login_logic.php" method="POST">
                                 <div class="form-floating mb-3">
-                                    <input type="text" class="form-control bg-light border-0" id="student-id"
-                                        placeholder="STUDENT ID" required>
-                                    <label for="student-id" class="text-secondary">Student ID Number</label>
+                                    <input type="text" class="form-control bg-light border-0" id="student-id" name="user_id" required>
+                                    <label for="student-id" class="text-secondary">ID Number</label>
                                 </div>
 
                                 <div class="form-floating mb-3">
-                                    <input type="password" class="form-control bg-light border-0" id="pwd"
-                                        placeholder="Password" required>
+                                    <input type="password" class="form-control bg-light border-0" id="pwd" name="user_password" required>
                                     <label for="pwd" class="text-secondary">Password</label>
                                 </div>
 
@@ -64,7 +62,7 @@ include("../login_logic.php");
 
                                 <div class="d-grid">
                                     <button type="submit"
-                                        class="btn btn-primary btn-lg shadow-sm fw-bold py-3 rounded-3">LOGIN</button>
+                                        class="btn btn-primary btn-lg shadow-sm fw-bold py-3 rounded-3" name="user_login">LOGIN</button>
                                 </div>
 
                                 <div class="text-center mt-4">
