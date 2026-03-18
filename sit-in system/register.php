@@ -1,5 +1,5 @@
 <?php
-include("register_logic.php")
+include("action/register_logic.php")
 ?>
 
 <!DOCTYPE html>
@@ -45,25 +45,25 @@ include("register_logic.php")
                                         </div>
                                     </div>
                                     <!--register form-->
-                                    <form id="multiStepForm" action="register_logic.php" method="post">
+                                    <form id="multiStepForm" action="action/register_logic.php" method="post">
                                         <div class="form-step" id="step-1">
                                             <div class="form-floating mb-3">
                                                 <input type="text" class="form-control" id="student-id" placeholder="ID"
-                                                    required>
+                                                    required name="reg_student_id">
                                                 <label>Student ID Number</label>
                                             </div>
                                             <div class="row g-2">
                                                 <div class="col-12 col-md-4">
                                                     <div class="form-floating mb-3">
                                                         <input type="text" class="form-control" id="fname"
-                                                            placeholder="First" required>
+                                                            placeholder="First" required name="reg_fname">
                                                         <label>Firstname</label>
                                                     </div>
                                                 </div>
                                                 <div class="col-6 col-md-3">
                                                     <div class="form-floating mb-3">
                                                         <input type="text" class="form-control" id="mname"
-                                                            placeholder="M">
+                                                            placeholder="M" name="reg_mname">
                                                         <label class="text-nowrap">M.I. <span
                                                                 class="small opacity-50">(Optional)</span></label>
                                                     </div>
@@ -71,7 +71,7 @@ include("register_logic.php")
                                                 <div class="col-6 col-md-5">
                                                     <div class="form-floating mb-3">
                                                         <input type="text" class="form-control" id="lname"
-                                                            placeholder="Last" required>
+                                                            placeholder="Last" required name="reg_lname">
                                                         <label>Lastname</label>
                                                     </div>
                                                 </div>
@@ -85,11 +85,11 @@ include("register_logic.php")
                                         <div class="form-step d-none" id="step-2">
                                             <div class="form-floating mb-3">
                                                 <input type="text" class="form-control" id="regCourse"
-                                                    placeholder="Course" required>
+                                                    placeholder="Course" required name="reg_course">
                                                 <label>Course / Program</label>
                                             </div>
                                             <div class="form-floating mb-3">
-                                                <select class="form-select" id="regCourseLvl">
+                                                <select class="form-select" id="regCourseLvl" name="reg_lvl">
                                                     <option value="1">First Year</option>
                                                     <option value="2">Second Year</option>
                                                     <option value="3">Third Year</option>
@@ -108,12 +108,12 @@ include("register_logic.php")
                                         <div class="form-step d-none" id="step-3">
                                             <div class="form-floating mb-3">
                                                 <input type="email" class="form-control" id="regEmail"
-                                                    placeholder="Email" required>
+                                                    placeholder="Email" required name="reg_email">
                                                 <label>School Email Address</label>
                                             </div>
                                             <div class="form-floating mb-3">
                                                 <textarea class="form-control" id="regAddress" style="height: 100px"
-                                                    placeholder="Address"></textarea>
+                                                    placeholder="Address" name="reg_address"></textarea>
                                                 <label>Home Address</label>
                                             </div>
                                             <div class="d-flex gap-2">
@@ -127,23 +127,23 @@ include("register_logic.php")
                                         <div class="form-step d-none" id="step-4">
                                             <div class="form-floating mb-3">
                                                 <input type="password" class="form-control" id="regPass"
-                                                    placeholder="Password" required>
+                                                    placeholder="Password" required name="reg_password">
                                                 <label>Create Password</label>
                                             </div>
                                             <div class="form-floating mb-4">
                                                 <input type="password" class="form-control" id="confPass"
-                                                    placeholder="Confirm" required>
+                                                    placeholder="Confirm" required name="confirm_password">
                                                 <label>Confirm Password</label>
                                             </div>
                                             <div class="d-flex gap-2">
                                                 <button type="button" class="btn btn-outline-secondary w-50"
                                                     onclick="goToStep(3)">Back</button>
-                                                <button type="submit" class="btn btn-success w-50">Finish
+                                                <button type="submit" class="btn btn-success w-50" name="reg_btn">Finish
                                                     Registration</button>
                                             </div>
                                         </div>
                                         <div class="text-center mt-4">
-                                            <p class="small text-muted">Already have an account? <a href="login.html"
+                                            <p class="small text-muted">Already have an account? <a href="login.php"
                                                     class="text-primary fw-bold text-decoration-none">Login</a></p>
                                         </div>
                                     </form>

@@ -1,60 +1,59 @@
 <?php
+// databse connection
+require __DIR__ . "/../config/database.php";
 
-require __DIR__ . "/config/database.php";
+if (isset($_POST['reg_btn'])) {
+    // get all user data and store to variables
+    $studentID = $_POST['reg_student_id'];
+    $firstName = $_POST['reg_fname'];
+    $middleName = $_POST['reg_mname'];
+    $lastName = $_POST['reg_lname'];
+    $course = $_POST['reg_course'];
+    $level = $_POST['reg_lvl'];
+    $email = $_POST['reg_email'];
+    $address = $_POST['reg_address'];
+    $password = $_POST['reg_password'];
+    $confirm_password = $_POST['confirm_password'];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // check password
+    $confirmPass = confirmPass($password,$confirm_password);
+    if ($confirmPass) {
+        // hash password
+        $hashedPass = hashPassword($confirmPass);
 
-    // Get form data
-    $student_id = $_POST['student_id'];
-    $fname = $_POST['fname'];
-    $mname = $_POST['mname'];
-    $lname = $_POST['lname'];
-    $course = $_POST['regCourse'];
-    $year_level = $_POST['regCourseLvl'];
-    $email = $_POST['regEmail'];
-    $address = $_POST['regAddress'];
-    $password = $_POST['regPass'];
-    $confirm_password = $_POST['confPass'];
+        // query to insert data
+        $sql = "INSERT INTO students (student_id,firstname,middlename,lastname,course,year_level,email,home_address,password)
+                VALUES(?,?,?,?,?,?,?,?,?)";
 
-    // Validate password
-    if ($password !== $confirm_password) {
-        die("Passwords do not match.");
-    }
-
-    // Hash password
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // Prepare query
-    $sql = "INSERT INTO students 
-            (student_id, first_name, middle_name, last_name, course, year_level, email, address, password) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    $stmt = mysqli_prepare($conn, $sql);
-
-    mysqli_stmt_bind_param(
-        $stmt,
-        "sssssssss",
-        $student_id,
-        $fname,
-        $mname,
-        $lname,
-        $course,
-        $year_level,
-        $email,
-        $address,
-        $hashed_password
-    );
-
-    // Execute
-    if (mysqli_stmt_execute($stmt)) {
-        echo "Registration successful!";
-        header("Location: login.php");
-        exit();
+        // prepare stmt
+        $insertData = mysqli_prepare($conn,$sql);
+        // bind parameters
+        mysqli_stmt_bind_param($insertData,'sssssssss', $studentID, $firstName,$middleName,$lastName,$course,$level,$email,$address,$hashedPass);
+        // execute stmt
+        mysqli_stmt_execute($insertData);
+        // close stmt
+        mysqli_stmt_close($insertData);
+        // redirect to login page
+        header("Location: ../login.php");
     } else {
-        echo "Error: " . mysqli_error($conn);
+        echo "password does not match!"; // display in ui later....
     }
-
-    mysqli_stmt_close($stmt);
-    mysqli_close($conn);
 }
-?>
+
+// function confirm password
+function confirmPass($password,$confirmPassword) {
+    if ($confirmPassword !== $password) {
+        return false;
+    }
+    return true;
+} 
+
+// hash password
+function hashPassword($password) {
+    // hash the password
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    return $hashedPassword;
+}
+
+// close db connection
+mysqli_close($conn);
