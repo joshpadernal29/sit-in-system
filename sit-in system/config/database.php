@@ -1,21 +1,16 @@
 <?php
-
-<?php
+// database connection
 
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "sit_in_db";
+$db_name = "sit_in_monitoring";
 
-/* Create connection */
-$conn = mysqli_connect($servername, $username, $password, $database);
+// create connection 
+$conn = mysqli_connect($servername,$username,$password,$db_name);
 
-/* Check connection */
 if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+    die("connection failed: " . mysqli_connect_error());
+} else {
+    echo "db connected!";
 }
-
-// Optional: set charset
-mysqli_set_charset($conn, "utf8");
-
-?>
