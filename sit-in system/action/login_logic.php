@@ -7,8 +7,10 @@ $adminID = "a-01";
 $adminPass = "admin123";
 
 if (isset($_POST['user_login'])) {
-    // check admin credentials
+    // if admin login check credentials
     if ($_POST['user_id'] && $_POST['user_password']) {
-        header("Location:  ../dashboard.php");
+        header("Location:  ../admin_module/adminDashboard.php");
     }
+
+    // user login check credentials
 }
