@@ -16,10 +16,10 @@ if (isset($_POST['reg_btn'])) {
     $confirm_password = $_POST['confirm_password'];
 
     // check password
-    $confirmPass = confirmPass($password,$confirm_password);
-    if ($confirmPass) {
+    $isMatched = confirmPass($password,$confirm_password);
+    if ($isMatched) {
         // hash password
-        $hashedPass = hashPassword($confirmPass);
+        $hashedPass = hashPassword($password);
 
         // query to insert data
         $sql = "INSERT INTO students (student_id,firstname,middlename,lastname,course,year_level,email,home_address,password)
@@ -36,7 +36,8 @@ if (isset($_POST['reg_btn'])) {
         // redirect to login page
         header("Location: ../login.php");
     } else {
-        echo "password does not match!"; // display in ui later....
+        header("Location: ../register.php?notMatch=1");
+        // echo "password does not match!"; // display in ui later....
     }
 }
 
