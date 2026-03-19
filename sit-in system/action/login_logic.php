@@ -1,4 +1,5 @@
 <?php
+session_start(); // session start
 // databse connection
 require __DIR__ . "/../config/database.php";
 
@@ -9,7 +10,10 @@ $adminPass = "admin123";
 if (isset($_POST['user_login'])) {
     // if admin login check credentials
     if ($_POST['user_id'] === $adminID && $_POST['user_password'] === $adminPass) {
+        $_SESSION['user_id'] = $_POST['user_id'];
+        $_SESSION['user_password'] = $_POST['user_password'];
         header("Location:  ../admin_module/adminDashboard.php");
+        die(); // exit
     }
 
     // db get data logic here...

@@ -1,4 +1,6 @@
 <?php
+// session start
+session_start();
 include("action/login_logic.php"); 
 ?>
 
