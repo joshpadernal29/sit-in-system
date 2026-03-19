@@ -65,11 +65,12 @@
                         <span class="text-white fw-bold" style="font-size: 0.75rem;">Administrator</span>
                         <br><small class="text-white-50" style="font-size: 0.65rem;">Main Campus</small>
                     </div>
-                    <!--TEMPORARY LOGOUT LOGIC-->
-                    <a href="../index.php"
-                        class="btn btn-sm btn-light text-primary fw-bold px-3 py-1 rounded-2 shadow-sm d-flex align-items-center">
-                        <i class="bi bi-box-arrow-right me-2"></i> Logout
-                    </a>
+                    <!--LOGOUT LOGIC-->
+                    <form action="../action/logout_logic.php" method="post"> 
+                        <button type="submit" name="log_out" class="btn btn-sm btn-light text-primary fw-bold px-3 py-1 rounded-2 shadow-sm d-flex align-items-center">
+                            <i class="bi bi-box-arrow-right me-2" ></i> Logout
+                        </button>
+                    </form
                 </div>
             </div>
         </div>

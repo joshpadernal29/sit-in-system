@@ -1,6 +1,7 @@
 <?php
 // session start
 session_start();
+echo "Session User ID: " . ($_SESSION['user_id'] ?? "EMPTY");
 include("action/login_logic.php"); 
 ?>
 

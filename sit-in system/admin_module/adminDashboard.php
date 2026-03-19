@@ -53,7 +53,7 @@ echo  $_SESSION['user_password'];
 
 <body>
     <!--header-->
-    <?php include("../includes/adminHeader.html"); ?>
+    <?php include("../includes/adminHeader.php"); ?>
     <!--header end-->
 
     <!--main content-->
