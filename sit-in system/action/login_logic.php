@@ -1,5 +1,8 @@
 <?php
-session_start(); // session start
+// session start if there is no session active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // databse connection
 require __DIR__ . "/../config/database.php";
 

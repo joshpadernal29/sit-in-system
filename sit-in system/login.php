@@ -1,7 +1,9 @@
 <?php
-// session start
-session_start();
-echo "Session User ID: " . ($_SESSION['user_id'] ?? "EMPTY");
+// session start if there is no session active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 include("action/login_logic.php"); 
 ?>
 
