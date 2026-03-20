@@ -25,7 +25,7 @@
                 <div class="collapse navbar-collapse" id="adminNav">
                     <ul class="navbar-nav mx-auto mb-2 mb-lg-0 nav-underline">
                         <li class="nav-item">
-                            <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                            <a class="nav-link px-2 text-white d-flex align-items-center" href="adminDashboard.php"
                                 style="font-size: 0.9rem;">
                                 <i class="bi bi-house-door me-2"></i>Home
                             </a>
