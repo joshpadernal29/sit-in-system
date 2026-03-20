@@ -86,7 +86,7 @@ include("../action/studentData.php");
                         </div>
                     </div>
                 </div>
-
+                <!--MAKE THIS DYNAMIC ANOUNCEMENT BOARD-->
                 <div class="col-md-9">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <div>
