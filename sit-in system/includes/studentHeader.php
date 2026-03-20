@@ -16,12 +16,11 @@ include("../action/studentData.php");
             <a class="navbar-brand d-flex align-items-center" href="student_dashboard.php" style="gap: 10px;">
                 <div class="bg-white rounded-circle d-flex align-items-center justify-content-center"
                     style="width: 40px; height: 40px; padding: 2px;">
-                    <img src="../assets/uclogo2.png" class="rounded-circle"
+                    <img src="../assets/ccsmainlogo2.png" class="rounded-circle"
                         style="width: 100%; height: 100%; object-fit: contain;" alt="UC Logo">
                 </div>
                 <div class="lh-1">
-                    <span class="fw-bold d-block mb-0" style="font-size: 0.85rem; letter-spacing: 0.5px;">STUDENT
-                        PORTAL</span>
+                    <span class="fw-bold d-block mb-0" style="font-size: 0.85rem; letter-spacing: 0.5px;">CCS LAB PORTAL</span>
                     <small class="text-white-50 text-uppercase fw-semibold" style="font-size: 0.55rem;">University of
                         Cebu</small>
                 </div>
@@ -61,7 +60,7 @@ include("../action/studentData.php");
                 </ul>
 
                 <div class="d-flex align-items-center gap-3">
-                    <div class="text-end d-none d-xl-block lh-1">
+                    <div class="text-center d-none d-xl-block lh-1">
                         <!--MAKE THIS DYNAMIC-->
                         <span class="text-white fw-bold" style="font-size: 0.75rem;"><?php echo $student['firstname']. " " .$student['lastname'] ?></span>
                         <br><small class="text-white-50" style="font-size: 0.70rem;"><?php echo $student['course']. " " .$student['year_level'] ?></small>
