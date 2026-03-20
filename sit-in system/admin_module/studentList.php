@@ -1,113 +1,161 @@
+<?php
+// session start if there is no session active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+include("../action/crud_functions.php");
+// call function to read students from db
+$students = getStudents($conn);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Registry | UC Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
+    
+    <style>
+        /* 1. FIX: Ensures the Header Dropdown is always above the table content */
+        header, .navbar {
+            z-index: 1050 !important;
+            position: relative;
+        }
 
+        /* 2. FIX: Allows dropdowns to "pop out" of the card and table */
+        .card { overflow: visible !important; }
+        .table-responsive { 
+            overflow-x: auto; 
+            overflow-y: visible !important; 
+        }
+
+        /* Redesign Styles */
+        .student-id {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #0d6efd;
+            font-size: 0.85rem;
+            background: #f0f7ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .bg-success-subtle { background-color: rgba(25, 135, 84, 0.1) !important; color: #198754 !important; }
+        .bg-info-subtle { background-color: rgba(13, 202, 240, 0.1) !important; color: #0dcaf0 !important; }
+        .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1) !important; color: #ffc107 !important; }
+
+        .btn-white { background: #fff; border: 1px solid #dee2e6; }
+        .btn-white:hover { background: #f8f9fa; }
+        
+        tr { transition: background 0.2s; }
+        tr:hover { background-color: rgba(13, 110, 253, 0.02) !important; }
+    </style>
+</head>
 <body class="bg-light">
 
     <?php include("../includes/adminHeader.php"); ?>
 
     <main class="container-fluid py-4 px-lg-5">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-            <div>
-                <h4 class="fw-bold text-dark mb-1">Student Registry</h4>
-                <p class="text-muted small mb-0">Manage and view all registered students in the system.</p>
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <h4 class="fw-bold mb-1">Student Registry</h4>
             </div>
-
-            <div class="d-flex gap-2">
-                <div class="input-group shadow-sm" style="max-width: 300px;">
-                    <span class="input-group-text bg-white border-end-0 text-muted">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Search ID or Name...">
+            <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                <div class="input-group shadow-sm" style="max-width: 280px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Search students...">
                 </div>
-                <button class="btn btn-primary shadow-sm d-flex align-items-center gap-2">
-                    <i class="bi bi-person-plus-fill"></i> <span class="d-none d-sm-inline">Add Student</span>
-                </button>
+                <button class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Add</button>
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card border-0 shadow-sm rounded-4">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light">
+                    <thead>
                         <tr>
-                            <th class="ps-4 py-3 text-muted fw-bold small text-uppercase">Student ID</th>
-                            <th class="py-3 text-muted fw-bold small text-uppercase">Full Name</th>
-                            <th class="py-3 text-muted fw-bold small text-uppercase">Course & Year</th>
-                            <th class="py-3 text-muted fw-bold small text-uppercase text-center">Sessions</th>
-                            <th class="py-3 text-muted fw-bold small text-uppercase">Status</th>
-                            <th class="pe-4 py-3 text-muted fw-bold small text-uppercase text-end">Actions</th>
+                            <th class="ps-4 py-3 text-muted fw-bold">Student ID</th>
+                            <th class="py-3 text-muted fw-bold">Student Profile</th>
+                            <th class="py-3 text-muted fw-bold">Course-Year</th>
+                            <th class="py-3 text-muted fw-bold text-center">Sessions</th>
+                            <th class="pe-4 py-3 text-muted fw-bold text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="ps-4 fw-bold text-primary">2021-0001-CEBU</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="https://ui-avatars.com/api/?name=Juan+Dela+Cruz&background=random"
-                                        class="rounded-circle me-2" width="32">
-                                    <span>Juan Dela Cruz</span>
-                                </div>
-                            </td>
-                            <td>BSIT - 3</td>
-                            <td class="text-center">
-                                <span class="badge rounded-pill bg-light text-dark border">24 / 30</span>
-                            </td>
-                            <td>
-                                <span
-                                    class="badge bg-success-subtle text-success border border-success-subtle px-3">Active</span>
-                            </td>
-                            <td class="pe-4 text-end">
-                                <button class="btn btn-sm btn-light border" title="Edit Student"><i
-                                        class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light border text-danger" title="Delete"><i
-                                        class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="ps-4 fw-bold text-primary">2021-0452-CEBU</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="https://ui-avatars.com/api/?name=Maria+Santos&background=random"
-                                        class="rounded-circle me-2" width="32">
-                                    <span>Maria Santos</span>
-                                </div>
-                            </td>
-                            <td>BSCS - 4</td>
-                            <td class="text-center">
-                                <span class="badge rounded-pill bg-light text-dark border">10 / 30</span>
-                            </td>
-                            <td>
-                                <span
-                                    class="badge bg-warning-subtle text-warning border border-warning-subtle px-3">Warning</span>
-                            </td>
-                            <td class="pe-4 text-end">
-                                <button class="btn btn-sm btn-light border"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light border text-danger"><i
-                                        class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
+                        <?php if (!empty($students)): ?>
+                            <?php foreach($students as $student): ?>
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="student-id fw-bold"><?php echo htmlspecialchars($student['student_id']); ?></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($student['firstname'].'+'.$student['lastname']); ?>&background=0d6efd&color=fff&size=32" 
+                                             class="rounded-circle me-3 border" alt="avatar">
+                                        <div class="lh-1">
+                                            <div class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($student['firstname'] . " " . $student['lastname']); ?></div>
+                                            <small class="text-muted">Verified Registry</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small fw-semibold text-dark"><?php echo htmlspecialchars($student['course']); ?></div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Year: <?php echo htmlspecialchars($student['year_level']); ?></div>
+                                </td>
+                                <td class="text-center">
+                                    <?php 
+                                        $sit_ins = (int)$student['sit_ins'];
+                                        $status = ($sit_ins > 10) ? 'success' : (($sit_ins > 5) ? 'info' : 'warning');
+                                    ?>
+                                    <span class="badge rounded-pill bg-<?php echo $status; ?>-subtle px-3 py-2">
+                                        <?php echo $sit_ins; ?> Sit-ins
+                                    </span>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="edit_student.php?id=<?php echo $student['id']; ?>" class="btn btn-sm btn-white text-primary px-3" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="delete_student.php?id=<?php echo $student['id']; ?>" 
+                                           class="btn btn-sm btn-white text-danger px-3" 
+                                           onclick="return confirm('Delete this record?')" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-people text-muted opacity-25" style="font-size: 3rem;"></i>
+                                    <p class="text-muted mt-2">No students found in the database.</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
-            <div class="card-footer bg-white border-top-0 py-3 px-4">
+            <div class="card-footer bg-white border-top py-3 px-4 rounded-bottom-4">
                 <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Showing 1 to 10 of 1,240 students</small>
+                    <p class="text-muted small mb-0">Total: <strong><?php echo count($students); ?></strong> Students</p>
                     <nav>
                         <ul class="pagination pagination-sm mb-0">
-                            <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                            <li class="page-item disabled"><a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a></li>
                             <li class="page-item active"><a class="page-link" href="#">1</a></li>
                             <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                            <li class="page-item"><a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a></li>
                         </ul>
                     </nav>
                 </div>
@@ -115,29 +163,6 @@
         </div>
     </main>
 
-    <style>
-        .table thead th {
-            letter-spacing: 0.5px;
-            font-size: 0.75rem;
-            background-color: #f8f9fa;
-        }
-
-        .bg-success-subtle {
-            background-color: rgba(25, 135, 84, 0.1);
-        }
-
-        .bg-warning-subtle {
-            background-color: rgba(255, 193, 7, 0.1);
-        }
-
-        tr {
-            transition: background-color 0.2s ease;
-        }
-
-        tr:hover {
-            background-color: rgba(13, 110, 253, 0.02) !important;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
