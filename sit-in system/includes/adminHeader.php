@@ -37,7 +37,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                            <a class="nav-link px-2 text-white d-flex align-items-center" href="studentList.php"
                                 style="font-size: 0.9rem;">
                                 <i class="bi bi-people me-2"></i>Students
                             </a>
@@ -54,8 +54,8 @@
                                 <i class="bi bi-file-earmark-bar-graph me-2"></i>Reports
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm mt-0">
-                                <li><a class="dropdown-item py-1 small" href="#">Records</a></li>
-                                <li><a class="dropdown-item py-1 small" href="#">Reports</a></li>
+                                <li><a class="dropdown-item py-1 small" href="#">Sit-in Records</a></li>
+                                <li><a class="dropdown-item py-1 small" href="#">Sit-in Reports</a></li>
                             </ul>
                         </li>
                     </ul>
