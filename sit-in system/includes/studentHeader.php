@@ -1,3 +1,12 @@
+<?php
+// session start if there is no session active
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+include("../action/studentData.php");
+?>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <header>
@@ -54,10 +63,11 @@
                 <div class="d-flex align-items-center gap-3">
                     <div class="text-end d-none d-xl-block lh-1">
                         <!--MAKE THIS DYNAMIC-->
-                        <span class="text-white fw-bold" style="font-size: 0.75rem;">User</span>
-                        <br><small class="text-white-50" style="font-size: 0.65rem;">BSIT - 3rd Year</small>
+                        <span class="text-white fw-bold" style="font-size: 0.75rem;"><?php echo $student['firstname']. " " .$student['lastname'] ?></span>
+                        <br><small class="text-white-50" style="font-size: 0.70rem;"><?php echo $student['course']. " " .$student['year_level'] ?></small>
                     </div>
-
+                    
+                    <!--LOGOUT-->
                     <form action="../action/logout_logic.php" method="post">
                         <button type="submit" name="log_out"
                             class="btn btn-sm btn-light text-primary fw-bold px-3 py-1 rounded-2 shadow-sm d-flex align-items-center transition-hover">
