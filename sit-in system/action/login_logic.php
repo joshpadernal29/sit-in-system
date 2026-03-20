@@ -34,7 +34,7 @@ if (isset($_POST['user_login'])) {
     // if student data in db and compare password inputted to the hashed password from the db
     if ($row && password_verify($userPassword,$row['password'])) {
         $_SESSION['user_id'] = $row['student_id'];
-        header("Location: ../student_module/studentDashboard.php");
+        header("Location: ../student_module/studentDashboard.php?student_id=$userId");
         exit();
     } else {
         header("Location: ../login.php?error=1"); // temp message
