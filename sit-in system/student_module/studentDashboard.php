@@ -19,7 +19,7 @@ include("../action/studentData.php");
 
 <body>
     <!--header-->
-    <?php include("../includes/studentHeader.php"); ?> 
+    <?php include("../includes/studentHeader.php"); ?>
     <!--header end-->
 
     <!--main contend-->
@@ -31,15 +31,19 @@ include("../action/studentData.php");
                     <div class="card border-0 shadow rounded-4 mb-4">
                         <div class="card-body p-4 text-center">
                             <div class="position-relative d-inline-block mb-3">
-                                <img src="https://ui-avatars.com/api/?name=Juan+Dela+Cruz&background=0D6EFD&color=fff&size=128"
+                                <img src="../assets/default_profile.jpg"
                                     class="rounded-circle border border-4 border-white shadow-sm" alt="Student Avatar"
                                     width="90"> <span
                                     class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-2"
                                     title="Online"></span>
                             </div>
 
-                            <h6 class="fw-bold mb-1 text-dark"><?php echo $student['firstname']. " " .$student['lastname'] ?></h6>
-                            <p class="text-muted mb-3" style="font-size: 0.75rem;"><?php echo $student['student_id'] ?></p>
+                            <h6 class="fw-bold mb-1 text-dark">
+                                <?php echo $student['firstname']. " " .$student['lastname'] ?>
+                            </h6>
+                            <p class="text-muted mb-3" style="font-size: 0.75rem;">
+                                <?php echo $student['student_id'] ?>
+                            </p>
                             <!---EDIT PROFILE-->
                             <div class="d-grid">
                                 <a href="profile.php" class="btn btn-primary btn-sm rounded-pill px-4"
@@ -51,17 +55,23 @@ include("../action/studentData.php");
                             <div class="list-group-item bg-transparent px-4 py-2"> <small
                                     class="text-muted d-block text-uppercase fw-bold"
                                     style="font-size: 0.6rem;">Course</small>
-                                <span class="fw-semibold small text-truncate d-block"><?php echo $student['course']. "-" .$student['year_level'] ?></span>
+                                <span class="fw-semibold small text-truncate d-block">
+                                    <?php echo $student['course']. "-" .$student['year_level'] ?>
+                                </span>
                             </div>
                             <div class="list-group-item bg-transparent px-4 py-2">
                                 <small class="text-muted d-block text-uppercase fw-bold"
                                     style="font-size: 0.6rem;">Email</small>
-                                <span class="fw-semibold small text-truncate d-block"><?php echo $student['email'] ?></span>
+                                <span class="fw-semibold small text-truncate d-block">
+                                    <?php echo $student['email'] ?>
+                                </span>
                             </div>
                             <div class="list-group-item bg-transparent px-4 py-2">
                                 <small class="text-muted d-block text-uppercase fw-bold"
                                     style="font-size: 0.6rem;">Remaining Sessions</small>
-                                <span class="badge bg-soft-info text-info rounded-pill px-3"><?php echo $student['sit_ins'] ?></span>
+                                <span class="badge bg-soft-info text-info rounded-pill px-3">
+                                    <?php echo $student['sit_ins'] ?>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -78,23 +88,115 @@ include("../action/studentData.php");
                 </div>
 
                 <div class="col-md-9">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div
-                            class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                            <h5 class="fw-bold mb-0">Recent Activity</h5>
-                            <span class="badge bg-light text-dark fw-normal border">Last 30 Days</span>
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-megaphone-fill text-primary me-2"></i>Campus Announcements
+                            </h5>
+                            <small class="text-muted">Stay updated with the latest news from CCS Admin</small>
                         </div>
-                        <div class="card-body p-4">
-                            <div class="text-center py-5">
-                                <i class="bi bi-calendar2-x text-muted opacity-25" style="font-size: 4rem;"></i>
-                                <h6 class="text-dark mt-3">No activity yet</h6>
-                                <p class="text-muted small">Your recent laboratory sit-in records will appear here.</p>
-                                <button class="btn btn-outline-primary btn-sm rounded-pill px-4 mt-2">Check In
-                                    Now</button>
+                        <button class="btn btn-light btn-sm rounded-pill px-3 border shadow-sm">
+                            <i class="bi bi-filter me-1"></i> Filter
+                        </button>
+                    </div>
+
+                    <div class="vstack gap-3">
+
+                        <div
+                            class="card border-0 shadow-sm rounded-4 border-start border-4 border-primary overflow-hidden">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span
+                                        class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 small fw-bold">
+                                        <i class="bi bi-pin-angle-fill me-1"></i> IMPORTANT
+                                    </span>
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i> 2 hours ago</small>
+                                </div>
+                                <h6 class="fw-bold text-dark fs-5">Midterm Examination Schedule</h6>
+                                <p class="text-muted mb-3" style="font-size: 0.9rem; line-height: 1.6;">
+                                    Please be guided on the upcoming midterm examination schedule for the 2nd Semester.
+                                    Ensure that your sit-in requirements are settled at the CCS Laboratory before the
+                                    exam starts.
+                                </p>
+                                <div class="d-flex align-items-center pt-2">
+                                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2"
+                                        style="width: 30px; height: 30px;">
+                                        <i class="bi bi-person-fill text-primary small"></i>
+                                    </div>
+                                    <small class="fw-bold text-dark">CCS Dean's Office</small>
+                                </div>
                             </div>
                         </div>
+
+                        <div class="card border-0 shadow-sm rounded-4 border-start border-4 border-success">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span
+                                        class="badge bg-success-subtle text-success rounded-pill px-3 py-2 small fw-bold">
+                                        EVENT
+                                    </span>
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i> Yesterday</small>
+                                </div>
+                                <h6 class="fw-bold text-dark fs-5">CCS IT Week 2026: Call for Participants</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                                    Registration for the "Code-A-Thon" and "Network Troubleshooting" competitions is now
+                                    open. Visit the lab admin to sign up.
+                                </p>
+                                <a href="#"
+                                    class="btn btn-link text-success p-0 mt-3 small fw-bold text-decoration-none">
+                                    View Mechanics <i class="bi bi-chevron-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-4 border-start border-4 border-info">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-info-subtle text-info rounded-pill px-3 py-2 small fw-bold">
+                                        SYSTEM
+                                    </span>
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i> 3 days ago</small>
+                                </div>
+                                <h6 class="fw-bold text-dark fs-5">Lab B Maintenance</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.9rem;">
+                                    Lab B will be closed for software updates on Saturday. Students are advised to use
+                                    Lab A for their sit-in sessions.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="text-center mt-4 pt-2">
+                        <button class="btn btn-white text-muted small fw-bold border-0">
+                            Show older announcements <i class="bi bi-chevron-down ms-1"></i>
+                        </button>
                     </div>
                 </div>
+
+                <style>
+                    /* Add these colors to your stylesheet if not using Bootstrap 5.3+ */
+                    .bg-primary-subtle {
+                        background-color: rgba(13, 110, 253, 0.1);
+                    }
+
+                    .bg-success-subtle {
+                        background-color: rgba(25, 135, 84, 0.1);
+                    }
+
+                    .bg-info-subtle {
+                        background-color: rgba(13, 202, 240, 0.1);
+                    }
+
+                    .card {
+                        transition: transform 0.2s ease, box-shadow 0.2s ease;
+                    }
+
+                    .card:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+                    }
+                </style>
 
             </div>
         </div>
