@@ -7,7 +7,7 @@ function getStudentById($conn, $id) {
     $stmt = mysqli_prepare($conn, $sql);
     
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "i", $id); // "i" for integer ID
+        mysqli_stmt_bind_param($stmt, "i", $id); 
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
         $student = mysqli_fetch_assoc($result);
@@ -70,7 +70,7 @@ function editStudent($conn) {
     return false;
 }
 
-// NOW: Check if the button was clicked and CALL the function
+//the button was clicked and CALL the function
 if (isset($_POST['update_student'])) {
     if (editStudent($conn)) {
         editStudent($conn);
