@@ -5,7 +5,7 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 $db_name = "sit_in_monitoring";
-$portNo = 3306;
+$portNo = 3307;
 
 // create connection 
 $conn = mysqli_connect($servername,$username,$password,$db_name,$portNo);
