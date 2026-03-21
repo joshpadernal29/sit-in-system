@@ -75,7 +75,7 @@ $students = getStudents($conn);
                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control border-start-0 ps-0" placeholder="Search students...">
                 </div>
-                <button class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Add</button>
+                <a class="btn btn-primary shadow-sm" href="add_student.php"><i class="bi bi-plus-lg me-1"></i> Add</a>
             </div>
         </div>
 

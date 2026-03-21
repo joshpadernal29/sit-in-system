@@ -110,3 +110,49 @@ if (isset($_POST['delete_student'])) {
         die("Error deleting record.");
     }
 }
+
+// add student function
+function addStudent($conn) {
+    // 1. Capture all form data
+    $student_id = $_POST['student_id'];
+    $firstname  = $_POST['firstname'];
+    $middlename = $_POST['middlename']; // New
+    $lastname   = $_POST['lastname'];
+    $course     = $_POST['course'];
+    $year_level = $_POST['year_level'];
+    $email      = $_POST['email'];      // New
+    $address    = $_POST['home_address']; // New
+    $sit_ins    = 30; // Default sessions
+    
+    // 2. Hash the password for security
+    // Use the student_id as the default password if not provided, or a custom input
+    $raw_password = $_POST['password']; 
+    $hashed_password = password_hash($raw_password, PASSWORD_DEFAULT);
+
+    // 3. Prepare the SQL (9 columns + 1 for ID which is AI)
+    $sql = "INSERT INTO students (student_id, firstname, middlename, lastname, course, year_level, email, home_address, password, sit_ins) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if ($stmt) {
+        // "sssssssssi" = 9 strings, 1 integer (sit_ins)
+        mysqli_stmt_bind_param($stmt, "sssssssssi", 
+            $student_id, $firstname, $middlename, $lastname, $course, $year_level, $email, $address, $hashed_password, $sit_ins
+        );
+        
+        $success = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return $success;
+    }
+    return false;
+}
+
+if (isset($_POST['add_student'])) {
+    if (addStudent($conn)) {
+        header("Location: ../admin_module/studentList.php?status=added");
+        exit();
+    } else {
+        die("Error adding student. Make sure the Student ID is unique.");
+    }
+}
