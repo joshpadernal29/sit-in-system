@@ -86,7 +86,7 @@ if (!$student) {
                     </div>
                 </div>
 
-                <form action="delete_handler.php" method="POST">
+                <form action="../action/crud_functions.php" method="POST">
                     <input type="hidden" name="id" value="<?php echo $student['id']; ?>">
                     
                     <div class="d-grid gap-2">

@@ -102,7 +102,7 @@ function deleteStudent($conn) {
 }
 
 // THE CALL: Listen for the delete button trigger
-if (isset($_POST['delete_student'])) {
+if (isset($_POST['confirm_delete'])) {
     if (deleteStudent($conn)) {
         header("Location: ../admin_module/studentList.php?status=deleted");
         exit();
