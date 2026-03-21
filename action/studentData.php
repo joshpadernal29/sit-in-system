@@ -16,12 +16,9 @@ include("../config/database.php");
 // // fetch student data to assoc array
 // $student = mysqli_fetch_assoc($result);
 
-// 1. Check for 'user_id' since that's what your login saves
 $student_id = $_SESSION['user_id'] ?? null; 
 
-// 2. If it's missing, don't let the script continue
 if (!$student_id) {
-    // Optional: redirect to login if session is lost
     header("Location: ../login.php");
     exit();
 }
