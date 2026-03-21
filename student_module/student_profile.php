@@ -85,29 +85,36 @@ if ($student === null) {
                         <input type="hidden" name="id_to_update" value="<?php echo $student['student_id']; ?>">
 
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label fw-semibold text-muted">First Name</label>
                                 <input type="text" name="firstname" class="form-control form-control-lg" 
-                                       value="<?php echo $student['firstname']; ?>" required>
+                                    value="<?php echo htmlspecialchars($student['firstname']); ?>" required>
                             </div>
-                            <div class="col-md-6">
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold text-muted">Middle Name</label>
+                                <input type="text" name="middlename" class="form-control form-control-lg" 
+                                    value="<?php echo htmlspecialchars($student['middlename'] ?? ''); ?>" placeholder="Optional">
+                            </div>
+
+                            <div class="col-md-4">
                                 <label class="form-label fw-semibold text-muted">Last Name</label>
                                 <input type="text" name="lastname" class="form-control form-control-lg" 
-                                       value="<?php echo $student['lastname']; ?>" required>
+                                    value="<?php echo htmlspecialchars($student['lastname']); ?>" required>
                             </div>
+
                             <div class="col-12">
                                 <label class="form-label fw-semibold text-muted">Email Address</label>
                                 <input type="email" name="email" class="form-control form-control-lg" 
-                                       value="<?php echo $student['email']; ?>" required>
+                                    value="<?php echo htmlspecialchars($student['email']); ?>" required>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-muted">Course</label>
-                                <select name="course" class="form-select form-select-lg">
-                                    <option value="BSIT" <?php echo ($student['course'] == 'BSIT') ? 'selected' : ''; ?>>BSIT</option>
-                                    <option value="BSCS" <?php echo ($student['course'] == 'BSCS') ? 'selected' : ''; ?>>BSCS</option>
-                                    <option value="BSCpE" <?php echo ($student['course'] == 'BSCpE') ? 'selected' : ''; ?>>BSCpE</option>
-                                </select>
+                                <input type="text" name="course" class="form-control form-control-lg" 
+                                    value="<?php echo htmlspecialchars($student['course']); ?>" placeholder="e.g. BSIT">
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold text-muted">Year Level</label>
                                 <select name="year_level" class="form-select form-select-lg">
@@ -117,6 +124,7 @@ if ($student === null) {
                                     <option value="4" <?php echo ($student['year_level'] == '4') ? 'selected' : ''; ?>>4th Year</option>
                                 </select>
                             </div>
+
                             <div class="col-12 mt-4 pt-3 border-top">
                                 <button type="submit" name="update_profile" class="btn btn-primary btn-lg px-5">
                                     Save Changes
