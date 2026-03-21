@@ -10,7 +10,6 @@ function current_sit_in($conn) {
 
 // --- UPDATED HISTORY FUNCTION ---
 function past_sit_in($conn, $filter_date = null) {
-    // Base SQL
     $sql = "SELECT * FROM sit_in_records WHERE status = 'Completed'";
     
     // If a date is provided (YYYY-MM-DD), filter by the login_time date
@@ -35,7 +34,7 @@ function searchStudentById($conn, $student_id) {
     return mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 }
 
-// --- TRIGGER: CONFIRM SIT-IN (Deduct & Log) ---
+// --- CONFIRM SIT-IN (Deduct & Log) ---
 if (isset($_POST['update_sitin_session'])) {
     $pk_id = $_POST['id'];
     $student_id_str = $_POST['student_id_str'];
@@ -44,18 +43,16 @@ if (isset($_POST['update_sitin_session'])) {
     $language = $_POST['language'];
     $current_sessions = (int)$_POST['sit_ins'];
 
-    // 1. Deduct 1 session from the students table
+    //  Deduct 1 session from the students table
     $new_count = $current_sessions - 1;
     $upd = mysqli_prepare($conn, "UPDATE students SET sit_ins = ? WHERE id = ?");
     mysqli_stmt_bind_param($upd, "ii", $new_count, $pk_id);
     mysqli_stmt_execute($upd);
 
-    // 2. Insert into sit_in_records with status 'Active'
     $ins = mysqli_prepare($conn, "INSERT INTO sit_in_records (student_pk_id, student_id_str, fullname, lab, language, status) VALUES (?, ?, ?, ?, ?, 'Active')");
     mysqli_stmt_bind_param($ins, "issss", $pk_id, $student_id_str, $fullname, $lab, $language);
     
     if (mysqli_stmt_execute($ins)) {
-        // Redirect to the list page to see the new record
         header("Location: ../admin_module/sit_in_list.php?session=started");
         exit();
     } else {
@@ -63,7 +60,7 @@ if (isset($_POST['update_sitin_session'])) {
     }
 }
 
-// --- TRIGGER: LOGOUT ---
+// --- LOGOUT from sit-in session ---
 if (isset($_POST['logout_student'])) {
     $record_id = $_POST['record_id'];
     $sql = "UPDATE sit_in_records SET status = 'Completed', logout_time = NOW() WHERE id = ?";
