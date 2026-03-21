@@ -46,7 +46,7 @@ include("../action/studentData.php");
                             </p>
                             <!---EDIT PROFILE-->
                             <div class="d-grid">
-                                <a href="profile.php" class="btn btn-primary btn-sm rounded-pill px-4"
+                                <a href="student_profile.php" class="btn btn-primary btn-sm rounded-pill px-4"
                                     style="font-size: 0.8rem;">Edit Profile</a>
                             </div>
                         </div>
