@@ -101,7 +101,7 @@ function deleteStudent($conn) {
     return false;
 }
 
-// THE CALL: Listen for the delete button trigger
+// delete button trigger
 if (isset($_POST['confirm_delete'])) {
     if (deleteStudent($conn)) {
         header("Location: ../admin_module/studentList.php?status=deleted");
@@ -113,19 +113,16 @@ if (isset($_POST['confirm_delete'])) {
 
 // add student function
 function addStudent($conn) {
-    // 1. Capture all form data
     $student_id = $_POST['student_id'];
     $firstname  = $_POST['firstname'];
-    $middlename = $_POST['middlename']; // New
+    $middlename = $_POST['middlename'];
     $lastname   = $_POST['lastname'];
     $course     = $_POST['course'];
     $year_level = $_POST['year_level'];
-    $email      = $_POST['email'];      // New
-    $address    = $_POST['home_address']; // New
+    $email      = $_POST['email'];     
+    $address    = $_POST['home_address']; 
     $sit_ins    = 30; // Default sessions
     
-    // 2. Hash the password for security
-    // Use the student_id as the default password if not provided, or a custom input
     $raw_password = $_POST['password']; 
     $hashed_password = password_hash($raw_password, PASSWORD_DEFAULT);
 
@@ -136,7 +133,6 @@ function addStudent($conn) {
     $stmt = mysqli_prepare($conn, $sql);
 
     if ($stmt) {
-        // "sssssssssi" = 9 strings, 1 integer (sit_ins)
         mysqli_stmt_bind_param($stmt, "sssssssssi", 
             $student_id, $firstname, $middlename, $lastname, $course, $year_level, $email, $address, $hashed_password, $sit_ins
         );
@@ -148,6 +144,7 @@ function addStudent($conn) {
     return false;
 }
 
+// add student trigger
 if (isset($_POST['add_student'])) {
     if (addStudent($conn)) {
         header("Location: ../admin_module/studentList.php?status=added");
