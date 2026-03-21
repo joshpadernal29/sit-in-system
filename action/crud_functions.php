@@ -81,3 +81,32 @@ if (isset($_POST['update_student'])) {
         echo "Error updating record.";
     }
 }
+
+
+// Function to Delete Student
+function deleteStudent($conn) {
+    if (isset($_POST['id'])) {
+        $id = (int)$_POST['id'];
+
+        $sql = "DELETE FROM students WHERE id = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "i", $id);
+            $success = mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            return $success;
+        }
+    }
+    return false;
+}
+
+// THE CALL: Listen for the delete button trigger
+if (isset($_POST['delete_student'])) {
+    if (deleteStudent($conn)) {
+        header("Location: ../admin_module/studentList.php?status=deleted");
+        exit();
+    } else {
+        die("Error deleting record.");
+    }
+}

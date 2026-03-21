@@ -151,7 +151,7 @@ if (!$student) {
                                 <button type="submit" name="update_student" class="btn btn-primary px-4 shadow-sm">
                                     <i class="bi bi-save me-2"></i> Save Changes
                                 </button>
-                                <a href="student_list.php" class="btn btn-light border px-4">Cancel</a>
+                                <a href="studentList.php" class="btn btn-light border px-4">Cancel</a>
                             </div>
                         </form>
                     </div>

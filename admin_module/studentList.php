@@ -127,8 +127,7 @@ $students = getStudents($conn);
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <a href="delete_student.php?id=<?php echo $student['id']; ?>" 
-                                           class="btn btn-sm btn-white text-danger px-3" 
-                                           onclick="return confirm('Delete this record?')" title="Delete">
+                                           class="btn btn-sm btn-white text-danger px-3" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </div>
