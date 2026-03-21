@@ -43,7 +43,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                            <a class="nav-link px-2 text-white d-flex align-items-center" href="sitin_management.php"
                                 style="font-size: 0.9rem;">
                                 <i class="bi bi-person-video3 me-2"></i>Sit-in
                             </a>
