@@ -40,7 +40,7 @@ include("../action/studentData.php");
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                        <a class="nav-link px-2 text-white d-flex align-items-center" href="student_profile.php"
                             style="font-size: 0.9rem;">
                             <i class="bi bi-person-circle me-2"></i>My Profile
                         </a>
