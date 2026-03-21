@@ -8,9 +8,23 @@ function current_sit_in($conn) {
     return mysqli_query($conn, $sql);
 }
 
-function past_sit_in($conn) {
-    $sql = "SELECT * FROM sit_in_records WHERE status = 'Completed' ORDER BY logout_time DESC LIMIT 50";
+// --- UPDATED HISTORY FUNCTION ---
+function past_sit_in($conn, $filter_date = null) {
+    // Base SQL
+    $sql = "SELECT * FROM sit_in_records WHERE status = 'Completed'";
+    
+    // If a date is provided (YYYY-MM-DD), filter by the login_time date
+    if ($filter_date) {
+        $sql .= " AND DATE(login_time) = '" . mysqli_real_escape_numeric($conn, $filter_date) . "'";
+    }
+    
+    $sql .= " ORDER BY logout_time DESC LIMIT 100";
     return mysqli_query($conn, $sql);
+}
+
+// Helper to prevent SQL injection for the date string
+function mysqli_real_escape_numeric($conn, $value) {
+    return mysqli_real_escape_string($conn, $value);
 }
 
 function searchStudentById($conn, $student_id) {
