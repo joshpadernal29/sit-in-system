@@ -53,7 +53,6 @@ $selected_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : null;
                             <thead class="table-dark">
                                 <tr>
                                     <th class="ps-4">Student ID</th>
-                                    <th>Full Name</th>
                                     <th>Lab</th>
                                     <th>Language</th>
                                     <th>Time In</th>
@@ -68,7 +67,6 @@ $selected_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : null;
                                 ?>
                                 <tr>
                                     <td class="ps-4 fw-bold"><?php echo htmlspecialchars($row['student_id_str']); ?></td>
-                                    <td><?php echo htmlspecialchars($student['firstname']. "" .$student['lastname']); ?></td>
                                     <td><span class="badge bg-info text-dark px-3"><?php echo $row['lab']; ?></span></td>
                                     <td><?php echo $row['language']; ?></td>
                                     <td><?php echo date('h:i A', strtotime($row['login_time'])); ?></td>
