@@ -81,6 +81,7 @@ if (isset($_GET['search_id'])) {
                                         <option value="C#">C#</option>
                                         <option value="PHP">PHP</option>
                                         <option value="C++">C++</option>
+                                        <option value="C">C</option>
                                     </select>
                                 </div>
 
