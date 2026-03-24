@@ -23,7 +23,6 @@ if (!$student_id) {
     exit();
 }
 
-// 3. Your query remains the same
 $sql = "SELECT * FROM students WHERE student_id = ? LIMIT 1";
 $stmt = mysqli_prepare($conn, $sql);
 mysqli_stmt_bind_param($stmt, "s", $student_id);
