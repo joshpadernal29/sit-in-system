@@ -126,7 +126,6 @@ function addStudent($conn) {
     $raw_password = $_POST['password']; 
     $hashed_password = password_hash($raw_password, PASSWORD_DEFAULT);
 
-    // 3. Prepare the SQL (9 columns + 1 for ID which is AI)
     $sql = "INSERT INTO students (student_id, firstname, middlename, lastname, course, year_level, email, home_address, password, sit_ins) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
