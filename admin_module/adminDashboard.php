@@ -80,7 +80,7 @@ include("../action/Data_count.php");
                         </div>
                         <div>
                             <small class="text-muted fw-bold text-uppercase">Total Sessions</small>
-                            <h4 class="mb-0 fw-bold">1</h4>
+                            <h4 class="mb-0 fw-bold"><?php echo $total_sessions = getTotalSessions($conn); ?></h4>
                         </div>
                     </div>
                 </div>
