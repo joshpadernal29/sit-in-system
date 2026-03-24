@@ -36,6 +36,26 @@ function currentSitIns($conn) {
     return 0;
 }
 
+// get total sessions (sit in)
+function getTotalSessions($conn) {
+    $status = 'Completed';
+    $sql = "SELECT COUNT(*) AS total_sessions FROM sit_in_records WHERE status = ?";
+    $getData = mysqli_prepare($conn,$sql);
+
+    if ($getData) {
+        mysqli_stmt_bind_param($getData, 's', $status);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        $row = mysqli_fetch_assoc($result);
+        $total_sessions = $row['total_sessions'];// asign the single value to the total_sessions variable 
+        mysqli_close($conn);
+
+        return $total_sessions;
+    }
+
+    return 0;
+}
+
 // get programming language preferences/used
 function languageUsed($conn) {
     $sql = "SELECT";
