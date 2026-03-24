@@ -16,3 +16,28 @@ function countStudents($conn) {
     return 0;
 }
 
+// get current sit-ins
+function currentSitIns($conn) {
+    $status = 'Active';
+    $sql = "SELECT COUNT(*) AS current_sit_in FROM sit_in_records WHERE status = ?";
+    $getData = mysqli_prepare($conn,$sql);
+    
+    if ($getData) {
+        mysqli_stmt_bind_param($getData, 's', $status);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        $row = mysqli_fetch_assoc($result);
+        $current_sit_ins = $row['current_sit_in']; // asign the single value to the current_sit_in variable 
+        mysqli_stmt_close($getData);
+
+        return $current_sit_ins;
+    }
+
+    return 0;
+}
+
+// get programming language preferences/used
+function languageUsed($conn) {
+    $sql = "SELECT";
+}
+
