@@ -57,7 +57,21 @@ function getTotalSessions($conn) {
 }
 
 // get programming language preferences/used
-function languageUsed($conn) {
-    $sql = "SELECT";
+function languageUsed($conn, $language) {
+    $sql = "SELECT COUNT(*) AS language_used FROM sit_in_records WHERE language = ?";
+    $getData = mysqli_prepare($conn, $sql);
+
+    if ($getData) {
+        mysqli_stmt_bind_param($getData, 's' ,$language);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        $row = mysqli_fetch_assoc($result);
+        $language_used = $row['language_used'];
+        mysqli_stmt_close($getData);
+
+        return $language_used;
+    }
+
+    return 0;
 }
 
