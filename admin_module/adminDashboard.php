@@ -67,7 +67,7 @@ include("../action/Data_count.php");
                         </div>
                         <div>
                             <small class="text-muted fw-bold text-uppercase">Current Sit-in</small>
-                            <h4 class="mb-0 fw-bold">1</h4>
+                            <h4 class="mb-0 fw-bold"><?php echo $current_sitting_in = currentSitIns($conn); ?></h4>
                         </div>
                     </div>
                 </div>
