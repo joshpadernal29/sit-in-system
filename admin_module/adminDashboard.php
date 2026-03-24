@@ -5,6 +5,13 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 include("../action/Data_count.php");
+
+// get language used data
+$Php = languageUsed($conn, 'PHP');
+$Java = languageUsed($conn, 'JAVA');
+$C = languageUsed($conn, 'C');
+$Csharp = languageUsed($conn, 'C#');
+$CPlusPlus = languageUsed($conn, 'C++');
 ?>
 
 <!DOCTYPE html>
@@ -24,7 +31,11 @@ include("../action/Data_count.php");
         function drawChart() {
             var data = google.visualization.arrayToDataTable([
                 ['Language', 'Students'],
-                ['C', 10], ['C#', 10], ['C++', 10], ['Java', 10], ['PHP', 10]
+                ['C', <?php echo $C ?>], 
+                ['C#', <?php echo $Csharp ?>], 
+                ['C++', <?php echo $CPlusPlus ?>], 
+                ['Java', <?php echo $Java ?>], 
+                ['PHP', <?php echo $Php ?>]
             ]);
 
             var options = {
