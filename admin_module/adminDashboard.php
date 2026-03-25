@@ -16,13 +16,14 @@ $CPlusPlus = languageUsed($conn, 'C++');
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | UC Sit-in</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', { 'packages': ['corechart'] });
@@ -31,10 +32,10 @@ $CPlusPlus = languageUsed($conn, 'C++');
         function drawChart() {
             var data = google.visualization.arrayToDataTable([
                 ['Language', 'Students'],
-                ['C', <?php echo $C ?>], 
-                ['C#', <?php echo $Csharp ?>], 
-                ['C++', <?php echo $CPlusPlus ?>], 
-                ['Java', <?php echo $Java ?>], 
+                ['C', <?php echo $C ?>],
+                ['C#', <?php echo $Csharp ?>],
+                ['C++', <?php echo $CPlusPlus ?>],
+                ['Java', <?php echo $Java ?>],
                 ['PHP', <?php echo $Php ?>]
             ]);
 
@@ -65,7 +66,9 @@ $CPlusPlus = languageUsed($conn, 'C++');
                         </div>
                         <div>
                             <small class="text-muted fw-bold text-uppercase">Registered</small>
-                            <h4 class="mb-0 fw-bold"><?php echo  $total_students = countStudents($conn); ?></h4>
+                            <h4 class="mb-0 fw-bold">
+                                <?php echo  $total_students = countStudents($conn); ?>
+                            </h4>
                         </div>
                     </div>
                 </div>
@@ -78,7 +81,9 @@ $CPlusPlus = languageUsed($conn, 'C++');
                         </div>
                         <div>
                             <small class="text-muted fw-bold text-uppercase">Current Sit-in</small>
-                            <h4 class="mb-0 fw-bold"><?php echo $current_sitting_in = currentSitIns($conn); ?></h4>
+                            <h4 class="mb-0 fw-bold">
+                                <?php echo $current_sitting_in = currentSitIns($conn); ?>
+                            </h4>
                         </div>
                     </div>
                 </div>
@@ -91,7 +96,9 @@ $CPlusPlus = languageUsed($conn, 'C++');
                         </div>
                         <div>
                             <small class="text-muted fw-bold text-uppercase">Total Sessions</small>
-                            <h4 class="mb-0 fw-bold"><?php echo $total_sessions = getTotalSessions($conn); ?></h4>
+                            <h4 class="mb-0 fw-bold">
+                                <?php echo $total_sessions = getTotalSessions($conn); ?>
+                            </h4>
                         </div>
                     </div>
                 </div>
@@ -118,10 +125,14 @@ $CPlusPlus = languageUsed($conn, 'C++');
                         <h5 class="mb-0 fw-bold">
                             <i class="bi bi-megaphone-fill text-danger me-2"></i>Broadcasts
                         </h5>
-                        <button class="btn btn-sm btn-outline-primary rounded-pill">Post New</button>
+                        <button type="button" class="btn btn-primary shadow-sm d-flex align-items-center gap-2"
+                            data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
+                            <i class="bi bi-megaphone-fill"></i> Post Announcement
+                        </button>
                     </div>
+
                     <div class="card-body overflow-auto" style="max-height: 400px;">
-                        
+
                         <div class="d-flex mb-4">
                             <div class="me-3 text-center">
                                 <div class="bg-danger rounded-circle mb-1" style="width:12px; height:12px;"></div>
@@ -130,7 +141,8 @@ $CPlusPlus = languageUsed($conn, 'C++');
                             <div>
                                 <h6 class="fw-bold mb-0">System Maintenance</h6>
                                 <small class="text-muted d-block mb-2">March 20, 2026 • 10:00 PM</small>
-                                <p class="small text-muted mb-0">The system will undergo scheduled maintenance to optimize database queries.</p>
+                                <p class="small text-muted mb-0">The system will undergo scheduled maintenance to
+                                    optimize database queries.</p>
                             </div>
                         </div>
 
@@ -142,7 +154,8 @@ $CPlusPlus = languageUsed($conn, 'C++');
                             <div>
                                 <h6 class="fw-bold mb-0">New Feature: CSV Export</h6>
                                 <small class="text-muted d-block mb-2">March 15, 2026</small>
-                                <p class="small text-muted mb-0">Admins can now export sit-in logs directly to Excel/CSV format.</p>
+                                <p class="small text-muted mb-0">Admins can now export sit-in logs directly to Excel/CSV
+                                    format.</p>
                             </div>
                         </div>
 
@@ -164,10 +177,134 @@ $CPlusPlus = languageUsed($conn, 'C++');
     </main>
 
     <style>
-        .card { transition: transform 0.2s ease; }
-        .card:hover { transform: translateY(-3px); }
-        .vr { width: 2px; background-color: #dee2e6; opacity: 1; }
+        .card {
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .vr {
+            width: 2px;
+            background-color: #dee2e6;
+            opacity: 1;
+        }
     </style>
+
+    <!--modal-->
+    <div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-labelledby="announcementModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+
+                <div class="modal-header bg-light border-bottom-0 py-3 px-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
+                            <i class="bi bi-megaphone text-primary fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark" id="announcementModalLabel">New
+                                Announcement</h5>
+                            <p class="text-muted small mb-0">Broadcast a message to all students.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form action="post_announcement.php" method="POST">
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Announcement
+                                Title</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="bi bi-type-h1 text-muted"></i></span>
+                                <input type="text" name="title" class="form-control border-start-0 ps-0"
+                                    placeholder="e.g. System Maintenance" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
+                                <select name="category" class="form-select bg-light border-0">
+                                    <option value="General">General</option>
+                                    <option value="Urgent">Urgent</option>
+                                    <option value="Academic">Academic</option>
+                                    <option value="Holiday">Holiday</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Target
+                                    Audience</label>
+                                <select name="target" class="form-select bg-light border-0">
+                                    <option value="all">All Students</option>
+                                    <option value="BSIT">BSIT Only</option>
+                                    <option value="BSCS">BSCS Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Message
+                                Content</label>
+                            <textarea name="message" class="form-control bg-light border-0" rows="4"
+                                placeholder="Write your announcement here..." required></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                           <form action="../action/announcement.php" method="post">
+                                <button type="submit" name="post_now" class="btn btn-primary py-2 fw-bold shadow-sm">
+                                    <i class="bi bi-send-fill me-2"></i> Post Announcement
+                                </button>
+                            </form>
+                            <button type="button" class="btn btn-outline-secondary text-decoration-none small"
+                                data-bs-dismiss="modal">
+                                Discard Draft
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0 py-2 justify-content-center">
+                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i> This will appear on
+                        the Student Dashboard.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .modal-content {
+            overflow: hidden;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #fff !important;
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        }
+
+        .input-group-text {
+            color: #6c757d;
+            transition: all 0.2s;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+
+        /* FIX: Prevents the background table from shifting when modal opens */
+        body.modal-open {
+            padding-right: 0 !important;
+        }
+    </style>
+    <!--end of modal-->
+
     <!--main end-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
