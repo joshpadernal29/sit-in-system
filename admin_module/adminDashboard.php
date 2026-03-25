@@ -12,6 +12,9 @@ $Java = languageUsed($conn, 'JAVA');
 $C = languageUsed($conn, 'C');
 $Csharp = languageUsed($conn, 'C#');
 $CPlusPlus = languageUsed($conn, 'C++');
+
+// get posts/annoucements
+$posts = getPost($conn, 1);
 ?>
 
 <!DOCTYPE html>
@@ -132,45 +135,45 @@ $CPlusPlus = languageUsed($conn, 'C++');
                     </div>
 
                     <div class="card-body overflow-auto" style="max-height: 400px;">
+                    <!--if posts is not empyt-->
+                    <?php if(!empty($posts)): ?>
+                        <!--foreach loop to show annoucements here-->
+                        <?php foreach ($posts as $post): ?>
+                            <?php 
+                                // helper for announcement priority color
+                                $priority_color = 'bg-success'; // default: general priority
+                                if ($post['priority'] === 'urgent') {
+                                    $priority_color = 'bg-danger';
+                                }
+                                if ($post['priority'] === 'academic') {
+                                    $priority_color = 'bg-info';
+                                }                        
+                            ?>
 
-                        <div class="d-flex mb-4">
-                            <div class="me-3 text-center">
-                                <div class="bg-danger rounded-circle mb-1" style="width:12px; height:12px;"></div>
-                                <div class="vr h-100"></div>
+                            <div class="d-flex mb-4">
+                                <div class="me-3 text-center">
+                                    <!--change color based on the priority/importance-->
+                                    <div class="<?php echo $priority_color ?> rounded-circle mb-1" style="width:12px; height:12px;"></div>
+                                    <div class="vr h-100"></div>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-0"><?php echo $post['title'] ?></h6> <!--post title-->
+                                    <small class="text-muted d-block mb-2"> <!--date and time-->
+                                    <?php
+                                    // format time to 12 hour format
+                                    $time = strtotime($post['date_posted']);
+                                    echo date("F j, Y . g:i a", $time);
+                                    ?>
+                                    </small>
+                                    <p class="small text-muted mb-0"><?php echo $post['message'] ?></p> <!--post message-->
+                                </div>
                             </div>
-                            <div>
-                                <h6 class="fw-bold mb-0">System Maintenance</h6>
-                                <small class="text-muted d-block mb-2">March 20, 2026 • 10:00 PM</small>
-                                <p class="small text-muted mb-0">The system will undergo scheduled maintenance to
-                                    optimize database queries.</p>
-                            </div>
-                        </div>
-
-                        <div class="d-flex mb-4">
-                            <div class="me-3 text-center">
-                                <div class="bg-info rounded-circle mb-1" style="width:12px; height:12px;"></div>
-                                <div class="vr h-100"></div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0">New Feature: CSV Export</h6>
-                                <small class="text-muted d-block mb-2">March 15, 2026</small>
-                                <p class="small text-muted mb-0">Admins can now export sit-in logs directly to Excel/CSV
-                                    format.</p>
-                            </div>
-                        </div>
-
-                        <div class="d-flex">
-                            <div class="me-3 text-center">
-                                <div class="bg-success rounded-circle mb-1" style="width:12px; height:12px;"></div>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0">Welcome Admin</h6>
-                                <small class="text-muted d-block mb-2">March 14, 2026</small>
-                                <p class="small text-muted mb-0">Portal is officially live for the second semester.</p>
-                            </div>
-                        </div>
-
+                        <?php endforeach ?>
+                    <?php else: ?>
+                        <p class="text-center text-muted py-4">No recent Annoucements...</p>
+                    <?php endif ?>
                     </div>
+                    <!--post card end here--> 
                 </div>
             </div>
         </div>
