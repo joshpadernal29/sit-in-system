@@ -17,6 +17,6 @@ if (isset($_POST['post_now'])) {
         mysqli_stmt_bind_param($getData, 'ssss', $title,$message,$category,$target_students);
         mysqli_stmt_execute($getData);
         mysqli_stmt_close($getData);
-        header("Location: ../admin_module/adminDashboard.php?announcement=success"); // redirect t dashboard after posting 
+        header("Location: ../admin_module/adminDashboard.php?status=success"); // redirect to dashboard after posting 
     }
 }

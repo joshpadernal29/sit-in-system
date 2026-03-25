@@ -303,8 +303,56 @@ $CPlusPlus = languageUsed($conn, 'C++');
     </style>
     <!--end of modal-->
 
+    <!--toast message succesful posting of announcement-->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="margin-top: 60px;">
+        <div id="successToast" class="toast border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center p-2">
+                <div class="bg-success bg-opacity-10 p-2 rounded-3 me-3 ms-2">
+                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                </div>
+                <div class="toast-body ps-0">
+                    <strong class="d-block text-dark">Success!</strong>
+                    <span class="text-muted small">Announcement posted successfully.</span>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        #successToast {
+            background-color: #ffffff;
+            min-width: 300px;
+        }
+        .toast-container {
+            z-index: 2000; 
+        }
+    </style>
+    <!--end of toast message-->
+
     <!--main end-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!--for toast message trigger-->
+    <script> 
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the URL has ?status=success
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('status') === 'success') {
+                // Initialize the Bootstrap Toast
+                const toastEl = document.getElementById('successToast');
+                const toast = new bootstrap.Toast(toastEl, {
+                    delay: 5000 // Visible for 5 seconds
+                });
+                
+                // Show toast message
+                toast.show();
+
+                // Clean the URL (Optional: removes ?status=success from address bar)
+                //window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+    </script>
 </body>
 
 </html>
