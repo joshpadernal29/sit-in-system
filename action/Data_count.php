@@ -1,6 +1,6 @@
 <?php
 require __DIR__. '/../config/database.php';
-// this file contains functions for number of data's for the admin dashboard
+// this file contains functions for getting data's for the admin/student dashboard
 
 // get number of students in the database
 function countStudents($conn) {
@@ -73,5 +73,25 @@ function languageUsed($conn, $language) {
     }
 
     return 0;
+}
+
+// getting annoucements from the db
+function getPost($conn, $active) {
+    $announcements = []; // initialize array
+    $sql = "SELECT * FROM announcements WHERE is_active = ?
+            ORDER BY date_posted DESC";
+    $getData = mysqli_prepare($conn,$sql);
+
+    if ($getData) {
+        mysqli_stmt_bind_param($getData, 'i', $active);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        
+        // loop through the array
+        while ($row = mysqli_fetch_assoc($result)) {
+            $announcements[] = $row;
+        }
+    }
+    return $announcements;
 }
 
