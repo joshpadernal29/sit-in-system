@@ -213,7 +213,7 @@ $CPlusPlus = languageUsed($conn, 'C++');
                 </div>
 
                 <div class="modal-body p-4">
-                    <form action="post_announcement.php" method="POST">
+                    <form action="../action/announcement.php" method="POST">
 
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-muted text-uppercase">Announcement
@@ -233,7 +233,6 @@ $CPlusPlus = languageUsed($conn, 'C++');
                                     <option value="General">General</option>
                                     <option value="Urgent">Urgent</option>
                                     <option value="Academic">Academic</option>
-                                    <option value="Holiday">Holiday</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -255,11 +254,10 @@ $CPlusPlus = languageUsed($conn, 'C++');
                         </div>
 
                         <div class="d-grid gap-2">
-                           <form action="../action/announcement.php" method="post">
-                                <button type="submit" name="post_now" class="btn btn-primary py-2 fw-bold shadow-sm">
-                                    <i class="bi bi-send-fill me-2"></i> Post Announcement
-                                </button>
-                            </form>
+                            <button type="submit" name="post_now" class="btn btn-primary py-2 fw-bold shadow-sm">
+                                <i class="bi bi-send-fill me-2"></i> Post Announcement
+                            </button>
+        
                             <button type="button" class="btn btn-outline-secondary text-decoration-none small"
                                 data-bs-dismiss="modal">
                                 Discard Draft
