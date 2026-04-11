@@ -4,10 +4,65 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+include("../config/database.php");
 include("../action/student_profile_logic.php");
+
+// toast message
+$course = isset($student['course']) ? strtolower($student['course']) : 'all';
+
+// CRITICAL FIX: Added 'id' to the SELECT
+$query = "SELECT id, title FROM announcements 
+          WHERE is_active = 1 
+          AND (target_audience = 'all' OR target_audience = ?) 
+          ORDER BY id DESC LIMIT 1";
+
+$stmt = mysqli_prepare($conn, $query);
+mysqli_stmt_bind_param($stmt, "s", $course);
+mysqli_stmt_execute($stmt);
+$res = mysqli_stmt_get_result($stmt);
+$latest = mysqli_fetch_assoc($res);
+
+$latest_id = $latest['id'] ?? 0;
+$announcement_title = $latest['title'] ?? "No new updates";
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!--NEW ANNOUNCEMENT NOTIF-->
+<style>
+    .notification-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .pulse-indicator {
+        position: absolute;
+        top: -2px;
+        right: -10px;
+        width: 8px;
+        height: 8px;
+        background-color: #ff4d4d; /* Noticeable Red */
+        border-radius: 50%;
+        border: 1px solid white;
+    }
+
+    .pulse-indicator::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #ff4d4d;
+        border-radius: 50%;
+        animation: navbar-pulse 1.5s infinite;
+    }
+
+    @keyframes navbar-pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(3.5); opacity: 0; }
+    }
+</style>
 
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm py-1 sticky-top">
@@ -54,7 +109,13 @@ include("../action/student_profile_logic.php");
                     <li class="nav-item">
                         <a class="nav-link px-2 text-white d-flex align-items-center" href="student_announcement.php"
                             style="font-size: 0.9rem;">
-                            <i class="bi bi-megaphone me-2"></i>Announcements
+                            <div class="notification-wrapper">
+                                <i class="bi bi-megaphone me-2"></i>Announcements
+                                
+                                <?php if ($announcement_title !== "No new updates"): ?>
+                                    <span id="nav-pulse-dot" class="pulse-indicator"></span>
+                                <?php endif; ?>
+                            </div>
                         </a>
                     </li>
                 </ul>
@@ -78,3 +139,48 @@ include("../action/student_profile_logic.php");
         </div>
     </nav>
 </header>
+
+<!--NOTIFICATION TOAST-->
+<div class="toast-container position-fixed top-0 end-0 p-3 mt-5" style="z-index: 1100;">
+    <div id="globalAnnouncementToast" class="toast border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-primary text-white border-0 rounded-top-4 py-3">
+            <i class="bi bi-megaphone-fill me-2"></i>
+            <strong class="me-auto">System Notification</strong>
+            <small class="text-white-50">Just now</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body bg-white rounded-bottom-4 p-3">
+            <p class="mb-2 fw-bold text-dark"><?php echo htmlspecialchars($announcement_title); ?></p>
+            <p class="small text-muted mb-3">A new update has been posted to the portal.</p>
+            <a href="student_announcement.php" class="btn btn-primary btn-sm rounded-pill w-100 shadow-sm">
+                <i class="bi bi-eye me-1"></i> View Details
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // These come from your PHP variables at the top of the header
+        const latestId = "<?php echo $latest_id; ?>";
+        const pulseDot = document.getElementById('nav-pulse-dot');
+        const toastEl = document.getElementById('globalAnnouncementToast');
+
+        // --- 1. BLINKER LOGIC ---
+        // Hide the dot ONLY if the stored ID matches the current ID from DB
+        if (localStorage.getItem('lastReadId') === latestId) {
+            if (pulseDot) pulseDot.style.display = 'none';
+        }
+
+        // --- 2. TOAST LOGIC ---
+        // Show if: 1. There is an announcement AND 2. This specific ID hasn't been shown in this session
+        if (latestId !== "0" && sessionStorage.getItem('lastToastId') !== latestId) {
+            if (toastEl) {
+                const toast = new bootstrap.Toast(toastEl, { autohide: true, delay: 8000 });
+                toast.show();
+                // Mark this ID as "Toast Shown" for this session
+                sessionStorage.setItem('lastToastId', latestId);
+            }
+        }
+    });
+</script>

@@ -3,7 +3,7 @@ CREATE TABLE announcements (
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     priority ENUM('general', 'urgent', 'academic') DEFAULT 'general',
-    target_audience ENUM('all', 'bsit', 'bscs') DEFAULT 'all' AFTER priority,
+    target_audience ENUM('all', 'bsit', 'bscs') DEFAULT 'all',
     is_active TINYINT(1) DEFAULT 1,
     date_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

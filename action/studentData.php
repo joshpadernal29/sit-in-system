@@ -33,4 +33,4 @@ $student = mysqli_fetch_assoc($result);
 
 
 // close db connection
-mysqli_close($conn);
+//mysqli_close($conn);
