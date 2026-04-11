@@ -16,7 +16,7 @@ if (!$session_id) {
 // 2. Fetch the data using the connection and the session ID
 $student = getStudentDetails($conn, $session_id);
 
-// 3. THE SAFETY SHIELD
+// 3. THE SAFETY SHIELD 
 if ($student === null) {
     echo "<h3>Database Error</h3>";
     echo "The system found your Session ID (<b>$session_id</b>), but that ID does not exist in your 'students' table.<br>";
