@@ -34,7 +34,7 @@ include("../action/student_profile_logic.php");
             <div class="collapse navbar-collapse" id="studentNav">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 nav-underline">
                     <li class="nav-item">
-                        <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                        <a class="nav-link px-2 text-white d-flex align-items-center" href="studentDashboard.php"
                             style="font-size: 0.9rem;">
                             <i class="bi bi-speedometer2 me-2"></i>Dashboard
                         </a>
@@ -46,13 +46,13 @@ include("../action/student_profile_logic.php");
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                        <a class="nav-link px-2 text-white d-flex align-items-center" href="sit_in_history.php"
                             style="font-size: 0.9rem;">
                             <i class="bi bi-clock-history me-2"></i>Sit-in History
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link px-2 text-white d-flex align-items-center" href="#"
+                        <a class="nav-link px-2 text-white d-flex align-items-center" href="student_announcement.php"
                             style="font-size: 0.9rem;">
                             <i class="bi bi-megaphone me-2"></i>Announcements
                         </a>
