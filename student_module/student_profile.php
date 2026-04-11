@@ -62,6 +62,11 @@ if ($student === null) {
                             <label class="small text-uppercase fw-bold text-muted">Current Course</label>
                             <p class="fw-semibold"><?php echo $student['course'] . " - Year " . $student['year_level']; ?></p>
                         </div>
+                        <hr>
+                        <div class="text-start px-3">
+                            <label class="small text-uppercase fw-bold text-muted">Sessions Available</label>
+                            <p class="fw-semibold"><?php echo $student['sit_ins'] ?></p>
+                        </div>
                     </div>
                 </div>
             </div>
