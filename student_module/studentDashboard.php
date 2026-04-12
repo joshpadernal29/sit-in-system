@@ -4,7 +4,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include("../action/studentData.php");
+include("../action/studentData.php"); // for session 
+include("../action/Data_count.php");
+
+// get language used data
+$language_used = progLanguage($conn,$student_id );
+// Prepare the rows for language pie chart
+$rows = [];
+foreach ($language_used as $row) {
+    $rows[] = "['" . $row['language'] . "', " . $row['language_count'] . "]";
+}
+$chartDataString = implode(',', $rows);
+
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +33,7 @@ include("../action/studentData.php");
         google.charts.setOnLoadCallback(drawCharts);
 
         function drawCharts() {
-            // 1. Line Chart: Direct Data Input
+            // Line Chart: Direct Data Input
             var lineData = google.visualization.arrayToDataTable([
                 ['Day', 'Sessions'],
                 ['Mon', 2],
@@ -47,15 +58,12 @@ include("../action/studentData.php");
             // 2. Pie Chart: Direct Data Input
             var pieData = google.visualization.arrayToDataTable([
                 ['Language', 'Usage'],
-                ['PHP', 15],
-                ['Python', 8],
-                ['C++', 5],
-                ['Java', 3]
+                <?php echo $chartDataString; ?>
             ]);
 
             var pieOptions = {
                 pieHole: 0.5,
-                colors: ['#0d6efd', '#198754', '#0dcaf0', '#ffc107'],
+                colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14'],
                 chartArea: { width: '95%', height: '80%' },
                 legend: { position: 'bottom', textStyle: { fontSize: 11 } },
                 pieSliceText: 'none'
