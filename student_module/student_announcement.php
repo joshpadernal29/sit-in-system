@@ -194,7 +194,7 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                             Apply
                         </button>
 
-                        <?php if (!empty($search) || !empty($date) || !empty($priority)): ?>
+                        <?php if (!empty($date) || !empty($priority)): ?>
                         <a href="?" class="btn btn-outline-secondary rounded-3" title="Clear Filters">
                             <i class="bi bi-x-lg"></i>
                         </a>
@@ -218,9 +218,9 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                         }
                     ?>
                     <div class="col">
-                        <div
-                            class="card h-100 border-0 shadow-sm rounded-4 position-relative overflow-hidden transition-hover">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 position-relative overflow-hidden transition-hover">
                             <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                                <span id="blinker-<?php echo $post['id']; ?>" class="notification-blinker d-none"></span>
                                 <span
                                     class="badge bg-<?php echo $color; ?>-subtle text-<?php echo $color; ?> rounded-pill px-3 py-2 small fw-bold">
                                     <i class="bi <?php echo $icon; ?> me-1"></i>
@@ -246,10 +246,11 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                                         <i class="bi bi-calendar3 me-1"></i>
                                         <?php echo date("M j, Y", strtotime($post['date_posted'])); ?>
                                     </small>
-                                    <button
-                                        class="btn btn-link btn-sm text-<?php echo $color; ?> p-0 fw-bold text-decoration-none"
-                                        data-bs-toggle="modal" data-bs-target="#modal<?php echo $post['id']; ?>">
-                                        Read More <i class="bi bi-arrow-right"></i>
+                                    <button class="btn btn-link btn-sm text-<?php echo $color; ?> p-0 fw-bold text-decoration-none" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modal<?php echo $post['id']; ?>"
+                                            onclick="markAsRead(<?php echo $post['id']; ?>)">
+                                            Read More <i class="bi bi-arrow-right"></i>
                                     </button>
                                 </div>
                             </div>
@@ -362,18 +363,61 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
         }
+
+        /* for notification blinker for new post(card) */
+        .notification-blinker {
+            width: 12px;
+            height: 12px;
+            background-color: #dc3545; /* Bootstrap Red */
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            border: 2px solid white; /* Makes it pop against the card */
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.5);
+            animation: blinker-pulse 1.5s infinite;
+        }
+
+        @keyframes blinker-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!--notification controller-->
     <script>
-        // Ensure this variable matches the $latest_id you fetched at the top of this page
-        const currentId = "<?php echo $latest_id; ?>";
+        // 1. Logic to show/hide blinkers based on what's in storage
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get the highest ID previously marked as read
+            const lastReadId = parseInt(localStorage.getItem('lastReadId')) || 0;
 
-        if (currentId !== "0") {
-            // Save the ID to permanent memory
-            localStorage.setItem('lastReadId', currentId);
-            console.log("Marked announcement " + currentId + " as read.");
+            // Select all blinkers and show them ONLY if the post ID is newer than lastReadId
+            document.querySelectorAll('.notification-blinker').forEach(blinker => {
+                const postId = parseInt(blinker.id.replace('blinker-', ''));
+                
+                if (postId > lastReadId) {
+                    blinker.classList.remove('d-none');
+                }
+            });
+        });
+
+        // 2. Function called when "Read More" is clicked
+        function markAsRead(postId) {
+            // Hide the blinker immediately for better UX
+            const blinker = document.getElementById('blinker-' + postId);
+            if (blinker) {
+                blinker.classList.add('d-none');
+            }
+
+            // Update localStorage so this (and older posts) don't blink on refresh
+            const lastReadId = parseInt(localStorage.getItem('lastReadId')) || 0;
+            if (postId > lastReadId) {
+                localStorage.setItem('lastReadId', postId);
+                console.log("Announcement " + postId + " marked as latest read.");
+            }
         }
     </script>
 </body>
