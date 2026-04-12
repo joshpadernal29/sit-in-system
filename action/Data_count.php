@@ -95,3 +95,25 @@ function getPost($conn, $active) {
     return $announcements;
 }
 
+
+// get students language used
+function progLanguage($conn,$student_id) {
+    $language = []; // initialize array to contain sql data
+    $sql = "SELECT language,COUNT(*) AS language_count FROM sit_in_records 
+            WHERE student_id_str = ?
+            GROUP BY language";
+    $getData = mysqli_prepare($conn,$sql);
+
+    if ($getData) {
+        mysqli_stmt_bind_param($getData,'s',$student_id);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        
+        // loop through array
+        while($row = mysqli_fetch_assoc($result)) {
+            $language[] = $row;
+        }
+        mysqli_stmt_close($getData);
+    }
+    return $language;
+}
