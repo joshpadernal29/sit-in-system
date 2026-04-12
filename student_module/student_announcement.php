@@ -26,6 +26,58 @@ $latest_id = $latest['id'] ?? 0;
 // get posts/announcements
 $posts = getPost($conn, 1);
 
+// 1. Pagination Settings
+$limit = 6; // Number of posts per page
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $limit;
+
+// 2. Capture Filters
+$date = $_GET['date'] ?? '';
+$priority = $_GET['priority'] ?? '';
+
+// --- COUNT TOTAL RESULTS (For pagination math) ---
+$countQuery = "SELECT COUNT(*) as total FROM announcements WHERE 1=1";
+$filterParams = [];
+$filterTypes = "";
+
+if (!empty($date)) {
+    $countQuery .= " AND DATE(date_posted) = ?";
+    $filterParams[] = $date;
+    $filterTypes .= "s";
+}
+if (!empty($priority)) {
+    $countQuery .= " AND priority = ?";
+    $filterParams[] = $priority;
+    $filterTypes .= "s";
+}
+
+$stmtCount = $conn->prepare($countQuery);
+if (!empty($filterParams)) {
+    $stmtCount->bind_param($filterTypes, ...$filterParams);
+}
+$stmtCount->execute();
+$totalRecords = $stmtCount->get_result()->fetch_assoc()['total'];
+$totalPages = ceil($totalRecords / $limit);
+
+// --- FETCH DATA WITH LIMIT & OFFSET ---
+$query = "SELECT * FROM announcements WHERE 1=1";
+if (!empty($date)) $query .= " AND DATE(date_posted) = ?";
+if (!empty($priority)) $query .= " AND priority = ?";
+
+$query .= " ORDER BY date_posted DESC LIMIT ? OFFSET ?";
+
+$stmt = $conn->prepare($query);
+
+// Combine filter params with pagination params
+$allParams = $filterParams;
+$allParams[] = $limit;
+$allParams[] = $offset;
+$allTypes = $filterTypes . "ii";
+
+$stmt->bind_param($allTypes, ...$allParams);
+$stmt->execute();
+$posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -114,39 +166,41 @@ $posts = getPost($conn, 1);
                         </h5>
                         <small class="text-muted">Stay updated with the latest news from CCS Admin</small>
                     </div>
-                    <button class="btn btn-white btn-sm rounded-pill px-3 shadow-sm border">
-                        <i class="bi bi-filter me-1"></i> Filter
-                    </button>
                 </div>
-
-                <div class="row g-3 mb-5 align-items-end bg-white p-3 rounded-4 shadow-sm mx-0 border">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold text-muted text-uppercase">Search Updates</label>
-                        <div class="input-group border rounded-3 bg-light">
-                            <span class="input-group-text bg-transparent border-0"><i
-                                    class="bi bi-search text-muted"></i></span>
-                            <input type="text" class="form-control border-0 bg-transparent" placeholder="Keyword...">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
+                <!--FILTER POSTS-->
+                <form method="GET" action=""
+                    class="row g-3 mb-5 align-items-end bg-white p-3 rounded-4 shadow-sm mx-0 border">
+                    <div class="col-md-5">
                         <label class="form-label small fw-bold text-muted text-uppercase">Filter by Date</label>
-                        <input type="date" class="form-control border rounded-3 bg-light">
+                        <input type="date" name="date" class="form-control border rounded-3 bg-light"
+                            value="<?php echo htmlspecialchars($date); ?>">
                     </div>
-                    <div class="col-md-3">
+
+                    <div class="col-md-5">
                         <label class="form-label small fw-bold text-muted text-uppercase">Priority</label>
-                        <select class="form-select border rounded-3 bg-light">
+                        <select name="priority" class="form-select border rounded-3 bg-light">
                             <option value="">All Types</option>
-                            <option value="urgent">Urgent</option>
-                            <option value="academic">Academic</option>
-                            <option value="general">General</option>
+                            <option value="urgent" <?php echo ($priority=='urgent' ) ? 'selected' : '' ; ?>>Urgent
+                            </option>
+                            <option value="academic" <?php echo ($priority=='academic' ) ? 'selected' : '' ; ?>>Academic
+                            </option>
+                            <option value="general" <?php echo ($priority=='general' ) ? 'selected' : '' ; ?>>General
+                            </option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-primary w-100 rounded-3 shadow-sm">
+
+                    <div class="col-md-2 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary w-100 rounded-3 shadow-sm">
                             Apply
                         </button>
+
+                        <?php if (!empty($search) || !empty($date) || !empty($priority)): ?>
+                        <a href="?" class="btn btn-outline-secondary rounded-3" title="Clear Filters">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                        <?php endif; ?>
                     </div>
-                </div>
+                </form>
 
                 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                     <?php if (!empty($posts)): ?>
@@ -192,9 +246,9 @@ $posts = getPost($conn, 1);
                                         <i class="bi bi-calendar3 me-1"></i>
                                         <?php echo date("M j, Y", strtotime($post['date_posted'])); ?>
                                     </small>
-                                    <button class="btn btn-link btn-sm text-<?php echo $color; ?> p-0 fw-bold text-decoration-none" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#modal<?php echo $post['id']; ?>">
+                                    <button
+                                        class="btn btn-link btn-sm text-<?php echo $color; ?> p-0 fw-bold text-decoration-none"
+                                        data-bs-toggle="modal" data-bs-target="#modal<?php echo $post['id']; ?>">
                                         Read More <i class="bi bi-arrow-right"></i>
                                     </button>
                                 </div>
@@ -204,34 +258,41 @@ $posts = getPost($conn, 1);
 
                     <!--READ MORE MODAL-->
                     <div class="modal fade" id="modal<?php echo $post['id']; ?>" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg"> 
+                        <div class="modal-dialog modal-dialog-centered modal-lg">
                             <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-                                
+
                                 <div class="bg-<?php echo $color; ?>" style="height: 6px;"></div>
 
                                 <div class="modal-header border-0 pt-4 px-4 pb-2">
-                                    <span class="badge bg-<?php echo $color; ?>-subtle text-<?php echo $color; ?> rounded-pill px-3 py-2 small fw-bold">
-                                        <i class="bi <?php echo $icon; ?> me-1"></i> <?php echo $label; ?>
+                                    <span
+                                        class="badge bg-<?php echo $color; ?>-subtle text-<?php echo $color; ?> rounded-pill px-3 py-2 small fw-bold">
+                                        <i class="bi <?php echo $icon; ?> me-1"></i>
+                                        <?php echo $label; ?>
                                     </span>
-                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                                 </div>
 
                                 <div class="modal-body px-4 pt-0 pb-4">
-                                    <h3 class="fw-bold text-dark mb-1"><?php echo htmlspecialchars($post['title']); ?></h3>
+                                    <h3 class="fw-bold text-dark mb-1">
+                                        <?php echo htmlspecialchars($post['title']); ?>
+                                    </h3>
                                     <p class="text-muted small mb-4">
-                                        <i class="bi bi-clock-history me-1"></i> 
-                                        Published on <?php echo date("F j, Y \a\\t g:i a", strtotime($post['date_posted'])); ?>
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        Published on
+                                        <?php echo date("F j, Y \a\\t g:i a", strtotime($post['date_posted'])); ?>
                                     </p>
                                     <!--POST MESSAGE-->
-                                    <div class="p-4 rounded-4 bg-light text-dark shadow-sm mb-4" 
+                                    <div class="p-4 rounded-4 bg-light text-dark shadow-sm mb-4"
                                         style="line-height: 1.8; white-space: pre-line; font-size: 1.05rem; letter-spacing: 0.01rem; text-align: left;">
-                                    <?php echo nl2br(htmlspecialchars(trim($post['message']))); ?></div>
+                                        <?php echo nl2br(htmlspecialchars(trim($post['message']))); ?>
+                                    </div>
 
                                     <div class="d-flex align-items-center p-3 rounded-3 border border-dashed shadow-sm">
                                         <div class="bg-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm"
                                             style="width: 45px; height: 45px;">
-                                            <img src='../assets/ccsmainlogo2.png' alt="CCS Logo" 
-                                            style="width: 100%; height: 100%; object-fit: cover;">
+                                            <img src='../assets/ccsmainlogo2.png' alt="CCS Logo"
+                                                style="width: 100%; height: 100%; object-fit: cover;">
                                         </div>
                                         <div>
                                             <h6 class="mb-0 fw-bold text-dark">CCS ADMIN</h6>
@@ -241,7 +302,8 @@ $posts = getPost($conn, 1);
                                 </div>
 
                                 <div class="modal-footer border-0 bg-light-subtle px-4">
-                                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-secondary rounded-pill px-4"
+                                        data-bs-dismiss="modal">Close</button>
                                 </div>
                             </div>
                         </div>
@@ -260,6 +322,37 @@ $posts = getPost($conn, 1);
             </div>
         </div>
     </div>
+    <!--POSTS PAGINATION-->
+    <?php if ($totalPages > 1): ?>
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                <a class="page-link border-0 shadow-sm rounded-pill px-3 me-2"
+                    href="?page=<?php echo $page - 1; ?>&date=<?php echo $date; ?>&priority=<?php echo $priority; ?>">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+            <li class="page-item mx-1">
+                <a class="page-link border-0 shadow-sm rounded-circle <?php echo ($page == $i) ? 'bg-primary text-white' : 'text-dark'; ?>"
+                    style="width: 40px; height: 40px; text-align: center;"
+                    href="?page=<?php echo $i; ?>&date=<?php echo $date; ?>&priority=<?php echo $priority; ?>">
+                    <?php echo $i; ?>
+                </a>
+            </li>
+            <?php endfor; ?>
+
+            <li class="page-item <?php echo ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                <a class="page-link border-0 shadow-sm rounded-pill px-3 ms-2"
+                    href="?page=<?php echo $page + 1; ?>&date=<?php echo $date; ?>&priority=<?php echo $priority; ?>">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <?php endif; ?>
+
     <style>
         .transition-hover {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
