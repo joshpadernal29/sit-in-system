@@ -117,3 +117,23 @@ function progLanguage($conn,$student_id) {
     }
     return $language;
 }
+
+// function to get students sit in (for line graph data)
+function sit_in_rate($conn, $student_id) {
+    $sit_in = [];
+    $sql = "SELECT DATE(logout_time) AS sit_in_date, COUNT(*) AS sit_in_rate FROM sit_in_records
+            WHERE student_id_str = ?
+            GROUP BY DATE(logout_time)
+            ORDER BY sit_in_date ASC";
+    $getData = mysqli_prepare($conn,$sql);
+    if ($getData) {
+        mysqli_stmt_bind_param($getData,'s',$student_id);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        while($row = mysqli_fetch_assoc($result)) {
+            $sit_in[] = $row;
+        }
+        mysqli_stmt_close($getData);
+    }
+    return $sit_in;
+}

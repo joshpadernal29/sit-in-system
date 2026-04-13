@@ -16,6 +16,22 @@ foreach ($language_used as $row) {
 }
 $chartDataString = implode(',', $rows);
 
+
+// get sit in data for line charts
+$sit_in_rate = sit_in_rate($conn,$student_id);
+$data = [['Date', 'Sessions']]; 
+
+foreach ($sit_in_rate as $row) {
+    // Ensure the date is a string and rate is a number
+    $dateValue = (string)$row['sit_in_date'];
+    $rateValue = (int)$row['sit_in_rate'];
+    
+    $data[] = [$dateValue, $rateValue];
+}
+
+$jsonTable = json_encode($data);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -34,14 +50,9 @@ $chartDataString = implode(',', $rows);
 
         function drawCharts() {
             // Line Chart: Direct Data Input
-            var lineData = google.visualization.arrayToDataTable([
-                ['Day', 'Sessions'],
-                ['Mon', 2],
-                ['Tue', 4],
-                ['Wed', 3],
-                ['Thu', 5],
-                ['Fri', 1]
-            ]);
+            var lineData = google.visualization.arrayToDataTable(
+                <?php echo $jsonTable ?>
+            );
 
             var lineOptions = {
                 curveType: 'function',
