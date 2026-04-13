@@ -62,7 +62,7 @@ $students = getStudents($conn);
     </style>
 </head>
 <body class="bg-light">
-
+    <!--HEADER-->
     <?php include("../includes/adminHeader.php"); ?>
 
     <main class="container-fluid py-4 px-lg-5">
@@ -76,6 +76,9 @@ $students = getStudents($conn);
                     <input type="text" class="form-control border-start-0 ps-0" placeholder="Search students...">
                 </div>
                 <a class="btn btn-primary shadow-sm" href="add_student.php"><i class="bi bi-plus-lg me-1"></i> Add</a>
+                <form action="../action/crud_functions.php" method="post"> 
+                    <button class="btn btn-outline-danger shadow-sm" name="reset_session" type="submit" onclick="return confirm('Reset all student Sessions?');">Reset Session</buton>
+                </form>
             </div>
         </div>
 

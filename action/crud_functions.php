@@ -152,3 +152,26 @@ if (isset($_POST['add_student'])) {
         die("Error adding student. Make sure the Student ID is unique.");
     }
 }
+
+// button trigger for the reset session button
+if(isset($_POST['reset_session'])) {
+    if(resetSession($conn)) {
+        header("Location: ../admin_module/studentList.php?reset=success");
+        exit();
+    } else {
+        header("Location: ../admin_module/studentList.php?reset=failed");
+        exit();
+    }
+}
+
+// function to reset all student session
+function resetSession($conn) {
+    $ok = false;
+    $sql = "UPDATE students SET sit_ins = 30";
+    $getData = mysqli_prepare($conn,$sql);
+    if ($getData) {
+        $ok = mysqli_stmt_execute($getData);
+        mysqli_stmt_close($getData);
+    }
+    return $ok;
+}
