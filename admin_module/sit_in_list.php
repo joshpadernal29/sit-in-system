@@ -1,5 +1,4 @@
 <?php 
-// session start if there is no session active
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -29,10 +28,13 @@ $total_pages = ceil($total_rows / $limit);
         .table thead th { background-color: #212529; color: white; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
         .status-pulse { width: 8px; height: 8px; background: #198754; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
+        /* Ensure dropdowns aren't hidden by table responsive containers */
+        .table-responsive { overflow: visible !important; }
     </style>
 </head>
 <body>
     <?php include("../includes/adminHeader.php"); ?>
+
     <main class="container py-4">
         <div class="mb-4">
             <h2 class="fw-bold mb-0">Active Sit-in Records</h2>
@@ -42,7 +44,7 @@ $total_pages = ceil($total_rows / $limit);
             </div>
         </div>
 
-        <div class="card shadow-sm overflow-hidden">
+        <div class="card shadow-sm table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead>
                     <tr>
@@ -77,5 +79,7 @@ $total_pages = ceil($total_rows / $limit);
             </table>
         </div>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
