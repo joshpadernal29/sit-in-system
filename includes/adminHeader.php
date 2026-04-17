@@ -54,7 +54,7 @@
                                 <i class="bi bi-file-earmark-bar-graph me-2"></i>Reports
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm mt-0">
-                                <li><a class="dropdown-item py-1 small" href="#">Sit-in Records</a></li>
+                                <li><a class="dropdown-item py-1 small" href="sit_in_records.php">Sit-in Records</a></li>
                                 <li><a class="dropdown-item py-1 small" href="#">Sit-in Reports</a></li>
                             </ul>
                         </li>
