@@ -82,3 +82,19 @@ if (isset($_POST['logout_student'])) {
     header("Location: ../admin_module/sit_in_list.php?session=stopped");
     exit();
 }
+
+// get all feedbacks (resturn result)
+function getFeedbacks($conn) {
+    $sql = "SELECT fb.message,fb.category,s.student_id, CONCAT(s.firstname, ' ', s.lastname) AS fullname, sr.lab,fb.submitted_at 
+            FROM feedbacks fb
+            JOIN students s ON fb.student_id = s.id
+            JOIN sit_in_records sr ON fb.record_id = sr.id
+            ORDER BY fb.submitted_at DESC";
+    $getData = mysqli_prepare($conn,$sql);
+
+    if ($getData) {
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+    }
+    return $result;
+}
