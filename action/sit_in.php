@@ -3,21 +3,32 @@ require_once __DIR__ . '/../config/database.php';
 
 // --- FUNCTIONS FOR THE LIST PAGE ---
 function current_sit_in($conn) {
-    // This query looks specifically for 'Active' status
+    // This query look for 'Active' status
     $sql = "SELECT * FROM sit_in_records WHERE status = 'Active' ORDER BY login_time DESC";
     return mysqli_query($conn, $sql);
 }
 
-// --- UPDATED HISTORY FUNCTION ---
-function past_sit_in($conn, $filter_date = null) {
-    $sql = "SELECT * FROM sit_in_records WHERE status = 'Completed'";
+// past_sit_in records and and feedbacks
+// JOIN students,sit_in_records, and feedbacks table
+function past_sit_in($conn, $date = null, $limit = null, $offset = null) {
+    $sql = "SELECT sr.*, CONCAT(s.firstname,' ',s.lastname) AS fullname, fb.message AS feedback_message 
+            FROM sit_in_records sr
+            JOIN students s ON sr.student_pk_id = s.id
+            LEFT JOIN feedbacks fb ON sr.id = fb.record_id";
     
-    // If a date is provided (YYYY-MM-DD), filter by the login_time date
-    if ($filter_date) {
-        $sql .= " AND DATE(login_time) = '" . mysqli_real_escape_numeric($conn, $filter_date) . "'";
+    // Filter (Optional)
+    if ($date) {
+        $safe_date = mysqli_real_escape_string($conn, $date);
+        $sql .= " WHERE DATE(sr.login_time) = '$safe_date'";
     }
     
-    $sql .= " ORDER BY logout_time DESC LIMIT 100";
+    // Sort and Paginate
+    $sql .= " ORDER BY sr.login_time DESC";
+    
+    if ($limit !== null && $offset !== null) {
+        $sql .= " LIMIT $limit OFFSET $offset";
+    }
+    
     return mysqli_query($conn, $sql);
 }
 
