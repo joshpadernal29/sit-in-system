@@ -55,7 +55,7 @@
                             </a>
                             <ul class="dropdown-menu border-0 shadow-sm mt-0">
                                 <li><a class="dropdown-item py-1 small" href="sit_in_records.php">Sit-in Records</a></li>
-                                <li><a class="dropdown-item py-1 small" href="#">Sit-in Reports</a></li>
+                                <li><a class="dropdown-item py-1 small" href="sit_in_reports.php">Sit-in Reports</a></li>
                                 <li><a class="dropdown-item py-1 small" href="feedbacks.php">Student Feedbacks</a></li>
                             </ul>
                         </li>
