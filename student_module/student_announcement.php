@@ -139,6 +139,12 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             border: 2px solid #fff;
             box-shadow: 0 0 0 1px #ef4444;
         }
+        
+        .announcement-body {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
 
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
