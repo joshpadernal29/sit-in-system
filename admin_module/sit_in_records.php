@@ -6,7 +6,6 @@ if (session_status() === PHP_SESSION_NONE) {
 include('../config/database.php');
 include('../action/sit_in.php');
 
-
 $selected_date = isset($_GET['filter_date']) ? $_GET['filter_date'] : null;
 
 // Pagination logic
@@ -18,119 +17,158 @@ $offset = ($page - 1) * $limit;
 $history_list = past_sit_in($conn, $selected_date, $limit, $offset);
 $total_rows = mysqli_num_rows(past_sit_in($conn, $selected_date)); 
 $total_pages = ceil($total_rows / $limit);
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sit-in Records | UC Admin</title>
+    <title>Sit-in History | UC Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 12px; border: none; }
-        .table thead th { background-color: #212529; color: white; text-transform: uppercase; font-size: 0.8rem; }
-        .duration-text { font-weight: 700; color: #0d6efd; }
+        body { background-color: #f4f7f6; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); }
+        .table thead th { 
+            background-color: #f8f9fa; 
+            color: #6c757d; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .duration-badge { 
+            background-color: #e7f1ff; 
+            color: #0d6efd; 
+            font-weight: 600; 
+            padding: 5px 12px; 
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        .date-badge {
+            background-color: #f8f9fa;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
 <body>
     <?php include("../includes/adminHeader.php"); ?>
 
-    <main class="container py-4">
-        <h2 class="fw-bold mb-4">Past Records & Feedback</h2>
+    <main class="container py-3">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <h2 class="fw-bold text-dark">Sit-in History</h2>
+                <p class="text-muted small mb-0">Reviewing past lab sessions and student attendance.</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="bg-white d-inline-flex p-2 rounded-3 shadow-sm border px-3">
+                    <span class="text-muted small me-2">Total Logs:</span>
+                    <span class="fw-bold text-primary"><?php echo $total_rows; ?></span>
+                </div>
+            </div>
+        </div>
 
-        <div class="card shadow-sm mb-4">
-            <div class="card-body py-2">
-                <form method="GET" class="row g-2 align-items-center">
-                    <div class="col-auto">
-                        <input type="date" name="filter_date" class="form-control form-control-sm" value="<?php echo htmlspecialchars($selected_date); ?>">
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Filter by Date</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" name="filter_date" class="form-control border-start-0" value="<?php echo htmlspecialchars($selected_date); ?>">
+                        </div>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3">Filter</button>
+                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Apply Filter</button>
+                        <?php if($selected_date): ?>
+                            <a href="sit_in_records.php" class="btn btn-outline-secondary btn-sm rounded-pill px-3 ms-2">Clear</a>
+                        <?php endif; ?>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="card shadow-sm overflow-hidden">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4">Student</th>
-                        <th>Lab</th>
-                        <th>Duration</th>
-                        <th class="text-center">Feedback</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if($total_rows > 0): ?>
-                        <?php while($row = mysqli_fetch_assoc($history_list)): 
-                            $hasFeedback = !empty($row['feedback_message']);
-                            $login_ts = strtotime($row['login_time']);
-                            $logout_ts = strtotime($row['logout_time']);
-                            $seconds = $logout_ts - $login_ts;
-                            $hours = floor($seconds / 3600);
-                            $minutes = floor(($seconds / 60) % 60);
-                        ?>
+        <div class="card overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td class="ps-4">
-                                <div class="fw-bold"><?php echo htmlspecialchars($row['fullname']); ?></div>
-                                <small class="text-muted"><?php echo htmlspecialchars($row['student_id_str']); ?></small>
-                            </td>
-                            <td><span class="badge bg-primary-subtle text-primary px-3 rounded-pill">Lab <?php echo htmlspecialchars($row['lab']); ?></span></td>
-                            <td>
-                                <div class="duration-text"><?php echo "$hours hr $minutes min"; ?></div>
-                                <small class="text-muted" style="font-size: 0.7rem;"><?php echo date('M d, Y', $login_ts); ?></small>
-                            </td>
-                            <td class="text-center">
-                                <?php if($hasFeedback): ?>
-                                    <button type="button" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold" 
-                                        data-bs-toggle="modal" data-bs-target="#fbModal" 
-                                        data-student="<?php echo htmlspecialchars($row['student_id_str']); ?>" 
-                                        data-text="<?php echo htmlspecialchars($row['feedback_message']); ?>">
-                                        <i class="bi bi-chat-left-text-fill"></i> Read
-                                    </button>
-                                <?php else: ?>
-                                    <button class="btn btn-light btn-sm rounded-pill px-3 text-muted border" disabled>None</button>
-                                <?php endif; ?>
-                            </td>
+                            <th class="ps-4 py-3">Student Details</th>
+                            <th class="py-3 text-center">Lab Location</th>
+                            <th class="py-3 text-center">Session Date</th>
+                            <th class="py-3 text-center">Time Duration</th>
                         </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr><td colspan="4" class="text-center py-5 text-muted">No records found.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-    </main>
-    <!--FEEDBACK MODAL-->
-    <div class="modal fade" id="fbModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-warning text-dark border-0">
-                    <h5 class="modal-title fw-bold">Session Feedback</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <h5 id="fbName" class="fw-bold mb-3"></h5>
-                    <div class="p-3 bg-light rounded-3 border">
-                        <p id="fbContent" class="mb-0 text-dark" style="font-style: italic;"></p>
-                    </div>
-                </div>
+                    </thead>
+                    <tbody>
+                        <?php if($total_rows > 0): ?>
+                            <?php while($row = mysqli_fetch_assoc($history_list)): 
+                                $login_ts = strtotime($row['login_time']);
+                                $logout_ts = strtotime($row['logout_time']);
+                                $seconds = $logout_ts - $login_ts;
+                                $hours = floor($seconds / 3600);
+                                $minutes = floor(($seconds / 60) % 60);
+                            ?>
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold" style="width: 38px; height: 38px; font-size: 0.8rem;">
+                                            <?php echo strtoupper(substr($row['fullname'], 0, 1)); ?>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars($row['fullname']); ?></div>
+                                            <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars($row['student_id_str']); ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-dark-subtle text-dark px-3 rounded-pill fw-medium">Lab <?php echo htmlspecialchars($row['lab']); ?></span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="fw-medium"><?php echo date('M d, Y', $login_ts); ?></div>
+                                    <small class="text-muted" style="font-size: 0.75rem;"><?php echo date('h:i A', $login_ts) . ' - ' . date('h:i A', $logout_ts); ?></small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="duration-badge">
+                                        <i class="bi bi-clock-history me-1"></i> <?php echo "$hours"."h "."$minutes"."m"; ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="text-muted">
+                                        <i class="bi bi-folder-x" style="font-size: 2.5rem;"></i>
+                                        <p class="mt-2 mb-0">No attendance logs found for this criteria.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+
+        <?php if($total_pages > 1): ?>
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center">
+                <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                    <a class="page-link shadow-sm" href="?page=<?php echo $page - 1; ?>&filter_date=<?php echo $selected_date; ?>"><i class="bi bi-chevron-left"></i></a>
+                </li>
+                <?php for($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                        <a class="page-link shadow-sm" href="?page=<?php echo $i; ?>&filter_date=<?php echo $selected_date; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                    <a class="page-link shadow-sm" href="?page=<?php echo $page + 1; ?>&filter_date=<?php echo $selected_date; ?>"><i class="bi bi-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+        <?php endif; ?>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const fbModal = document.getElementById('fbModal');
-        fbModal.addEventListener('show.bs.modal', function (event) {
-            const btn = event.relatedTarget;
-            document.getElementById('fbName').textContent = btn.getAttribute('data-student');
-            document.getElementById('fbContent').textContent = '"' + btn.getAttribute('data-text') + '"';
-        });
-    </script>
 </body>
 </html>
