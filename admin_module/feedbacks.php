@@ -142,7 +142,7 @@ $total_rows = mysqli_num_rows($feedback_list);
         <article class="inbox-detail" id="detailPane">
             <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
                 <i class="bi bi-layout-sidebar-inset text-light mb-3" style="font-size: 5rem;"></i>
-                <h5>Select a record to view</h5>
+                <h5>Select a Feedback to view</h5>
             </div>
         </article>
     </div>
