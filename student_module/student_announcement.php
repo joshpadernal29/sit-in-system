@@ -35,117 +35,55 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Announcements | SIT-IN System</title>
+    <title>Announcements | SIT-IN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        /* CORE LAYOUT - Fixed height for the inbox feel */
-        body { 
-            background-color: #f8fafc; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            font-family: 'Inter', sans-serif;
-            margin: 0;
+        :root { --slate-blue: #f8fafc; --msg-active: #ffffff; --border-color: #e2e8f0; }
+        body { height: 100vh; overflow: hidden; font-family: 'Inter', sans-serif; background: #fff; margin: 0; }
+        
+        .inbox-wrapper { height: calc(100vh - 65px); } 
+        
+        /* Sidebar - Slate background for contrast against white cards */
+        .inbox-list { 
+            width: 380px; 
+            background: #f1f5f9; 
+            border-right: 1px solid var(--border-color); 
+            overflow-y: auto; 
         }
 
-        .inbox-wrapper {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        /* SIDEBAR - Slate blue/gray background for contrast */
-        .inbox-list {
-            width: 380px;
-            border-right: 1px solid #e2e8f0;
-            overflow-y: auto;
-            background: #f1f5f9; /* Soft Slate */
-        }
-
-        .filter-header {
-            background: #f1f5f9;
-            padding: 1.2rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        /* CARD STYLE ITEMS */
-        .list-item {
-            padding: 18px;
-            margin: 0 12px 10px 12px;
+        /* List Item Depth */
+        .list-item { 
+            cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            margin: 8px 12px;
             border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             background: transparent;
             border: 1px solid transparent;
-            position: relative;
         }
-
-        .list-item:hover {
-            background: rgba(13, 110, 253, 0.04);
-        }
-
-        .list-item.active {
-            background: #ffffff;
-            border-color: #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        .list-item:hover { background-color: rgba(255,255,255,0.5); }
+        .list-item.active { 
+            background-color: var(--msg-active); 
+            border-color: var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transform: translateX(4px);
         }
-
-        .list-item.active::before {
-            content: "";
-            position: absolute;
-            left: -12px; top: 15px; bottom: 15px; width: 4px;
-            background: #0d6efd;
-            border-radius: 0 4px 4px 0;
-        }
-
-        /* DETAIL PANE - Clean white workspace */
-        .inbox-detail {
-            flex: 1;
-            overflow-y: auto;
-            padding: 50px 80px;
-            background: #ffffff;
-        }
-
-        .announcement-body {
-            background: #f8fafc;
-            border-radius: 1.5rem;
-            padding: 40px;
-            line-height: 1.8;
-            color: #334155;
-            font-size: 1.1rem;
-            border: 1px solid #edf2f7;
-            margin-top: 2rem;
-        }
-
-        .priority-pill {
-            font-size: 0.65rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 0.8px;
-            padding: 5px 12px; border-radius: 6px;
-        }
-
-        /* NOTIFICATION DOT */
-        .unread-dot {
-            height: 10px; width: 10px;
-            background-color: #ef4444;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            border: 2px solid #fff;
-            box-shadow: 0 0 0 1px #ef4444;
-        }
         
-        .announcement-body {
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            word-break: break-word;
+        .avatar-box { width: 48px; height: 48px; flex-shrink: 0; }
+
+        /* Message Content Depth */
+        .msg-bubble {
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 20px;
+            line-height: 1.8;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         }
 
+        .inbox-detail { flex: 1; overflow-y: auto; background: #ffffff; }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     </style>
@@ -154,119 +92,99 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
     <?php include("../includes/studentHeader.php"); ?>
 
-    <div class="inbox-wrapper">
-        <aside class="inbox-list">
-            <div class="filter-header">
+    <div class="inbox-wrapper d-flex">
+        
+        <aside class="inbox-list d-flex flex-column">
+            <div class="p-3 sticky-top bg-white border-bottom shadow-sm">
                 <form action="" method="GET" class="row g-2">
-                    <div class="col-12 mb-1">
-                        <label class="form-label small fw-bold text-primary text-uppercase" style="font-size: 0.6rem;">Date Posted</label>
-                        <input type="date" name="date" class="form-control form-control-sm border shadow-sm rounded-3" value="<?php echo htmlspecialchars($date); ?>">
+                    <div class="col-12">
+                        <div class="input-group input-group-sm border rounded-pill overflow-hidden bg-light">
+                            <span class="input-group-text border-0 bg-transparent ps-3"><i class="bi bi-calendar-event"></i></span>
+                            <input type="date" name="date" class="form-control border-0 bg-transparent shadow-none" value="<?= htmlspecialchars($date); ?>">
+                        </div>
                     </div>
                     <div class="col-8">
-                        <select name="priority" class="form-select form-select-sm border shadow-sm rounded-3">
-                            <option value="">All Types</option>
-                            <option value="urgent" <?php echo ($priority=='urgent')?'selected':'';?>>Urgent</option>
-                            <option value="academic" <?php echo ($priority=='academic')?'selected':'';?>>Academic</option>
-                            <option value="general" <?php echo ($priority=='general')?'selected':'';?>>General</option>
+                        <select name="priority" class="form-select form-select-sm rounded-pill border bg-light px-3 shadow-none">
+                            <option value="">All Priorities</option>
+                            <option value="urgent" <?= ($priority=='urgent')?'selected':'';?>>Urgent</option>
+                            <option value="academic" <?= ($priority=='academic')?'selected':'';?>>Academic</option>
+                            <option value="general" <?= ($priority=='general')?'selected':'';?>>General</option>
                         </select>
                     </div>
                     <div class="col-4">
-                        <button type="submit" class="btn btn-sm btn-primary w-100 rounded-3 shadow-sm">
-                            <i class="bi bi-funnel"></i>
-                        </button>
+                        <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold shadow-sm">Apply</button>
                     </div>
                 </form>
             </div>
 
-            <div class="mt-2 pb-4">
-                <?php if(!empty($posts)): ?>
-                    <?php foreach($posts as $post): ?>
-                    <div class="list-item" id="item-<?php echo $post['id']; ?>" onclick="loadAnnouncement(this, <?php echo htmlspecialchars(json_encode($post)); ?>)">
+            <div class="flex-grow-1 py-2">
+                <?php foreach($posts as $post): ?>
+                <div class="list-item p-3 d-flex align-items-center" 
+                     id="item-<?= $post['id']; ?>"
+                     onclick="loadAnnouncement(this, <?= htmlspecialchars(json_encode($post)); ?>)">
+                    
+                    <div class="avatar-box rounded-circle bg-white d-flex align-items-center justify-content-center border shadow-sm">
+                        <img src="../assets/ccsmainlogo2.png" style="width: 25px;">
+                    </div>
+
+                    <div class="ms-3 overflow-hidden w-100">
                         <div class="d-flex justify-content-between align-items-center mb-1">
-                            <div>
-                                <span id="dot-<?php echo $post['id']; ?>" class="unread-dot d-none"></span>
-                                <small class="text-muted fw-semibold"><?php echo date('M d, Y', strtotime($post['date_posted'])); ?></small>
-                            </div>
-                            <span class="priority-pill bg-white text-dark border shadow-sm"><?php echo $post['priority']; ?></span>
+                            <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;"><?= htmlspecialchars($post['title']); ?></h6>
+                            <span id="dot-<?= $post['id']; ?>" class="badge rounded-circle p-1 bg-primary d-none" style="height: 8px; width: 8px;"> </span>
                         </div>
-                        <h6 class="mb-1 fw-bold text-dark text-truncate"><?php echo htmlspecialchars($post['title']); ?></h6>
-                        <p class="text-muted small mb-0 text-truncate"><?php echo htmlspecialchars($post['message']); ?></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-0 text-muted small text-truncate" style="max-width: 150px;"><?= htmlspecialchars($post['message']); ?></p>
+                            <small class="text-muted fw-bold" style="font-size: 0.7rem;"><?= date('M d', strtotime($post['date_posted'])); ?></small>
+                        </div>
                     </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="p-5 text-center">
-                        <i class="bi bi- megaphone display-4 text-light"></i>
-                        <p class="text-muted mt-2">No announcements</p>
-                    </div>
-                <?php endif; ?>
+                </div>
+                <div class="mx-4 border-bottom opacity-50"></div>
+                <?php endforeach; ?>
             </div>
         </aside>
 
-        <article class="inbox-detail" id="detailPane">
-            <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted text-center">
-                <div class="bg-light rounded-pill p-4 mb-3">
-                    <i class="bi bi-megaphone text-primary opacity-25" style="font-size: 4rem;"></i>
-                </div>
-                <h4 class="fw-bold text-dark">CCS News Feed</h4>
-                <p>Select an item from the sidebar to read the full announcement.</p>
+        <article class="inbox-detail d-flex flex-column" id="detailPane">
+            <div class="m-auto text-center opacity-75">
+                <i class="bi bi-chat-square-quote display-1 text-light-emphasis mb-3"></i>
+                <h4 class="fw-bold">No Announcement Selected</h4>
+                <p class="text-muted">Click on a post from the sidebar to view details.</p>
             </div>
         </article>
+
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // Check local storage for unread status
-        document.addEventListener("DOMContentLoaded", function() {
-            const lastRead = parseInt(localStorage.getItem('lastReadAnnounce')) || 0;
-            document.querySelectorAll('.unread-dot').forEach(dot => {
-                const id = parseInt(dot.id.replace('dot-', ''));
-                if (id > lastRead) dot.classList.remove('d-none');
-            });
-        });
-
         function loadAnnouncement(element, data) {
-            // UI Update
             document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
-            // Mark as read
             const dot = document.getElementById('dot-' + data.id);
             if(dot) dot.classList.add('d-none');
-            const lastRead = parseInt(localStorage.getItem('lastReadAnnounce')) || 0;
-            if (data.id > lastRead) localStorage.setItem('lastReadAnnounce', data.id);
-
-            // Format date
-            const date = new Date(data.date_posted);
-            const formattedDate = date.toLocaleDateString('en-US', { 
-                month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true 
-            });
-
-            // Color logic
-            let pColor = data.priority === 'urgent' ? 'bg-danger' : (data.priority === 'academic' ? 'bg-primary' : 'bg-success');
-
+            
             const pane = document.getElementById('detailPane');
-            pane.innerHTML = `
-                <div class="animate-fade-in">
-                    <span class="badge ${pColor} rounded-pill px-3 py-2 mb-3 text-uppercase shadow-sm">${data.priority}</span>
-                    <h1 class="fw-bold text-dark display-5 mb-2">${data.title}</h1>
-                    <div class="d-flex align-items-center text-muted">
-                        <i class="bi bi-clock-history me-2"></i>
-                        <span>Posted on ${formattedDate}</span>
-                    </div>
+            const colors = { urgent: 'danger', academic: 'primary', general: 'success' };
+            const badgeColor = colors[data.priority] || 'secondary';
 
-                    <div class="announcement-body shadow-sm">
+            pane.innerHTML = `
+                <div class="p-4 border-bottom bg-white sticky-top d-flex align-items-center shadow-sm">
+                    <div class="rounded-circle bg-light border p-2 me-3">
+                        <img src="../assets/ccsmainlogo2.png" style="width:30px;">
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">CCS Admin Official</h6>
+                        <small class="text-muted"><i class="bi bi-clock me-1"></i> Posted on ${new Date(data.date_posted).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</small>
+                    </div>
+                </div>
+                <div class="p-5 mx-auto w-100" style="max-width: 850px;">
+                    <span class="badge bg-${badgeColor} rounded-pill px-3 py-2 mb-3 text-uppercase shadow-sm" style="font-size:0.7rem;">${data.priority}</span>
+                    <h1 class="fw-bold text-dark display-6 mb-4">${data.title}</h1>
+                    
+                    <div class="msg-bubble animate-fade-in">
                         ${data.message.replace(/\n/g, '<br>')}
                     </div>
 
-                    <div class="mt-5 d-flex align-items-center p-4 rounded-4 border bg-light shadow-sm">
-                        <div class="bg-white rounded-circle p-2 shadow-sm me-3 border">
-                            <img src='../assets/ccsmainlogo2.png' alt="Logo" style="width: 40px; height:40px; object-fit:contain;">
-                        </div>
-                        <div>
-                            <h6 class="mb-0 fw-bold">CCS ADMIN</h6>
-                            <small class="text-muted">University of Cebu Main Campus</small>
-                        </div>
+                    <div class="mt-4 p-3 border-start border-4 border-primary bg-light rounded-end">
+                        <p class="mb-0 small text-muted"><strong>Note:</strong> Please refer to the official CCS Bulletin board for supplemental documents if mentioned above.</p>
                     </div>
                 </div>
             `;
