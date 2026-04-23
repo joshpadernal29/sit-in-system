@@ -4,21 +4,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 1. Include your data logic. 
-// This file sets up $conn and fetches the $student array based on the session string ID.
 include("../action/studentData.php");
 
-/**
- * Fetches student history using the numeric Primary Key
- */
+
+// get the students past sit in records in the database
 function getStudentHistory($conn, $student_pk) {
     $history = [];
-    // We use TIMESTAMPDIFF to handle the duration calculation directly in SQL
-    $sql = "SELECT *, 
-            TIMESTAMPDIFF(MINUTE, login_time, logout_time) / 60 AS duration_hours 
-            FROM sit_in_records 
-            WHERE student_pk_id = ? 
-            ORDER BY login_time DESC";
+    // join the feedbacks table to see if a record already exists for each session
+    $sql = "SELECT 
+                sr.id,
+                sr.student_pk_id,
+                sr.lab,
+                sr.login_time,
+                sr.logout_time,
+                sr.language,
+                COALESCE(f.id, 0) AS feedback_submitted,
+                TIMESTAMPDIFF(MINUTE, sr.login_time, sr.logout_time) / 60 AS duration_hours 
+            FROM sit_in_records sr
+            LEFT JOIN feedbacks f ON sr.id = f.record_id
+            WHERE sr.student_pk_id = ? 
+            ORDER BY sr.login_time DESC";
             
     $stmt = mysqli_prepare($conn, $sql);
 
@@ -34,18 +39,23 @@ function getStudentHistory($conn, $student_pk) {
     return $history;
 }
 
-/** * IMPLEMENTATION OF THE FIX:
- * Your studentData.php fetches a $student array. 
- * We must use the 'id' (Primary Key) from that array to query sit_in_records.
- */
+//  use the 'id' (Primary Key) from that array to query sit_in_records.
 $student_pk = isset($student['id']) ? $student['id'] : 0;
 $history = getStudentHistory($conn, $student_pk);
 
-// Stats Calculation
+// Stats Calculation (get query result based on the student_id as current session)
+$sql = "SELECT sit_ins FROM students WHERE student_id = ?";
+$getData = mysqli_prepare($conn, $sql);
+mysqli_stmt_bind_param($getData,'s',$student_id);
+mysqli_stmt_execute($getData);
+$result = mysqli_stmt_get_result($getData);
+$row = mysqli_fetch_assoc($result);
+$currentSession = $row['sit_ins'] ?? 0;
 $max_sessions = 30;
 $used_sessions = count($history);
 $remaining = max(0, $max_sessions - $used_sessions);
 $percentage = ($used_sessions / $max_sessions) * 100;
+
 ?>
 
 <!DOCTYPE html>
@@ -167,7 +177,7 @@ $percentage = ($used_sessions / $max_sessions) * 100;
                 <div class="card stat-card p-4 h-100">
                     <small class="text-muted fw-bold text-uppercase">Sessions Remaining</small>
                     <div class="d-flex align-items-end mt-2">
-                        <h1 class="fw-bold mb-0 text-primary"><?= $remaining ?></h1>
+                        <h1 class="fw-bold mb-0 text-primary"><?= $currentSession ?></h1>
                         <span class="ms-2 text-muted">/ <?= $max_sessions ?></span>
                     </div>
                     <div class="progress mt-4" style="height: 8px; border-radius: 10px;">
@@ -252,12 +262,18 @@ $percentage = ($used_sessions / $max_sessions) * 100;
                                             <div class="purpose-box p-3 small text-secondary flex-grow-1">
                                                 <strong>Focus:</strong> <?= htmlspecialchars($record['language'] ?? 'General Lab') ?>
                                             </div>
-                                            <button class="btn btn-outline-primary btn-sm rounded-pill px-4" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#feedbackModal"
-                                                    data-session-id="<?= $record['id'] ?>">
-                                                <i class="bi bi-chat-left-text me-1"></i> Feedback
-                                            </button>
+                                            <?php if ($record['feedback_submitted']): ?>
+                                                    <button class="btn btn-secondary btn-sm rounded-pill px-4" disabled>
+                                                        <i class="bi bi-check-all me-1"></i> Feedback Sent
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-4" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#feedbackModal"
+                                                            data-session-id="<?= $record['id'] ?>">
+                                                        <i class="bi bi-chat-left-text me-1"></i> Feedback
+                                                    </button>
+                                                <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
