@@ -189,6 +189,17 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 </div>
             `;
         }
+
+       
+        document.addEventListener('DOMContentLoaded', function () {
+            // We get the latestId from PHP in this page too
+            const currentAnnouncementId = "<?php echo $latest_id; ?>";
+            
+            if (currentAnnouncementId !== "0") {
+                // Save this ID to localStorage to stop the blinking in the header
+                localStorage.setItem('lastReadId', currentAnnouncementId);
+            }
+        });
     </script>
 </body>
 </html>
