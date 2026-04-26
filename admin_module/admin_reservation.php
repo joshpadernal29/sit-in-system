@@ -10,7 +10,6 @@
         :root { 
             --sidebar-w: 380px; 
             --admin-accent: #0f172a; 
-            --glass-bg: rgba(255, 255, 255, 0.95);
         }
         
         body { 
@@ -19,13 +18,8 @@
             overflow: hidden; 
         }
 
-        /* Layout Structure */
-        .admin-wrapper { 
-            display: flex; 
-            height: calc(100vh - 65px); 
-        }
+        .admin-wrapper { display: flex; height: calc(100vh - 65px); }
         
-        /* Left Panel: Approvals & Logs */
         .side-panel {
             width: var(--sidebar-w);
             background: white;
@@ -35,7 +29,6 @@
             z-index: 10;
         }
 
-        /* Right Panel: Interactive Lab */
         .main-panel {
             flex-grow: 1;
             padding: 2rem;
@@ -45,7 +38,6 @@
             align-items: center;
         }
 
-        /* Floor Plan Card */
         .floor-plan-card {
             background: white;
             border: 3px solid var(--admin-accent);
@@ -56,27 +48,19 @@
             min-width: 900px;
         }
 
-        /* PC Unit Styling */
         .pc-unit {
-            width: 44px; 
-            height: 44px;
+            width: 44px; height: 44px;
             border: 2px solid var(--admin-accent);
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            font-size: 0.65rem; 
-            font-weight: 800; 
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 800; cursor: pointer;
+            transition: 0.2s;
         }
-        .pc-unit:hover { transform: scale(1.15); z-index: 5; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .pc-unit:hover { transform: scale(1.15); z-index: 5; }
 
-        /* Status Colors */
         .bg-open { background: #008000; color: white; }
         .bg-reserved { background: #ef4444; color: white; border-color: #b91c1c; }
-        .bg-warning { background: #fbbf24; color: white; border-color: #00000; }
+        .bg-warning { background: #fbbf24; color: white; border-color: #000000; }
 
-        /* Cluster Layout */
         .island { display: flex; gap: 6px; margin-bottom: 20px; }
         .spine { width: 5px; background: var(--admin-accent); border-radius: 2px; }
 
@@ -156,12 +140,7 @@
             </div>
 
             <div class="tab-pane fade" id="tab-logs">
-                <div class="p-2">
-                    <div class="border-start border-3 ps-3 mb-4">
-                        <small class="text-muted">11:45 AM</small>
-                        <p class="small mb-0"><strong>Admin</strong> manually set <strong>PC-13</strong> to Yellow.</p>
-                    </div>
-                </div>
+                <div class="p-2 text-muted small">Viewing logs for current session...</div>
             </div>
         </div>
     </div>
@@ -169,65 +148,27 @@
     <div class="main-panel">
         <div class="w-100 d-flex justify-content-between align-items-center mb-4 px-5">
             <div>
-                <h4 class="fw-black mb-0">LAB 544 MONITORING</h4>
-                <p class="text-muted small mb-0">Click workstations to manually override status.</p>
+                <h4 class="fw-black mb-0"><span id="labHeading">LAB 544</span> MONITORING</h4>
+                <p class="text-muted small mb-0">Lab Capacity: <span id="pcCountLabel">40</span> PCs</p>
             </div>
             <div class="d-flex gap-3">
-                <select class="form-select border-dark fw-bold shadow-none">
-                    <option>Lab 544</option>
-                    <option>Lab 542</option>
+                <select id="labSwitcher" class="form-select border-dark fw-bold shadow-none" onchange="switchLab(this.value)">
+                    <option value="544">Lab 544</option>
+                    <option value="542">Lab 542</option>
+                    <option value="526">Lab 526</option>
                 </select>
-                <button class="btn btn-dark px-4 fw-bold shadow-sm">REFRESH</button>
+                <button class="btn btn-dark px-4 fw-bold shadow-sm" onclick="switchLab(document.getElementById('labSwitcher').value)">REFRESH</button>
             </div>
         </div>
 
         <div class="floor-plan-card">
-            <div class="d-flex justify-content-around flex-wrap">
-                <?php for($isl=0; $isl<5; $isl++): ?>
-                    <div class="island">
-                        <div class="d-flex flex-column gap-2">
-                            <?php for($i=1; $i<=4; $i++): 
-                                $id = ($isl * 8) + $i;
-                                $status = ($id == 12 || $id == 24) ? 'bg-reserved' : 'bg-open';
-                            ?>
-                                <div class="pc-unit <?=$status?>" onclick="showControl(<?=$id?>, '<?=$status?>')">pc-<?=$id?></div>
-                            <?php endfor; ?>
-                        </div>
-                        <div class="spine"></div>
-                        <div class="d-flex flex-column gap-2">
-                            <?php for($i=5; $i<=8; $i++): 
-                                $id = ($isl * 8) + $i;
-                                $status = ($id == 13) ? 'bg-warning' : 'bg-open';
-                            ?>
-                                <div class="pc-unit <?=$status?>" onclick="showControl(<?=$id?>, '<?=$status?>')">pc-<?=$id?></div>
-                            <?php endfor; ?>
-                        </div>
-                    </div>
-                <?php endfor; ?>
-            </div>
+            <div id="pcGrid" class="d-flex justify-content-around flex-wrap">
+                </div>
 
             <div class="mt-5 d-flex gap-4 justify-content-center border-top pt-4">
                 <span class="small fw-bold"><i class="bi bi-square-fill text-success me-1"></i> Available</span>
                 <span class="small fw-bold"><i class="bi bi-square-fill text-danger me-1"></i> Occupied</span>
                 <span class="small fw-bold"><i class="bi bi-square-fill text-warning me-1"></i> Maintenance</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="pcControlModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content rounded-0 border-dark">
-            <div class="modal-header bg-dark text-white rounded-0 py-2">
-                <h6 class="modal-title fw-bold">Control: PC-<span id="displayPC"></span></h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="d-grid gap-2">
-                    <button class="btn btn-outline-success btn-sm rounded-0 fw-bold py-2">SET OPEN (GREEN)</button>
-                    <button class="btn btn-outline-danger btn-sm rounded-0 fw-bold py-2">SET TAKEN (RED)</button>
-                    <button class="btn btn-outline-warning btn-sm rounded-0 fw-bold py-2 text-dark">SET BROKEN (YELLOW)</button>
-                </div>
             </div>
         </div>
     </div>
@@ -251,11 +192,53 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    function showControl(id, status) {
-        document.getElementById('displayPC').innerText = id;
-        new bootstrap.Modal(document.getElementById('pcControlModal')).show();
+    const labData = {
+        '544': { total: 40, reserved: [5, 12, 24, 38], warning: [13, 20] },
+        '542': { total: 30, reserved: [2, 15, 29], warning: [7] },
+        '526': { total: 35, reserved: [10, 11, 33], warning: [1, 22] }
+    };
+
+    function switchLab(labNum) {
+        document.getElementById('labHeading').innerText = `LAB ${labNum}`;
+        document.getElementById('pcCountLabel').innerText = labData[labNum].total;
+        renderLab(labNum);
     }
 
+    function renderLab(labNum) {
+        const config = labData[labNum];
+        const pcGrid = document.getElementById('pcGrid');
+        let html = '';
+        let pcCounter = 1;
+        const numIslands = Math.ceil(config.total / 8);
+
+        for(let isl = 0; isl < numIslands; isl++) {
+            html += `<div class="island"><div class="d-flex flex-column gap-2">`;
+            for(let i = 0; i < 4; i++) {
+                if (pcCounter <= config.total) {
+                    html += generatePC(pcCounter, config);
+                    pcCounter++;
+                }
+            }
+            html += `</div><div class="spine"></div><div class="d-flex flex-column gap-2">`;
+            for(let i = 0; i < 4; i++) {
+                if (pcCounter <= config.total) {
+                    html += generatePC(pcCounter, config);
+                    pcCounter++;
+                }
+            }
+            html += `</div></div>`;
+        }
+        pcGrid.innerHTML = html;
+    }
+
+    function generatePC(id, config) {
+        let statusClass = 'bg-open';
+        if (config.reserved.includes(id)) statusClass = 'bg-reserved';
+        if (config.warning.includes(id)) statusClass = 'bg-warning';
+        return `<div class="pc-unit ${statusClass}" onclick="alert('Manage pc-${id}')">pc-${id}</div>`;
+    }
+
+    // Modal logic for sidebar buttons
     function confirmAction(type, name, pc) {
         const title = document.getElementById('actionTitle');
         const desc = document.getElementById('actionDesc');
@@ -264,17 +247,19 @@
 
         if(type === 'approve') {
             title.innerText = "Approve Reservation";
-            desc.innerHTML = `Confirm <strong>${name}</strong> for <strong>PC-${pc}</strong>? <br>A notification will be sent to the student.`;
+            desc.innerHTML = `Confirm <strong>${name}</strong> for <strong>PC-${pc}</strong>?`;
             icon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
             btn.className = "btn btn-lg btn-success flex-grow-1 rounded-0 fw-bold";
         } else {
             title.innerText = "Reject Reservation";
-            desc.innerHTML = `Reject <strong>${name}</strong>'s request for <strong>PC-${pc}</strong>? <br>Please ensure this is valid.`;
+            desc.innerHTML = `Reject request for <strong>PC-${pc}</strong>?`;
             icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
             btn.className = "btn btn-lg btn-danger flex-grow-1 rounded-0 fw-bold";
         }
         new bootstrap.Modal(document.getElementById('actionModal')).show();
     }
+
+    window.onload = () => switchLab('544');
 </script>
 
 </body>
