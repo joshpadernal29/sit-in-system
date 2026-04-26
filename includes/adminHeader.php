@@ -57,6 +57,7 @@
                                 <li><a class="dropdown-item py-1 small" href="sit_in_records.php">Sit-in Records</a></li>
                                 <li><a class="dropdown-item py-1 small" href="sit_in_reports.php">Sit-in Reports</a></li>
                                 <li><a class="dropdown-item py-1 small" href="feedbacks.php">Student Feedbacks</a></li>
+                                <li><a class="dropdown-item py-1 small" href="admin_reservation.php">Admin Reservation</a></li>
                             </ul>
                         </li>
                     </ul>
