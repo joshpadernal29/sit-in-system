@@ -107,6 +107,12 @@ $announcement_title = $latest['title'] ?? "No new updates";
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link px-2 text-white d-flex align-items-center" href="student_reservation.php"
+                            style="font-size: 0.9rem;">
+                            <i class="bi bi-calendar-check me-2"></i>sit-in reserve
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link px-2 text-white d-flex align-items-center" href="student_announcement.php"
                             style="font-size: 0.9rem;">
                             <div class="notification-wrapper">
