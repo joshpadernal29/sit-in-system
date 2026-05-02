@@ -3,10 +3,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 include("../config/database.php");
-include("../action/studentData.php"); // student session
-include("../action/sit_in_reserve.php");
+include("../action/studentData.php"); //session 
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +20,8 @@ include("../action/sit_in_reserve.php");
             --blueprint-line: #334155;
             --pc-open: #22c55e;
             --pc-taken: #ef4444;
-            --pc-broken: #f59e0b;
+            --pc-pending: #f59e0b;
+            --pc-broken: #ea580c;
         }
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
 
@@ -72,7 +73,8 @@ include("../action/sit_in_reserve.php");
 
         .green { background: #dcfce7; color: #166534; border-color: var(--pc-open); }
         .red { background: #fee2e2; color: #991b1b; border-color: #b91c1c; cursor: not-allowed; }
-        .yellow { background: #fef3c7; color: #92400e; border-color: #f59e0b; cursor: not-allowed; }
+        .yellow { background: #fef3c7; color: #92400e; border-color: var(--pc-pending); cursor: not-allowed; }
+        .orange { background: #fff7ed; color: #c2410c; border-color: var(--pc-broken); cursor: not-allowed; }
 
         .filter-section {
             background: white;
@@ -85,6 +87,15 @@ include("../action/sit_in_reserve.php");
 
 <?php include("../includes/studentHeader.php"); ?>
 
+<div class="container mt-3">
+    <?php if (isset($_GET['success']) && $_GET['success'] === 'reserved'): ?>
+        <div class="alert alert-success alert-dismissible fade show rounded-0" role="alert">
+            <strong>Success!</strong> Your reservation has been sent and is currently pending.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+</div>
+
 <div class="filter-section shadow-sm mb-4">
     <div class="container d-flex justify-content-between align-items-center">
         <div>
@@ -93,9 +104,9 @@ include("../action/sit_in_reserve.php");
         </div>
         <div style="width: 250px;">
             <select class="form-select fw-bold shadow-none border-dark" id="labNameSelect" onchange="syncStudentLayout()">
-                <option value="LAB-544">Lab 544</option>
-                <option value="LAB-542">Lab 542</option>
-                <option value="LAB-526">Lab 526</option>
+                <option value="544">LAB 544</option>
+                <option value="542">LAB 542</option>
+                <option value="526">LAB 526</option>
             </select>
         </div>
     </div>
@@ -105,15 +116,15 @@ include("../action/sit_in_reserve.php");
     <div class="d-flex gap-4 mb-4 justify-content-center">
         <div class="small fw-bold"><i class="bi bi-square-fill text-success"></i> Open</div>
         <div class="small fw-bold"><i class="bi bi-square-fill text-danger"></i> Occupied</div>
-        <div class="small fw-bold"><i class="bi bi-square-fill text-warning"></i> Maintenance</div>
+        <div class="small fw-bold" style="color: #f59e0b;"><i class="bi bi-square-fill"></i> Pending</div>
+        <div class="small fw-bold" style="color: #ea580c;"><i class="bi bi-square-fill"></i> Maintenance</div>
     </div>
 
     <div class="lab-container shadow-sm">
-        <div class="pc-grid" id="pcGridContainer">
-            </div>
+        <div class="pc-grid" id="pcGridContainer"></div>
     </div>
 </div>
-<!--SIT-IN RESERVE MODAL-->
+
 <div class="modal fade" id="reservationModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-0 border-dark shadow-lg">
@@ -167,15 +178,18 @@ include("../action/sit_in_reserve.php");
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let currentLab = 'LAB-544';
+    let globalLabData = {};
 
     async function syncStudentLayout() {
-        currentLab = document.getElementById('labNameSelect').value;
+        const rawValue = document.getElementById('labNameSelect').value;
+        currentLab = rawValue.startsWith('LAB-') ? rawValue : 'LAB-' + rawValue;
+
         const response = await fetch(`../action/get_lab_status.php?lab=${currentLab}`);
         const data = await response.json();
         
-        document.getElementById('pcCountLabel') && (document.getElementById('pcCountLabel').innerText = data.total);
+        // Save to global state variable so openReserve can access it
+        globalLabData = data;
         
-        // Build islands based on the total number of PCs
         const gridContainer = document.getElementById('pcGridContainer');
         let html = '';
         let pcCounter = 1;
@@ -186,7 +200,7 @@ include("../action/sit_in_reserve.php");
             
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">pc-${pcCounter}</div>`;
+                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">PC-${pcCounter}</div>`;
                     pcCounter++;
                 }
             }
@@ -195,7 +209,7 @@ include("../action/sit_in_reserve.php");
             
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">pc-${pcCounter}</div>`;
+                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">PC-${pcCounter}</div>`;
                     pcCounter++;
                 }
             }
@@ -205,28 +219,59 @@ include("../action/sit_in_reserve.php");
         
         gridContainer.innerHTML = html;
 
-        // Apply any live reservation indicators from the database
-        data.reserved.forEach(id => {
-            const pcElement = document.getElementById(`pc-${id}`);
-            if (pcElement) {
-                pcElement.className = 'pc-box red';
-                pcElement.onclick = () => alert("This PC is already occupied.");
-            }
-        });
+        // Apply Occupied (Red)
+        if (data.reserved && data.reserved.length) {
+            data.reserved.forEach(id => {
+                const pcElement = document.getElementById(`pc-${id}`);
+                if (pcElement) {
+                    pcElement.className = 'pc-box red';
+                    pcElement.onclick = () => alert("This PC is already occupied.");
+                }
+            });
+        }
+
+        // Apply Pending (Yellow)
+        if (data.pending && data.pending.length) {
+            data.pending.forEach(id => {
+                const pcElement = document.getElementById(`pc-${id}`);
+                if (pcElement) {
+                    pcElement.className = 'pc-box yellow';
+                    // Override click function for pending PCs
+                    pcElement.onclick = () => alert("Action Denied! You already have a pending reservation request.");
+                }
+            });
+        }
+
+        // Apply Maintenance / Broken (Orange)
+        if (data.maintenance && data.maintenance.length) {
+            data.maintenance.forEach(id => {
+                const pcElement = document.getElementById(`pc-${id}`);
+                if (pcElement) {
+                    pcElement.className = 'pc-box orange';
+                    pcElement.onclick = () => alert("This PC is currently under maintenance.");
+                }
+            });
+        }
     }
 
     function openReserve(id, status) {
-        if (status === 'red') {
-            alert("This PC is already occupied.");
+        // If the element has been assigned non-green classes, block access
+        if (status === 'red' || status === 'orange') {
+            return;
+        }
+
+        // Check if student already has any pending request listed in the payload
+        if (globalLabData.pending && globalLabData.pending.length > 0) {
+            alert("Action Denied! You already have a pending reservation request. Please wait for an admin to process it.");
             return;
         }
 
         const labSelect = document.getElementById('labNameSelect');
         document.getElementById('pcNumberInput').value = id;
-        document.getElementById('labNameInput').value = labSelect.value;
+        document.getElementById('labNameInput').value = "LAB-" + labSelect.value;
         
         document.getElementById('pcTitle').innerText = "PC-" + id;
-        document.getElementById('labTitle').innerText = labSelect.options[labSelect.selectedIndex].text;
+        document.getElementById('labTitle').innerText = "Lab " + labSelect.value;
 
         var myModal = new bootstrap.Modal(document.getElementById('reservationModal'));
         myModal.show();

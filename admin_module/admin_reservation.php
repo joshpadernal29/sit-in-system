@@ -25,6 +25,7 @@ $pendingQuery = "SELECT r.*, s.firstname, s.lastname
                  WHERE r.status = 'pending' 
                  ORDER BY r.created_at ASC";
 $pendingResult = mysqli_query($conn, $pendingQuery);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -143,7 +144,6 @@ $pendingResult = mysqli_query($conn, $pendingQuery);
                             <div class="request-item bg-white border p-3 rounded mb-3 shadow-sm">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="status-pill bg-primary text-white">Pending Request</span>
-                                    <small class="text-muted">ID: <?= $req['id'] ?></small>
                                 </div>
                                 <h6 class="mb-1 fw-bold"><?= htmlspecialchars($req['firstname']." ".$req['lastname']) ?> <span class="text-primary">• PC-<?= $req['pc_number'] ?></span></h6>
                                 <p class="text-muted small mb-3"><?= $req['schedule_date'] ?> @ <?= $req['schedule_time'] ?><br>Purpose: <?= htmlspecialchars($req['lab_name']) ?></p>
@@ -170,9 +170,9 @@ $pendingResult = mysqli_query($conn, $pendingQuery);
             </div>
             <div class="d-flex gap-3">
                 <select id="labSwitcher" class="form-select border-dark fw-bold shadow-none" onchange="syncAdminDashboard()">
-                    <option value="LAB-544">Lab 544</option>
-                    <option value="LAB-542">Lab 542</option>
-                    <option value="LAB-526">Lab 526</option>
+                    <option value="544">Lab 544</option>
+                    <option value="542">Lab 542</option>
+                    <option value="526">Lab 526</option>
                 </select>
                 <button class="btn btn-dark px-4 fw-bold shadow-sm" onclick="syncAdminDashboard()">REFRESH</button>
             </div>
@@ -185,6 +185,7 @@ $pendingResult = mysqli_query($conn, $pendingQuery);
             <div class="mt-5 d-flex gap-4 justify-content-center border-top pt-4">
                 <span class="small fw-bold"><i class="bi bi-square-fill text-success me-1"></i> Available</span>
                 <span class="small fw-bold"><i class="bi bi-square-fill text-danger me-1"></i> Occupied</span>
+                <span class="small fw-bold"><i class="bi bi-square-fill text-info me-1"></i>Pending</span>
                 <span class="small fw-bold"><i class="bi bi-square-fill text-warning me-1"></i> Unavailable</span>
             </div>
         </div>
@@ -234,7 +235,7 @@ $pendingResult = mysqli_query($conn, $pendingQuery);
             
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-unit bg-open" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">pc-${pcCounter}</div>`;
+                    html += `<div class="pc-unit bg-open" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">PC-${pcCounter}</div>`;
                     pcCounter++;
                 }
             }
@@ -243,7 +244,7 @@ $pendingResult = mysqli_query($conn, $pendingQuery);
             
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-unit bg-open" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">${pcCounter}</div>`;
+                    html += `<div class="pc-unit bg-open" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">PC-${pcCounter}</div>`;
                     pcCounter++;
                 }
             }
