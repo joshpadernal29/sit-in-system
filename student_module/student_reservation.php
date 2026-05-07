@@ -3,8 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 include("../config/database.php");
-include("../action/studentData.php"); //session 
-
+include("../action/studentData.php"); // student session
+include("../action/sit_in_reserve.php");
+//echo($student_id);
+$student_pk = $student['id']; // get students pk id 
+//echo($student_pk);
 ?>
 
 <!DOCTYPE html>
@@ -12,163 +15,97 @@ include("../action/studentData.php"); //session
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIT-IN | PC Reservation</title>
+    <title>SIT-IN | Floor Plan Reservation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --blueprint-line: #334155;
-            --pc-open: #22c55e;
-            --pc-taken: #ef4444;
-            --pc-pending: #f59e0b;
-            --pc-broken: #ea580c;
-        }
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; }
-
-        .lab-container {
-            background: white;
-            border: 3px solid var(--blueprint-line);
-            border-radius: 4px;
-            padding: 30px;
-            position: relative;
-            max-width: 1000px;
-            margin: 20px auto;
-        }
-
-        .pc-grid {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 25px;
-        }
-
-        .island {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 20px;
-        }
-        
-        .bank {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .spine { width: 5px; background: var(--blueprint-line); border-radius: 2px; }
-
-        .pc-box {
-            width: 44px;
-            height: 44px;
-            border: 2px solid var(--blueprint-line);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        
-        .pc-box:hover { transform: scale(1.15); z-index: 5; }
-
-        .green { background: #dcfce7; color: #166534; border-color: var(--pc-open); }
-        .red { background: #fee2e2; color: #991b1b; border-color: #b91c1c; cursor: not-allowed; }
-        .yellow { background: #fef3c7; color: #92400e; border-color: var(--pc-pending); cursor: not-allowed; }
-        .orange { background: #fff7ed; color: #c2410c; border-color: var(--pc-broken); cursor: not-allowed; }
-
-        .filter-section {
-            background: white;
-            padding: 15px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-    </style>
 </head>
-<body>
+<body class="bg-light">
 
 <?php include("../includes/studentHeader.php"); ?>
 
-<div class="container mt-3">
-    <?php if (isset($_GET['success']) && $_GET['success'] === 'reserved'): ?>
-        <div class="alert alert-success alert-dismissible fade show rounded-0" role="alert">
-            <strong>Success!</strong> Your reservation has been sent and is currently pending.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="container-fluid px-4 py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center bg-white p-4 border border-dark shadow-sm">
+            <div>
+                <h3 class="fw-bold text-dark mb-1 text-uppercase">Laboratory Floor Plan</h3>
+                <p class="text-muted small mb-0">Select an <span class="text-success fw-bold">Available</span> PC unit to submit a reservation request.</p>
+            </div>
+            <div class="d-flex gap-3 mt-3 mt-md-0">
+                <select id="labSwitcher" class="form-select border-dark fw-bold rounded-0 shadow-none" onchange="syncStudentDashboard()">
+                    <option value="544">LAB 544</option>
+                    <option value="542">LAB 542</option>
+                    <option value="526">LAB 526</option>
+                </select>
+                <button class="btn btn-dark rounded-0 px-4 fw-bold shadow-sm" onclick="syncStudentDashboard()">REFRESH</button>
+            </div>
         </div>
-    <?php endif; ?>
-</div>
+    </div>
 
-<div class="filter-section shadow-sm mb-4">
-    <div class="container d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="fw-bold mb-0">Laboratory Reservation</h5>
-            <small class="text-muted">Select a laboratory and click a PC to reserve</small>
-        </div>
-        <div style="width: 250px;">
-            <select class="form-select fw-bold shadow-none border-dark" id="labNameSelect" onchange="syncStudentLayout()">
-                <option value="544">LAB 544</option>
-                <option value="542">LAB 542</option>
-                <option value="526">LAB 526</option>
-            </select>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border border-dark rounded-0 shadow-sm">
+                <div class="card-body p-5 bg-white">
+                    <div id="studentGridContainer" class="d-flex flex-wrap justify-content-center gap-4">
+                        </div>
+
+                    <div class="mt-5 d-flex flex-wrap gap-4 justify-content-center border-top pt-4">
+                        <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
+                        <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Reserved</span>
+                        <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Pending</span>
+                        <span class="small fw-bold" style="color: #ea580c;"><i class="bi bi-square-fill me-1"></i> Under Maintenance</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<div class="container">
-    <div class="d-flex gap-4 mb-4 justify-content-center">
-        <div class="small fw-bold"><i class="bi bi-square-fill text-success"></i> Open</div>
-        <div class="small fw-bold"><i class="bi bi-square-fill text-danger"></i> Occupied</div>
-        <div class="small fw-bold" style="color: #f59e0b;"><i class="bi bi-square-fill"></i> Pending</div>
-        <div class="small fw-bold" style="color: #ea580c;"><i class="bi bi-square-fill"></i> Maintenance</div>
-    </div>
-
-    <div class="lab-container shadow-sm">
-        <div class="pc-grid" id="pcGridContainer"></div>
-    </div>
-</div>
-
-<div class="modal fade" id="reservationModal" tabindex="-1">
+<!--RESERVE MODAL-->
+<div class="modal fade" id="resModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-0 border-dark shadow-lg">
-            <div class="modal-header bg-dark text-white rounded-0">
-                <h5 class="modal-title fw-bold"><i class="bi bi-pc-display me-2"></i>Reserve Workstation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border border-dark rounded-0 shadow-lg">
+            <div class="modal-header bg-dark text-white rounded-0 py-3">
+                <h5 class="modal-title fw-bold text-uppercase"><i class="bi bi-pencil-square me-2"></i>Apply for Reservation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="../action/sit_in_reserve.php" method="POST">
-                <input type="hidden" name="student_pk_id" value="<?php echo $_SESSION['student_id'] ?? '1'; ?>">
-                <input type="hidden" name="pc_number" id="pcNumberInput">
-                <input type="hidden" name="lab_name" id="labNameInput">
+                <input type="hidden" name="student_pk_id" value="<?php echo $student_pk ?? '1'; ?>">
+                <input type="hidden" name="pc_number" id="modal_pc_number">
+                <input type="hidden" name="lab_name" id="modal_lab_name">
 
                 <div class="modal-body p-4">
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bold mb-0" id="pcTitle">PC-00</h2>
-                        <span class="text-muted" id="labTitle">Lab 544</span>
+                    <div class="text-center mb-4 bg-light p-3 border border-secondary">
+                        <h2 class="fw-bold mb-0 text-dark" id="display_pc">PC-00</h2>
+                        <p class="text-muted small mb-0 fw-bold text-uppercase" id="display_lab">LAB 544</p>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">RESERVATION DATE</label>
-                        <input type="date" class="form-control rounded-0" name="res_date" required min="<?= date('Y-m-d'); ?>">
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold">START TIME</label>
-                        <input type="time" class="form-control rounded-0" name="res_time" required>
-                        <div class="form-text mt-2 text-primary">
-                            <i class="bi bi-info-circle"></i> Logout determined by manual logout or class schedule.
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Reservation Date</label>
+                            <input type="date" class="form-control border-dark rounded-0 shadow-none" name="res_date" required min="<?= date('Y-m-d'); ?>">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-secondary text-uppercase">Start Time</label>
+                            <input type="time" class="form-control border-dark rounded-0 shadow-none" name="res_time" required>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">SIT-IN PURPOSE</label>
-                        <select class="form-select rounded-0" name="sit_in_purpose">
-                            <option>Research</option>
-                            <option>Programming Task</option>
-                            <option>Exam / Quiz</option>
-                            <option>Self Study</option>
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Purpose of Use</label>
+                        <select class="form-select border-dark rounded-0 shadow-none" name="sit_in_purpose" required>
+                            <option value="Research">Research</option>
+                            <option value="Programming Task">Programming Task</option>
+                            <option value="Exam / Quiz">Exam / Quiz</option>
+                            <option value="Self Study">Self Study</option>
                         </select>
                     </div>
+                    
+                    <div class="alert alert-info border-0 rounded-0 small mb-0 mt-3">
+                        <i class="bi bi-info-circle-fill me-2"></i> Requests are sent to admin for approval.
+                    </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-dark rounded-0 px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-dark rounded-0 px-4 fw-bold" name="reserve_pc">Confirm Reservation</button>
+                <div class="modal-footer border-0 p-4">
+                    <button type="button" class="btn btn-outline-dark rounded-0 fw-bold px-4" data-bs-dismiss="modal">CANCEL</button>
+                    <button type="submit" name="reserve_pc" class="btn btn-dark rounded-0 fw-bold px-4">CONFIRM APPLICATION</button>
                 </div>
             </form>
         </div>
@@ -176,110 +113,111 @@ include("../action/studentData.php"); //session
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-    let currentLab = 'LAB-544';
-    let globalLabData = {};
+    let studentHasPending = false;
 
-    async function syncStudentLayout() {
-        const rawValue = document.getElementById('labNameSelect').value;
-        currentLab = rawValue.startsWith('LAB-') ? rawValue : 'LAB-' + rawValue;
-
-        const response = await fetch(`../action/get_lab_status.php?lab=${currentLab}`);
+    async function syncStudentDashboard() {
+        const lab = document.getElementById('labSwitcher').value;
+        const studentId = <?php echo $_SESSION['student_id'] ?? '1'; ?>;
+        
+        const response = await fetch(`../action/get_lab_status.php?lab=${lab}`);
         const data = await response.json();
         
-        // Save to global state variable so openReserve can access it
-        globalLabData = data;
+        // Check if this student already has a pending reservation
+        studentHasPending = (data.student_pending && data.student_pending.includes(studentId));
+
+        const gridContainer = document.getElementById('studentGridContainer');
+        gridContainer.innerHTML = ''; // Clear
         
-        const gridContainer = document.getElementById('pcGridContainer');
-        let html = '';
         let pcCounter = 1;
         const numIslands = Math.ceil(data.total / 8);
 
         for (let isl = 0; isl < numIslands; isl++) {
-            html += `<div class="island"><div class="bank d-flex flex-column gap-2">`;
-            
+            // Island Container (Using Bootstrap Flex)
+            const island = document.createElement('div');
+            island.className = "d-flex gap-2 mb-3 border p-2 bg-light";
+
+            // Left Bank
+            const leftBank = document.createElement('div');
+            leftBank.className = "d-flex flex-column gap-2";
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">PC-${pcCounter}</div>`;
+                    leftBank.appendChild(createPCUnit(pcCounter, data));
                     pcCounter++;
                 }
             }
-            
-            html += `</div><div class="spine"></div><div class="bank d-flex flex-column gap-2">`;
-            
+
+            // Spine
+            const spine = document.createElement('div');
+            spine.className = "bg-dark rounded-pill";
+            spine.style.width = "5px";
+
+            // Right Bank
+            const rightBank = document.createElement('div');
+            rightBank.className = "d-flex flex-column gap-2";
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="pc-box green" id="pc-${pcCounter}" onclick="openReserve(${pcCounter}, 'green')">PC-${pcCounter}</div>`;
+                    rightBank.appendChild(createPCUnit(pcCounter, data));
                     pcCounter++;
                 }
             }
-            
-            html += `</div></div>`;
-        }
-        
-        gridContainer.innerHTML = html;
 
-        // Apply Occupied (Red)
-        if (data.reserved && data.reserved.length) {
-            data.reserved.forEach(id => {
-                const pcElement = document.getElementById(`pc-${id}`);
-                if (pcElement) {
-                    pcElement.className = 'pc-box red';
-                    pcElement.onclick = () => alert("This PC is already occupied.");
-                }
-            });
-        }
-
-        // Apply Pending (Yellow)
-        if (data.pending && data.pending.length) {
-            data.pending.forEach(id => {
-                const pcElement = document.getElementById(`pc-${id}`);
-                if (pcElement) {
-                    pcElement.className = 'pc-box yellow';
-                    // Override click function for pending PCs
-                    pcElement.onclick = () => alert("Action Denied! You already have a pending reservation request.");
-                }
-            });
-        }
-
-        // Apply Maintenance / Broken (Orange)
-        if (data.maintenance && data.maintenance.length) {
-            data.maintenance.forEach(id => {
-                const pcElement = document.getElementById(`pc-${id}`);
-                if (pcElement) {
-                    pcElement.className = 'pc-box orange';
-                    pcElement.onclick = () => alert("This PC is currently under maintenance.");
-                }
-            });
+            island.appendChild(leftBank);
+            island.appendChild(spine);
+            island.appendChild(rightBank);
+            gridContainer.appendChild(island);
         }
     }
 
-    function openReserve(id, status) {
-        // If the element has been assigned non-green classes, block access
-        if (status === 'red' || status === 'orange') {
+    function createPCUnit(id, data) {
+        const btn = document.createElement('div');
+        // Initial Available Styling (Pure Bootstrap)
+        btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
+        btn.style.width = "46px";
+        btn.style.height = "46px";
+        btn.style.fontSize = "0.65rem";
+        btn.innerText = `PC-${id}`;
+        btn.onclick = () => openModal(id);
+
+        // Apply Status based on data
+        if (data.reserved && data.reserved.includes(id)) {
+            btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
+        } else if (data.pending && data.pending.includes(id)) {
+            btn.className = btn.className.replace('btn-success', 'btn-warning') + " pe-none text-dark";
+        } else if (data.maintenance && data.maintenance.includes(id)) {
+            // Orange for maintenance
+            btn.className = btn.className.replace('btn-success', '') + " pe-none text-white";
+            btn.style.backgroundColor = "#ea580c";
+        }
+
+        return btn;
+    }
+
+    function openModal(pcNumber) {
+        if (studentHasPending) {
+            alert("You cannot reserve another PC while you have a pending request.");
             return;
         }
 
-        // Check if student already has any pending request listed in the payload
-        if (globalLabData.pending && globalLabData.pending.length > 0) {
-            alert("Action Denied! You already have a pending reservation request. Please wait for an admin to process it.");
-            return;
-        }
-
-        const labSelect = document.getElementById('labNameSelect');
-        document.getElementById('pcNumberInput').value = id;
-        document.getElementById('labNameInput').value = "LAB-" + labSelect.value;
+        const labName = document.getElementById('labSwitcher').value;
         
-        document.getElementById('pcTitle').innerText = "PC-" + id;
-        document.getElementById('labTitle').innerText = "Lab " + labSelect.value;
+        // Set values to hidden inputs
+        document.getElementById('modal_pc_number').value = pcNumber;
+        document.getElementById('modal_lab_name').value = labName;
+        
+        // Set values for display
+        document.getElementById('display_pc').innerText = "PC-" + pcNumber;
+        document.getElementById('display_lab').innerText = labName;
 
-        var myModal = new bootstrap.Modal(document.getElementById('reservationModal'));
+        // Open Modal
+        var myModal = new bootstrap.Modal(document.getElementById('resModal'));
         myModal.show();
     }
 
     window.onload = () => {
-        syncStudentLayout();
-        setInterval(syncStudentLayout, 10000);
+        syncStudentDashboard();
+        setInterval(syncStudentDashboard, 15000); // Auto refresh
     };
 </script>
 
