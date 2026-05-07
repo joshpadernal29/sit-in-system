@@ -22,5 +22,5 @@ if (isset($_POST['reserve_pc'])) {
         mysqli_stmt_execute($getData); // insert the reservation data
         mysqli_stmt_close($getData);
     }
-    header("Location: ../admin_module/student_reservation.php?reservation=sent");
+    header("Location: ../student_module/student_reservation.php?id=$student_pk,request=sent");
 }
