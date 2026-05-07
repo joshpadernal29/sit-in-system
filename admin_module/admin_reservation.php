@@ -111,8 +111,8 @@ $logsResult =  getSystemLogs($conn);
                                             <span class="text-primary">Purpose:</span> <?= htmlspecialchars($pendingRequest['purpose']) ?>                         
                                         </p>
                                         <div class="d-flex gap-2">
-                                            <a href="dashboard.php?action=approve&id=<?= $pendingRequest['id'] ?>" class="btn btn-success btn-sm w-50 rounded-0 fw-bold">APPROVE</a>
-                                            <a href="dashboard.php?action=reject&id=<?= $pendingRequest['id'] ?>" class="btn btn-danger btn-sm w-50 rounded-0 fw-bold">REJECT</a>
+                                            <a href="../action/admin_pc_control.php?action=approve&id=<?= $pendingRequest['id'] ?>" class="btn btn-success btn-sm w-50 rounded-0 fw-bold">APPROVE</a>
+                                            <a href="../action/admin_pc_control.php?action=reject&id=<?= $pendingRequest['id'] ?>" class="btn btn-danger btn-sm w-50 rounded-0 fw-bold">REJECT</a>
                                         </div>
                                     </div>
                                 <?php endwhile; ?>
