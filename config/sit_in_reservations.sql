@@ -7,5 +7,8 @@ CREATE TABLE IF NOT EXISTS reservations (
     schedule_time TIME NOT NULL,
     purpose VARCHAR(100) NOT NULL,
     status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_pk_id) REFERENCES students(id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
 );
