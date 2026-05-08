@@ -66,6 +66,7 @@ $total_pages = ceil($total_rows / $limit);
                         <td class="text-center">
                             <form action="../action/sit_in.php" method="POST" onsubmit="return confirm('End Session?');">
                                 <input type="hidden" name="record_id" value="<?php echo $row['id']; ?>">
+                                <input type="hidden" name="student_pk_id" value="<?php echo $row['student_pk_id']; ?>">
                                 <button type="submit" name="logout_student" class="btn btn-danger btn-sm px-3 rounded-pill">
                                     Logout Student
                                 </button>
