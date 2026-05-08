@@ -5,6 +5,14 @@ include("../config/database.php");
 session_start();
 session_write_close(); 
 
+// clear expired reservatin requests
+$cleanSQL = "UPDATE reservations 
+             SET status = 'rejected', action = 'rejected' 
+             WHERE status IN ('approved', 'pending') 
+             AND action IN ('approved', 'pending')
+             AND (schedule_date < CURDATE() OR (schedule_date = CURDATE() AND schedule_time < CURTIME()))";
+mysqli_query($conn, $cleanSQL);
+
 header('Content-Type: application/json');
 
 // 2. Get the lab (e.g., "544") directly from the request
@@ -40,6 +48,7 @@ function fetchPcs($conn, $table, $lab, $status) {
 // 4. Gather data using the exact "544" string
 $reserved    = fetchPcs($conn, 'reservations', $lab, 'approved');
 $pending     = fetchPcs($conn, 'reservations', $lab, 'pending');
+$active      = fetchPcs($conn, 'reservations', $lab, 'active'); // Added to track current sit-ins
 $maintenance = fetchPcs($conn, 'pc_status',    $lab, 'unavailable');
 
 // 5. Return clean JSON
@@ -47,5 +56,8 @@ echo json_encode([
     "total"       => $total,
     "reserved"    => $reserved,
     "pending"     => $pending,
-    "maintenance" => $maintenance
+    "active"      => $active, 
+    "maintenance" => $maintenance,
+    "debug_count" => count($active), // Tells you how many are active
+    "raw_active"  => $active        // Shows exactly what IDs are in there
 ]);
