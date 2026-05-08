@@ -5,9 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include("../config/database.php");
 include("../action/studentData.php"); // student session
 include("../action/sit_in_reserve.php");
-//echo($student_id);
-$student_pk = $student['id']; // get students pk id 
-//echo($student_pk);
+$student_pk = $student['id']; 
 ?>
 
 <!DOCTYPE html>
@@ -45,12 +43,11 @@ $student_pk = $student['id']; // get students pk id
         <div class="col-lg-10">
             <div class="card border border-dark rounded-0 shadow-sm">
                 <div class="card-body p-5 bg-white">
-                    <div id="studentGridContainer" class="d-flex flex-wrap justify-content-center gap-4">
-                        </div>
+                    <div id="studentGridContainer" class="d-flex flex-wrap justify-content-center gap-4"></div>
 
                     <div class="mt-5 d-flex flex-wrap gap-4 justify-content-center border-top pt-4">
                         <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
-                        <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Reserved</span>
+                        <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Reserved / Active</span>
                         <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Pending</span>
                         <span class="small fw-bold" style="color: #ea580c;"><i class="bi bi-square-fill me-1"></i> Under Maintenance</span>
                     </div>
@@ -59,7 +56,7 @@ $student_pk = $student['id']; // get students pk id
         </div>
     </div>
 </div>
-<!--RESERVE MODAL-->
+
 <div class="modal fade" id="resModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border border-dark rounded-0 shadow-lg">
@@ -68,7 +65,7 @@ $student_pk = $student['id']; // get students pk id
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="../action/sit_in_reserve.php" method="POST">
-                <input type="hidden" name="student_pk_id" value="<?php echo $student_pk ?? '1'; ?>">
+                <input type="hidden" name="student_pk_id" value="<?php echo $student_pk; ?>">
                 <input type="hidden" name="pc_number" id="modal_pc_number">
                 <input type="hidden" name="lab_name" id="modal_lab_name">
 
@@ -87,6 +84,18 @@ $student_pk = $student['id']; // get students pk id
                             <label class="form-label small fw-bold text-secondary text-uppercase">Start Time</label>
                             <input type="time" class="form-control border-dark rounded-0 shadow-none" name="res_time" required>
                         </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary text-uppercase">Programming Language</label>
+                        <select class="form-select border-dark rounded-0 shadow-none" name="language" required>
+                            <option value="" selected disabled>Select language...</option>
+                            <option value="PHP">PHP</option>
+                            <option value="Java">Java</option>
+                            <option value="Python">Python</option>
+                            <option value="C#">C#</option>
+                            <option value="C++">C++</option>
+                        </select>
                     </div>
 
                     <div class="mb-3">
@@ -119,26 +128,23 @@ $student_pk = $student['id']; // get students pk id
 
     async function syncStudentDashboard() {
         const lab = document.getElementById('labSwitcher').value;
-        const studentId = <?php echo $_SESSION['student_id'] ?? '1'; ?>;
+        const studentId = <?php echo $_SESSION['student_id'] ?? '0'; ?>;
         
         const response = await fetch(`../action/get_lab_status.php?lab=${lab}`);
         const data = await response.json();
         
-        // Check if this student already has a pending reservation
         studentHasPending = (data.student_pending && data.student_pending.includes(studentId));
 
         const gridContainer = document.getElementById('studentGridContainer');
-        gridContainer.innerHTML = ''; // Clear
+        gridContainer.innerHTML = ''; 
         
         let pcCounter = 1;
         const numIslands = Math.ceil(data.total / 8);
 
         for (let isl = 0; isl < numIslands; isl++) {
-            // Island Container (Using Bootstrap Flex)
             const island = document.createElement('div');
             island.className = "d-flex gap-2 mb-3 border p-2 bg-light";
 
-            // Left Bank
             const leftBank = document.createElement('div');
             leftBank.className = "d-flex flex-column gap-2";
             for (let i = 0; i < 4; i++) {
@@ -148,12 +154,10 @@ $student_pk = $student['id']; // get students pk id
                 }
             }
 
-            // Spine
             const spine = document.createElement('div');
             spine.className = "bg-dark rounded-pill";
             spine.style.width = "5px";
 
-            // Right Bank
             const rightBank = document.createElement('div');
             rightBank.className = "d-flex flex-column gap-2";
             for (let i = 0; i < 4; i++) {
@@ -172,7 +176,6 @@ $student_pk = $student['id']; // get students pk id
 
     function createPCUnit(id, data) {
         const btn = document.createElement('div');
-        // Initial Available Styling (Pure Bootstrap)
         btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
         btn.style.width = "46px";
         btn.style.height = "46px";
@@ -180,13 +183,18 @@ $student_pk = $student['id']; // get students pk id
         btn.innerText = `PC-${id}`;
         btn.onclick = () => openModal(id);
 
-        // Apply Status based on data
-        if (data.reserved && data.reserved.includes(id)) {
+        // This check ensures the PC stays RED for both reservations AND current sit-ins
+        const isOccupied = (data.reserved && data.reserved.includes(id)) || 
+                        (data.active && data.active.includes(id));
+
+        if (isOccupied) {
+            // Red for Occupied / Approved
             btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
         } else if (data.pending && data.pending.includes(id)) {
+            // Yellow for Pending
             btn.className = btn.className.replace('btn-success', 'btn-warning') + " pe-none text-dark";
         } else if (data.maintenance && data.maintenance.includes(id)) {
-            // Orange for maintenance
+            // Orange for Maintenance
             btn.className = btn.className.replace('btn-success', '') + " pe-none text-white";
             btn.style.backgroundColor = "#ea580c";
         }
@@ -201,25 +209,19 @@ $student_pk = $student['id']; // get students pk id
         }
 
         const labName = document.getElementById('labSwitcher').value;
-        
-        // Set values to hidden inputs
         document.getElementById('modal_pc_number').value = pcNumber;
         document.getElementById('modal_lab_name').value = labName;
-        
-        // Set values for display
         document.getElementById('display_pc').innerText = "PC-" + pcNumber;
-        document.getElementById('display_lab').innerText = labName;
+        document.getElementById('display_lab').innerText = "LAB " + labName;
 
-        // Open Modal
         var myModal = new bootstrap.Modal(document.getElementById('resModal'));
         myModal.show();
     }
 
     window.onload = () => {
         syncStudentDashboard();
-        setInterval(syncStudentDashboard, 15000); // Auto refresh
+        setInterval(syncStudentDashboard, 15000); 
     };
 </script>
-
 </body>
 </html>

@@ -5,16 +5,15 @@ if (session_status() === PHP_SESSION_NONE) {
 include("../config/database.php");
 include("../action/admin_pc_control.php");
 
-// fetch pending requests
+// Fetch pending requests
 $row = getPendingReservations($conn);
 $total_pending_requests = mysqli_num_rows($row);
 
-// fetch approved requests
+// Fetch approved requests
 $approvedResult = getApprovedReservations($conn); 
 
-// fetch systelogs
-$logsResult =  getSystemLogs($conn);
-
+// Fetch system logs
+$logsResult = getSystemLogs($conn);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,14 +71,15 @@ $logsResult =  getSystemLogs($conn);
                     <div class="card border border-dark rounded-0 shadow-sm h-100">
                         <div class="card-header bg-dark text-white rounded-0 d-flex justify-content-between align-items-center py-3">
                             <h5 class="mb-0 fw-bold text-uppercase" id="labHeading">LAB-544 MONITORING</h5>
-                            <span class="badge bg-light text-dark rounded-pill" id="pcCountLabel">40 Units</span>
+                            <span class="badge bg-light text-dark rounded-pill" id="pcCountLabel">0 Units</span>
                         </div>
                         <div class="card-body bg-white p-4">
                             <div class="d-flex flex-wrap justify-content-center gap-4" id="adminGridContainer"></div>
+                            
                             <hr class="my-4">
                             <div class="d-flex flex-wrap gap-4 justify-content-center">
                                 <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
-                                <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Occupied</span>
+                                <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Occupied / Active</span>
                                 <span class="small fw-bold text-primary"><i class="bi bi-square-fill me-1"></i> Pending</span>
                                 <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Maintenance</span>
                             </div>
@@ -91,11 +91,11 @@ $logsResult =  getSystemLogs($conn);
                     <div class="card border border-dark rounded-0 shadow-sm">
                         <div class="card-header bg-secondary text-white border-bottom border-dark rounded-0 d-flex justify-content-between align-items-center py-3">
                             <h5 class="mb-0 fs-6 fw-bold text-uppercase"><i class="bi bi-person-exclamation me-2"></i>Queue for Approvals</h5>
-                            <span class="badge bg-danger rounded-pill"><?= $total_pending_requests?></span>
+                            <span class="badge bg-danger rounded-pill"><?= $total_pending_requests ?></span>
                         </div>
                         <div class="card-body p-3" style="max-height: 520px; overflow-y: auto;">
                             <?php if($total_pending_requests == 0): ?>
-                                <p class="text-muted small text-center my-5">No pending reservation requests at the moment.</p>
+                                <p class="text-muted small text-center my-5">No pending reservation requests.</p>
                             <?php else: ?>
                                 <?php while($pendingRequest = mysqli_fetch_assoc($row)): ?>
                                     <div class="p-3 border border-secondary rounded-0 mb-3 bg-light shadow-sm">
@@ -105,10 +105,8 @@ $logsResult =  getSystemLogs($conn);
                                         </div>
                                         <h6 class="mb-1 fw-bold text-dark"><?= htmlspecialchars($pendingRequest['fullname']) ?></h6>
                                         <p class="text-secondary small mb-3 lh-sm">
-                                            <span class="text-primary">Scheduled Date:</span> <?= htmlspecialchars($pendingRequest['schedule_date']) ?><br>
-                                            <span class="text-primary">Time:</span> <?= htmlspecialchars($pendingRequest['schedule_time']) ?><br>
-                                            <span class="text-primary">LAB:</span> <?= htmlspecialchars($pendingRequest['lab_name']) ?><br/>
-                                            <span class="text-primary">Purpose:</span> <?= htmlspecialchars($pendingRequest['purpose']) ?>                         
+                                            <span class="text-primary">Lab:</span> <?= htmlspecialchars($pendingRequest['lab_name']) ?><br>
+                                            <span class="text-primary">Time:</span> <?= htmlspecialchars($pendingRequest['schedule_time']) ?>
                                         </p>
                                         <div class="d-flex gap-2">
                                             <a href="../action/admin_pc_control.php?action=approve&id=<?= $pendingRequest['id'] ?>" class="btn btn-success btn-sm w-50 rounded-0 fw-bold">APPROVE</a>
@@ -135,34 +133,25 @@ $logsResult =  getSystemLogs($conn);
                                 <tr>
                                     <th class="ps-4">Name</th>
                                     <th>Lab Name</th>
-                                    <th>PC Unit Number</th>
+                                    <th>PC Unit</th>
                                     <th>Schedule Date</th>
-                                    <th>Schedule Time</th>
-                                    <th>Purpose</th>
-                                    <th class="pe-4">Action</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(mysqli_num_rows($approvedResult) == 0): ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center text-muted py-5">No approved reservations.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php while($approvedResults = mysqli_fetch_assoc($approvedResult)): ?>
-                                        <tr>
-                                            <td class="ps-4 fw-bold text-dark"><?= htmlspecialchars($approvedResults['fullname']) ?></td>
-                                            <td><?= htmlspecialchars($approvedResults['lab_name']) ?></td>
-                                            <td><span class="badge bg-secondary">PC-<?= $approvedResults['pc_number'] ?></span></td>
-                                            <td><?= $approvedResults['schedule_date'] ?></td>
-                                            <td><?= $approvedResults['schedule_time'] ?></td>
-                                            <td><?= htmlspecialchars($approvedResults['sit_in_purpose'] ?? 'Research') ?></td>
-                                            <td class="pe-4">
-                                                <span class="badge bg-success text-white">Active</span>
-                                            </td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                <?php endif; ?>
-                            </tbody>
+                                <?php while($approvedResults = mysqli_fetch_assoc($approvedResult)): ?>
+                                <tr>
+                                    <td class="ps-4 fw-bold"><?= htmlspecialchars($approvedResults['fullname']) ?></td>
+                                    <td><?= htmlspecialchars($approvedResults['lab_name']) ?></td>
+                                    <td><span class="badge bg-secondary">PC-<?= $approvedResults['pc_number'] ?></span></td>
+                                    <td><?= $approvedResults['schedule_date'] ?></td>
+                                    <td>
+                                        <!-- Use the new action column here -->
+                                        <span class="badge bg-success"><?= ucfirst($approvedResults['action']) ?></span>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                        </tbody>
                         </table>
                     </div>
                 </div>
@@ -170,48 +159,41 @@ $logsResult =  getSystemLogs($conn);
         </div>
 
         <div class="tab-pane fade" id="logs" role="tabpanel">
-            <div class="card border border-dark rounded-0 shadow-sm">
+             <div class="card border border-dark rounded-0 shadow-sm">
                 <div class="card-header bg-dark text-white rounded-0 py-3">
-                    <i class="bi bi-file-text me-2"></i>System-wide Audit Trail & Logs
+                    <i class="bi bi-file-text me-2"></i>System-wide Audit Trail
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-striped align-middle mb-0">
                             <thead class="table-light border-bottom small text-uppercase">
                                 <tr>
-                                    <th class="ps-4">Log ID</th>
-                                    <th>User Name</th>
-                                    <th>Lab</th>
-                                    <th>PC Target</th>
-                                    <th>Activity / Status</th>
-                                    <th class="pe-4">Timestamp</th>
+                                    <th class="ps-4">Name</th>
+                                    <th>Lab Name</th>
+                                    <th>PC Unit</th>
+                                    <th>Schedule Date</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if(mysqli_num_rows($logsResult) == 0): ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted py-5">No transaction logs recorded yet.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php while($logs = mysqli_fetch_assoc($logsResult)): ?>
-                                        <tr>
-                                            <td class="ps-4">#<?= $logs['id'] ?></td>
-                                            <td><?= htmlspecialchars($logs['fullname']) ?></td>
-                                            <td><?= htmlspecialchars($logs['lab_name']) ?></td>
-                                            <td>PC-<?= $logs['pc_number'] ?></td>
-                                            <td>
-                                                <?php if ($logs['status'] == 'approved'): ?>
-                                                    <span class="badge bg-success">Approved</span>
-                                                <?php elseif ($logs['status'] == 'rejected'): ?>
-                                                    <span class="badge bg-danger">Rejected</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-primary">Pending</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="pe-4"><?= $logs['created_at'] ?? 'Just now' ?></td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                <?php endif; ?>
+                                <?php while($logs = mysqli_fetch_assoc($logsResult)): ?>
+                                <tr>
+                                    <td class="ps-4"><?= $logs['fullname'] ?></td>
+                                    <td><?= htmlspecialchars($logs['lab_name']) ?></td>
+                                    <td><span class="badge bg-secondary">PC-<?= $logs['pc_number'] ?></span></td>
+                                    <td><?= $logs['schedule_date'] ?></td>
+                                    <td>
+                                        <?php 
+                                            // Set color based on the action value
+                                            $badgeClass = 'bg-secondary';
+                                            if ($logs['action'] == 'approved') $badgeClass = 'bg-success';
+                                            if ($logs['action'] == 'rejected') $badgeClass = 'bg-danger';
+                                            if ($logs['action'] == 'pending')  $badgeClass = 'bg-warning text-dark';
+                                        ?>
+                                        <span class="badge <?= $badgeClass ?>"><?= ucfirst($logs['action']) ?></span>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
                             </tbody>
                         </table>
                     </div>
@@ -223,22 +205,19 @@ $logsResult =  getSystemLogs($conn);
 
 <div class="modal fade" id="pcSettingModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-0 border-dark shadow-lg">
+        <div class="modal-content rounded-0 border-dark">
             <div class="modal-header bg-dark text-white rounded-0">
-                <h5 class="modal-title fw-bold">Workstation Maintenance Configuration</h5>
+                <h5 class="modal-title fw-bold">Workstation Maintenance</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4 text-center">
-                <h3 class="fw-bold mb-1 text-dark" id="modalPcTitle">PC-00</h3>
-                <p class="text-muted mb-4" id="modalLabTitle">Lab 544</p>
-                <p class="text-secondary small mb-4">Select the specific status for this workstation below:</p>
-
-                <div class="d-flex justify-content-center gap-3">
+                <h3 class="fw-bold mb-1" id="modalPcTitle">PC-00</h3>
+                <input type="hidden" id="selectedPcNumber">
+                <div class="d-flex justify-content-center gap-3 mt-4">
                     <button class="btn btn-success rounded-0 px-3 py-2 fw-bold" onclick="processToggle('available')">Available</button>
                     <button class="btn btn-warning rounded-0 px-3 py-2 fw-bold" onclick="processToggle('unavailable')">Unavailable</button>
                     <button class="btn btn-danger rounded-0 px-3 py-2 fw-bold" onclick="processToggle('maintenance')">Maintenance</button>
                 </div>
-                <input type="hidden" id="selectedPcNumber">
             </div>
         </div>
     </div>
@@ -254,114 +233,90 @@ $logsResult =  getSystemLogs($conn);
         const data = await response.json();
         
         document.getElementById('pcCountLabel').innerText = `${data.total} Units`;
-
         const gridContainer = document.getElementById('adminGridContainer');
-        let html = '';
+        
+        // VITAL: Clear the container every time we sync to remove old red icons
+        gridContainer.innerHTML = ''; 
+
         let pcCounter = 1;
         const numIslands = Math.ceil(data.total / 8);
 
         for (let isl = 0; isl < numIslands; isl++) {
-            html += `<div class="d-flex gap-2 mb-3"><div class="d-flex flex-column gap-2">`;
-            
+            let island = document.createElement('div');
+            island.className = "d-flex gap-2 mb-3";
+            island.innerHTML = `<div class="d-flex flex-column gap-2" id="isl-left-${isl}"></div>
+                                <div class="bg-dark rounded" style="width: 5px;"></div>
+                                <div class="d-flex flex-column gap-2" id="isl-right-${isl}"></div>`;
+            gridContainer.appendChild(island);
+
+            // Left side of the island (4 units)
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="btn btn-success p-0 border border-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; font-size: 0.65rem; font-weight: 800;" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">PC-${pcCounter}</div>`;
+                    document.getElementById(`isl-left-${isl}`).appendChild(createPCUnit(pcCounter, data));
                     pcCounter++;
                 }
             }
-            
-            html += `</div><div class="bg-dark rounded" style="width: 5px;"></div><div class="d-flex flex-column gap-2">`;
-            
+            // Right side of the island (4 units)
             for (let i = 0; i < 4; i++) {
                 if (pcCounter <= data.total) {
-                    html += `<div class="btn btn-success p-0 border border-secondary d-flex align-items-center justify-content-center" style="width: 46px; height: 46px; font-size: 0.65rem; font-weight: 800;" id="admin-pc-${pcCounter}" onclick="openPcModal(${pcCounter})">PC-${pcCounter}</div>`;
+                    document.getElementById(`isl-right-${isl}`).appendChild(createPCUnit(pcCounter, data));
                     pcCounter++;
                 }
             }
-            
-            html += `</div></div>`;
+        }
+    }
+
+    function createPCUnit(id, data) {
+        const btn = document.createElement('div');
+        // Standard Green Setup
+        btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
+        btn.style.width = "46px";
+        btn.style.height = "46px";
+        btn.style.fontSize = "0.65rem";
+        btn.innerText = `PC-${id}`;
+        btn.onclick = () => openPcModal(id);
+
+        // Define status logic
+        const isOccupied = (data.reserved && data.reserved.map(String).includes(id.toString())) || 
+                    (data.active && data.active.map(String).includes(id.toString()));
+
+        const isPending = data.pending && data.pending.map(String).includes(id.toString());
+
+        const isMaint = (data.maintenance && data.maintenance.map(String).includes(id.toString())) || 
+                        (data.warning && data.warning.map(String).includes(id.toString()));
+
+        // Apply visual classes (ONLY one status at a time)
+        if (isOccupied) {
+            btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
+        } else if (isPending) {
+            btn.className = btn.className.replace('btn-success', 'btn-primary');
+        } else if (isMaint) {
+            btn.className = btn.className.replace('btn-success', 'btn-warning') + " text-dark";
         }
 
-        gridContainer.innerHTML = html;
-
-        // Apply dynamic classes without using CSS declarations in an HTML style tag
-        if (data.reserved && data.reserved.length) {
-            data.reserved.forEach(id => {
-                const el = document.getElementById(`admin-pc-${id}`);
-                if (el) {
-                    el.className = "btn btn-danger p-0 border border-secondary d-flex align-items-center justify-content-center";
-                    el.style.width = "46px";
-                    el.style.height = "46px";
-                    el.style.fontSize = "0.65rem";
-                    el.style.fontWeight = "800";
-                }
-            });
-        }
-        
-        if (data.warning && data.warning.length) {
-            data.warning.forEach(id => {
-                const el = document.getElementById(`admin-pc-${id}`);
-                if (el) {
-                    el.className = "btn btn-warning p-0 border border-secondary d-flex align-items-center justify-content-center";
-                    el.style.width = "46px";
-                    el.style.height = "46px";
-                    el.style.fontSize = "0.65rem";
-                    el.style.fontWeight = "800";
-                }
-            });
-        }
-        
-        if (data.pending && data.pending.length) {
-            data.pending.forEach(id => {
-                const el = document.getElementById(`admin-pc-${id}`);
-                if (el) {
-                    el.className = "btn btn-primary p-0 border border-secondary d-flex align-items-center justify-content-center";
-                    el.style.width = "46px";
-                    el.style.height = "46px";
-                    el.style.fontSize = "0.65rem";
-                    el.style.fontWeight = "800";
-                }
-            });
-        }
+        return btn;
     }
 
     function openPcModal(pcNumber) {
         document.getElementById('modalPcTitle').innerText = "PC-" + pcNumber;
-        document.getElementById('modalLabTitle').innerText = "Lab: " + document.getElementById('labSwitcher').value;
         document.getElementById('selectedPcNumber').value = pcNumber;
-        
-        var pcModal = new bootstrap.Modal(document.getElementById('pcSettingModal'));
-        pcModal.show();
+        new bootstrap.Modal(document.getElementById('pcSettingModal')).show();
     }
 
     async function processToggle(status) {
-        const pcNumber = document.getElementById('selectedPcNumber').value;
-        const lab = document.getElementById('labSwitcher').value;
-        
         const formData = new FormData();
-        formData.append('lab_name', lab);
-        formData.append('pc_number', pcNumber);
+        formData.append('lab_name', document.getElementById('labSwitcher').value);
+        formData.append('pc_number', document.getElementById('selectedPcNumber').value);
         formData.append('status', status);
 
-        try {
-            const response = await fetch('../action/admin_pc_control.php', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.text();
-            console.log("Response:", result);
-
-            bootstrap.Modal.getInstance(document.getElementById('pcSettingModal')).hide();
-            syncAdminDashboard();
-        } catch (error) {
-            console.error("Error toggling PC:", error);
-        }
+        await fetch('../action/admin_pc_control.php', { method: 'POST', body: formData });
+        bootstrap.Modal.getInstance(document.getElementById('pcSettingModal')).hide();
+        syncAdminDashboard();
     }
 
     window.onload = () => {
         syncAdminDashboard();
-        setInterval(syncAdminDashboard, 10000);
+        setInterval(syncAdminDashboard, 5000); // 5-second interval for real-time updates
     };
 </script>
 </body>
