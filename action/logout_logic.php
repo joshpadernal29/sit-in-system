@@ -17,7 +17,7 @@ if (isset($_POST['log_out'])){
 
     // finally destroy session
     session_destroy();
-    header("Location: ../index.php");
+    header("Location: ../index.php?logout=success");
     die();
 }
 
