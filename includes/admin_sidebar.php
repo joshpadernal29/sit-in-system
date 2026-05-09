@@ -284,9 +284,9 @@ body{
             </div>
 
         </div>
-
-        <form action="../action/logout_logic.php" method="post">
-            <button class="btn btn-primary w-100 mt-2">
+        <!--LOGOUT LOGIC-->
+        <form action="../action/logout_logic.php" method="post"> 
+            <button class="btn btn-primary w-100 mt-2" name='log_out'>
                 <i class="bi bi-box-arrow-right me-1"></i>
                 <span class="logout-text">Logout</span>
             </button>
@@ -296,28 +296,21 @@ body{
 
 </aside>
 
-<!-- ================= MAIN ================= -->
-<main class="main-content">
-    <h3>Admin Dashboard</h3>
-</main>
-
 <!-- ================= SCRIPT ================= -->
 <script>
+    const sidebar = document.getElementById("sidebar");
+    const toggle = document.getElementById("toggleSidebar");
+    const logo = document.getElementById("logoToggle");
 
-const sidebar = document.getElementById("sidebar");
-const toggle = document.getElementById("toggleSidebar");
-const logo = document.getElementById("logoToggle");
+    // toggle button (only expanded visible)
+    toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+    });
 
-// toggle button (only expanded visible)
-toggle.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
-
-// logo always toggles
-logo.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
-
+    // logo always toggles
+    logo.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+    });
 </script>
 
 </body>
