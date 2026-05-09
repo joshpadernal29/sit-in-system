@@ -53,7 +53,7 @@ $total_pages = ceil($total_rows / $limit);
     </style>
 </head>
 <body>
-    <?php include("../includes/adminHeader.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
 
     <main class="container py-3">
         <div class="row align-items-center mb-4">

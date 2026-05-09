@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <?php include("../includes/adminHeader.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
 
     <main class="container py-5">
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden mx-auto" style="max-width: 800px;">

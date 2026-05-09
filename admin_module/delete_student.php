@@ -60,7 +60,7 @@ if (!$student) {
 </head>
 <body class="bg-light">
 
-    <?php include("../includes/adminHeader.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
 
     <main class="container">
         <div class="card border-0 shadow-lg rounded-4 delete-card overflow-hidden">

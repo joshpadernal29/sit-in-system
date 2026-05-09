@@ -20,7 +20,7 @@ if (isset($_GET['search_id'])) {
 </head>
 <body class="bg-light">
 
-    <?php include("../includes/adminHeader.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
     
     <main class="container py-5">
         <div class="row justify-content-center">

@@ -219,15 +219,14 @@ body{
 
     <!-- NAV (ADMIN VERSION) -->
     <div class="sidebar-nav">
-
         <a href="adminDashboard.php" class="nav-link">
-            <i class="bi bi-house-door"></i>
-            <span>Home</span>
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
         </a>
 
         <a href="sitin_management.php" class="nav-link">
             <i class="bi bi-search"></i>
-            <span>Search</span>
+            <span>Search Student</span>
         </a>
 
         <a href="studentList.php" class="nav-link">
@@ -240,11 +239,30 @@ body{
             <span>Sit-in</span>
         </a>
 
-        <a href="sit_in_records.php" class="nav-link">
+        <a href="sit_in_reports.php" class="nav-link">
             <i class="bi bi-file-earmark-bar-graph"></i>
             <span>Reports</span>
         </a>
 
+        <a class="nav-link" href="sit_in_records.php">
+            <i class="bi bi-card-list"></i>
+            <span>Sit-in Records</span>
+        </a>
+
+        <a class="nav-link" href="sit_in_reports.php">
+           <i class="bi bi-newspaper"></i>
+            <span>Generate Reports</span>
+        </a>
+
+        <a class="nav-link" href="feedbacks.php">
+            <i class="bi bi-chat-left-text"></i>
+            <span>Student Feedbacks</span>
+        </a>
+
+        <a class="nav-link" href="admin_reservation.php">
+            <i class="bi bi-ticket-detailed"></i>
+            <span>Admin Reservation Management</span>
+        </a>   
     </div>
 
     <!-- FOOTER -->
