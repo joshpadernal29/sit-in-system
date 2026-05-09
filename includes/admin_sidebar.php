@@ -241,17 +241,12 @@ body{
 
         <a href="sit_in_reports.php" class="nav-link">
             <i class="bi bi-file-earmark-bar-graph"></i>
-            <span>Reports</span>
+            <span>Generate  Report</span>
         </a>
 
         <a class="nav-link" href="sit_in_records.php">
             <i class="bi bi-card-list"></i>
             <span>Sit-in Records</span>
-        </a>
-
-        <a class="nav-link" href="sit_in_reports.php">
-           <i class="bi bi-newspaper"></i>
-            <span>Generate Reports</span>
         </a>
 
         <a class="nav-link" href="feedbacks.php">
