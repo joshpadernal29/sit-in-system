@@ -4,235 +4,286 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include("../action/studentData.php"); // for session 
+include("../action/studentData.php");
 include("../action/Data_count.php");
 
 // get language used data
-$language_used = progLanguage($conn,$student_id );
-// Prepare the rows for language pie chart
+$language_used = progLanguage($conn,$student_id);
+
+// prepare pie chart data
 $rows = [];
 foreach ($language_used as $row) {
     $rows[] = "['" . $row['language'] . "', " . $row['language_count'] . "]";
 }
 $chartDataString = implode(',', $rows);
 
-
-// get sit in data for line charts
+// get sit in data for line chart
 $sit_in_rate = sit_in_rate($conn,$student_id);
-$data = [['Date', 'Sessions']]; 
 
+$data = [['Date', 'Sessions']];
 foreach ($sit_in_rate as $row) {
-    // Ensure the date is a string and rate is a number
-    $dateValue = (string)$row['sit_in_date'];
-    $rateValue = (int)$row['sit_in_rate'];
-    
-    $data[] = [$dateValue, $rateValue];
+    $data[] = [(string)$row['sit_in_date'], (int)$row['sit_in_rate']];
 }
 
 $jsonTable = json_encode($data);
-
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <title>Dashboard | Student Portal</title>
-    
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-        google.charts.load('current', {'packages':['corechart']});
-        google.charts.setOnLoadCallback(drawCharts);
 
-        function drawCharts() {
-            // Line Chart: Direct Data Input
-            var lineData = google.visualization.arrayToDataTable(
-                <?php echo $jsonTable ?>
-            );
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-            var lineOptions = {
-                curveType: 'function',
-                legend: { position: 'none' },
-                colors: ['#0d6efd'],
-                chartArea: { width: '90%', height: '75%' },
-                vAxis: { gridlines: { color: '#f0f0f0' }, minValue: 0 },
-                hAxis: { textStyle: { color: '#6c757d', fontSize: 11 } }
-            };
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
-            var lineChart = new google.visualization.LineChart(document.getElementById('line_chart_div'));
-            lineChart.draw(lineData, lineOptions);
+<title>Dashboard | Student Portal</title>
 
-            // 2. Pie Chart: Direct Data Input
-            var pieData = google.visualization.arrayToDataTable([
-                ['Language', 'Usage'],
-                <?php echo $chartDataString; ?>
-            ]);
+<!-- Google Charts -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 
-            var pieOptions = {
-                pieHole: 0.5,
-                colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14'],
-                chartArea: { width: '95%', height: '80%' },
-                legend: { position: 'bottom', textStyle: { fontSize: 11 } },
-                pieSliceText: 'none'
-            };
+<script type="text/javascript">
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawCharts);
 
-            var pieChart = new google.visualization.PieChart(document.getElementById('pie_chart_div'));
-            pieChart.draw(pieData, pieOptions);
-        }
-    </script>
+function drawCharts() {
 
-    <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { border: none; border-radius: 12px; transition: all 0.3s ease; }
-        .stat-card { border-bottom: 4px solid; }
-        .chart-container { min-height: 320px; width: 100%; }
-        
-        /* Rules Sidebar Styling */
-        .rules-column { background: #ffffff; border-left: 1px solid #e0e0e0; min-height: 100vh; }
-        .rule-card { 
-            background: #f8f9fa; 
-            border-radius: 10px; 
-            padding: 12px; 
-            margin-bottom: 12px; 
-            border-left: 4px solid #0d6efd;
-            display: flex;
-            align-items: flex-start;
-        }
-        .rule-card i { font-size: 1.2rem; margin-right: 12px; margin-top: 2px; }
-        .rule-text { font-size: 0.85rem; line-height: 1.4; color: #444; }
-    </style>
+    // LINE CHART
+    var lineData = google.visualization.arrayToDataTable(
+        <?= $jsonTable ?>
+    );
+
+    var lineOptions = {
+        curveType: 'function',
+        legend: { position: 'none' },
+        colors: ['#0d6efd'],
+        chartArea: { width: '92%', height: '80%' },
+        vAxis: { minValue: 0 },
+        backgroundColor: 'transparent'
+    };
+
+    var lineChart = new google.visualization.LineChart(document.getElementById('line_chart_div'));
+    lineChart.draw(lineData, lineOptions);
+
+    // PIE CHART
+    var pieData = google.visualization.arrayToDataTable([
+        ['Language', 'Usage'],
+        <?= $chartDataString ?>
+    ]);
+
+    var pieOptions = {
+        pieHole: 0.55,
+        colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14'],
+        chartArea: { width: '95%', height: '85%' },
+        legend: { position: 'bottom' },
+        pieSliceText: 'none'
+    };
+
+    var pieChart = new google.visualization.PieChart(document.getElementById('pie_chart_div'));
+    pieChart.draw(pieData, pieOptions);
+}
+</script>
+
+<style>
+
+/* ================= BASE ================= */
+body{
+    background-color: #f4f7f6;
+}
+
+/* ================= MAIN LAYOUT (SIDEBAR COMPATIBLE) ================= */
+.main-content{
+    margin-left:260px;
+    padding:1.5rem;
+    transition: margin-left .3s ease;
+}
+
+/* sidebar collapsed support */
+.sidebar.collapsed ~ .main-content{
+    margin-left:80px;
+}
+
+/* ================= PAGE HEADER ================= */
+.page-title{
+    font-weight:700;
+    color:#1f2937;
+}
+
+/* ================= KPI CARDS ================= */
+.kpi-card{
+    border:0;
+    border-radius:14px;
+    padding:18px;
+    background:#fff;
+    box-shadow:0 6px 20px rgba(0,0,0,.05);
+    height:100px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+
+.kpi-label{
+    font-size:.75rem;
+    text-transform:uppercase;
+    color:#6c757d;
+    font-weight:600;
+}
+
+.kpi-value{
+    font-size:1.7rem;
+    font-weight:700;
+}
+
+/* ================= CHART CARDS ================= */
+.chart-card{
+    background:#fff;
+    border:0;
+    border-radius:14px;
+    box-shadow:0 6px 20px rgba(0,0,0,.05);
+    padding:1rem;
+}
+
+.chart-title{
+    font-weight:600;
+    margin-bottom:.5rem;
+}
+
+/* chart size */
+.chart-box{
+    height:340px;
+}
+
+/* ================= RULES ================= */
+.rules-column{
+    background:#fff;
+    border-left:1px solid #dee2e6;
+    border-radius:14px;
+    box-shadow:0 6px 20px rgba(0,0,0,.05);
+    padding:1rem;
+}
+
+.rule-card{
+    background:#f8f9fa;
+    border-left:4px solid #0d6efd;
+    padding:10px;
+    border-radius:8px;
+    font-size:.85rem;
+    margin-bottom:10px;
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:991px){
+    .main-content{
+        margin-left:0 !important;
+    }
+
+    .rules-column{
+        border-left:none;
+        margin-top:1rem;
+    }
+}
+
+</style>
+
 </head>
+
 <body>
 
-    <?php include("../includes/studentHeader.php"); ?>
+<?php include("../includes/student_sidebar.php"); ?>
 
-    <main class="container-fluid">
-        <div class="row">
-            
-            <div class="col-lg-9 p-4 px-lg-5">
-                <h5 class="fw-bold mb-4 text-dark">Student Overview</h5>
-                
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="card shadow-sm stat-card border-info p-3">
-                            <small class="text-muted fw-bold">REMAINING SESSIONS</small>
-                            <h3 class="fw-bold mb-0 mt-1"><?php echo $student['sit_ins'] ?></h3>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm stat-card border-primary p-3">
-                            <small class="text-muted fw-bold">TOTAL LAB HOURS</small>
-                            <h3 class="fw-bold mb-0 mt-1">12.5</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card shadow-sm stat-card border-success p-3">
-                            <small class="text-muted fw-bold">STATUS</small>
-                            <h3 class="fw-bold mb-0 mt-1 text-success">Verified</h3>
-                        </div>
+<!-- ================= MAIN CONTENT ================= -->
+<main class="main-content">
+
+    <!-- PAGE TITLE -->
+    <div class="mb-4">
+        <h4 class="page-title">Student Dashboard</h4>
+        <small class="text-muted">Overview of your laboratory activity</small>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT CONTENT -->
+        <div class="col-lg-9">
+
+            <!-- KPI ROW -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Remaining Sessions</div>
+                        <div class="kpi-value text-primary"><?= $student['sit_ins'] ?></div>
                     </div>
                 </div>
 
-                <div class="row g-4">
-                    <div class="col-md-7">
-                        <div class="card shadow-sm p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h6 class="fw-bold m-0"><i class="bi bi-graph-up me-2"></i>Sit-in</h6>
-                            </div>
-                            <div id="line_chart_div" class="chart-container"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="card shadow-sm p-4">
-                            <h6 class="fw-bold mb-4"><i class="bi bi-pie-chart-fill me-2"></i>Programming Focus</h6>
-                            <div id="pie_chart_div" class="chart-container"></div>
-                        </div>
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Lab Hours</div>
+                        <div class="kpi-value">12.5</div>
                     </div>
                 </div>
+
+                <div class="col-md-4">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Status</div>
+                        <div class="kpi-value text-success">Verified</div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="col-lg-3 rules-column p-4 shadow-sm">
-                <div class="text-center mb-4">
-                    <img src="../assets/ccsmainlogo2.png" alt="UC Logo" width="50" class="mb-2"> <h6 class="fw-bold text-primary mb-0">LABORATORY POLICIES</h6>
-                    <small class="text-muted">University of Cebu</small>
-                </div>
+            <!-- CHARTS -->
+            <div class="row g-4">
 
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
-                        <span class="fw-bold small text-uppercase">General Rules</span>
-                    </div>
-                    <div class="rule-card shadow-sm border-primary">
-                        <div class="rule-text">Proper conduct must be maintained. Only authorized users are allowed. No eating, drinking, or loud conversations.</div>
+                <div class="col-md-7">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-graph-up me-1"></i> Sit-in Activity
+                        </div>
+                        <div id="line_chart_div" class="chart-box"></div>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-pc-display text-primary me-2"></i>
-                        <span class="fw-bold small text-uppercase">Laboratory Use</span>
-                    </div>
-                    <div class="rule-card shadow-sm border-primary">
-                        <div class="rule-text">Log in properly before use. Use your <b>assigned unit</b> only. Do not modify software or system settings.</div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-globe2 text-primary me-2"></i>
-                        <span class="fw-bold small text-uppercase">Internet & Files</span>
-                    </div>
-                    <div class="rule-card shadow-sm border-primary">
-                        <div class="rule-text">Academic use only. No illegal downloads. You are responsible for backing up your own files.</div>
+                <div class="col-md-5">
+                    <div class="chart-card">
+                        <div class="chart-title">
+                            <i class="bi bi-pie-chart-fill me-1"></i> Programming Focus
+                        </div>
+                        <div id="pie_chart_div" class="chart-box"></div>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bi bi-tools text-primary me-2"></i>
-                        <span class="fw-bold small text-uppercase">Equipment</span>
-                    </div>
-                    <div class="rule-card shadow-sm border-primary">
-                        <div class="rule-text">Handle equipment with care. Keep your area clean and organized before leaving.</div>
-                    </div>
-                </div>
-
-                <div class="alert alert-danger border-0 mt-3 py-2 shadow-sm" style="font-size: 0.75rem;">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                    <strong>Penalty:</strong> Violations may result in suspension of laboratory privileges.
-                </div>
             </div>
 
-            <style>
-                .rules-column { 
-                    background: #ffffff; 
-                    border-left: 1px solid #dee2e6; 
-                    max-height: 100vh; 
-                    overflow-y: auto; 
-                }
+        </div>
 
-                .rule-card { 
-                    background: #fdfdfd; 
-                    border-radius: 8px; 
-                    padding: 10px; 
-                    border-left: 3px solid #0d6efd;
-                    margin-bottom: 5px;
-                }
+        <!-- RIGHT RULES -->
+        <div class="col-lg-3">
 
-                .rule-text { 
-                    font-size: 0.8rem; 
-                    color: #495057; 
-                    line-height: 1.5;
-                }
-            </style>
+            <div class="rules-column">
 
-        </div> 
-    </main>
+                <div class="text-center mb-3">
+                    <img src="../assets/ccsmainlogo2.png" width="45">
+                    <h6 class="fw-bold text-primary mt-2">Laboratory Policies</h6>
+                    <small class="text-muted">University Guidelines</small>
+                </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                <div class="rule-card">Maintain proper conduct inside the laboratory.</div>
+                <div class="rule-card">Use assigned units only.</div>
+                <div class="rule-card">Academic-only internet usage.</div>
+                <div class="rule-card">Handle equipment responsibly.</div>
+
+                <div class="alert alert-danger mt-3 py-2 small">
+                    Violations may result in suspension of privileges.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
 </body>
 </html>

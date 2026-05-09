@@ -45,19 +45,21 @@ function fetchPcs($conn, $table, $lab, $status) {
     return $pcs;
 }
 
-// 4. Gather data using the exact "544" string
+// 4. Gather data separately for different visual states
 $reserved    = fetchPcs($conn, 'reservations', $lab, 'approved');
 $pending     = fetchPcs($conn, 'reservations', $lab, 'pending');
-$active      = fetchPcs($conn, 'reservations', $lab, 'active'); // Added to track current sit-ins
-$maintenance = fetchPcs($conn, 'pc_status',    $lab, 'unavailable');
+$active      = fetchPcs($conn, 'reservations', $lab, 'active'); 
 
-// 5. Return clean JSON
+// Fetch 'unavailable' for Yellow and 'maintenance' for Red
+$unavailable = fetchPcs($conn, 'pc_status',    $lab, 'unavailable'); 
+$maintenance = fetchPcs($conn, 'pc_status',    $lab, 'maintenance'); 
+
+// 5. Return updated JSON
 echo json_encode([
     "total"       => $total,
     "reserved"    => $reserved,
     "pending"     => $pending,
     "active"      => $active, 
-    "maintenance" => $maintenance,
-    "debug_count" => count($active), // Tells you how many are active
-    "raw_active"  => $active        // Shows exactly what IDs are in there
+    "unavailable" => $unavailable, // Will map to Yellow
+    "maintenance" => $maintenance  // Will map to Red
 ]);

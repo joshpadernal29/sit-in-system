@@ -44,13 +44,12 @@ $student_pk = $student['id'];
             <div class="card border border-dark rounded-0 shadow-sm">
                 <div class="card-body p-5 bg-white">
                     <div id="studentGridContainer" class="d-flex flex-wrap justify-content-center gap-4"></div>
-
-                    <div class="mt-5 d-flex flex-wrap gap-4 justify-content-center border-top pt-4">
-                        <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
-                        <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Reserved / Active</span>
-                        <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Pending</span>
-                        <span class="small fw-bold" style="color: #ea580c;"><i class="bi bi-square-fill me-1"></i> Under Maintenance</span>
-                    </div>
+                        <div class="d-flex flex-wrap gap-4 justify-content-center">
+                                    <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
+                                    <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Occupied / Active</span>
+                                    <span class="small fw-bold text-primary"><i class="bi bi-square-fill me-1"></i> Pending</span>
+                                    <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Maintenance</span>
+                        </div>
                 </div>
             </div>
         </div>
@@ -175,28 +174,40 @@ $student_pk = $student['id'];
     }
 
     function createPCUnit(id, data) {
+        const pcId = id.toString(); // Ensure we match against strings if needed
         const btn = document.createElement('div');
+        
+        // 1. Base Styles (Default Green)
         btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
         btn.style.width = "46px";
         btn.style.height = "46px";
         btn.style.fontSize = "0.65rem";
         btn.innerText = `PC-${id}`;
-        btn.onclick = () => openModal(id);
 
-        // This check ensures the PC stays RED for both reservations AND current sit-ins
-        const isOccupied = (data.reserved && data.reserved.includes(id)) || 
-                        (data.active && data.active.includes(id));
+        // 2. Data Mapping (Convert to Strings for safe comparison)
+        const isMaint    = data.maintenance && data.maintenance.map(String).includes(pcId);
+        const isUnavail  = data.unavailable && data.unavailable.map(String).includes(pcId);
+        const isOccupied = (data.active && data.active.map(String).includes(pcId)) || 
+                        (data.reserved && data.reserved.map(String).includes(pcId));
+        const isPending  = data.pending && data.pending.map(String).includes(pcId);
 
-        if (isOccupied) {
-            // Red for Occupied / Approved
+        // 3. Color Logic & Click Permission
+        if (isMaint || isOccupied) {
+            // RED: Maintenance or already sitting there
             btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
-        } else if (data.pending && data.pending.includes(id)) {
-            // Yellow for Pending
-            btn.className = btn.className.replace('btn-success', 'btn-warning') + " pe-none text-dark";
-        } else if (data.maintenance && data.maintenance.includes(id)) {
-            // Orange for Maintenance
-            btn.className = btn.className.replace('btn-success', '') + " pe-none text-white";
-            btn.style.backgroundColor = "#ea580c";
+        } 
+        else if (isPending) {
+            // BLUE: (Or your preferred color for pending requests)
+            btn.className = btn.className.replace('btn-success', 'btn-primary') + " pe-none";
+        } 
+        else if (isUnavail) {
+            // YELLOW: Admin manually set this to unavailable
+            btn.className = btn.className.replace('btn-success', 'btn-warning') + " text-dark pe-none";
+        } 
+        else {
+            // GREEN: This is the ONLY clickable state
+            btn.onclick = () => openModal(id);
+            btn.style.cursor = "pointer";
         }
 
         return btn;

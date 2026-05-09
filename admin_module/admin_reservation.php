@@ -202,7 +202,7 @@ $logsResult = getSystemLogs($conn);
         </div>
     </div>
 </div>
-
+<!--PC Availability Modal-->
 <div class="modal fade" id="pcSettingModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-0 border-dark">
@@ -267,32 +267,38 @@ $logsResult = getSystemLogs($conn);
     }
 
     function createPCUnit(id, data) {
+        const pcId = id.toString();
         const btn = document.createElement('div');
-        // Standard Green Setup
+        
+        // Base Styles
         btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
         btn.style.width = "46px";
         btn.style.height = "46px";
         btn.style.fontSize = "0.65rem";
         btn.innerText = `PC-${id}`;
+        
+        // ADMIN PRIVILEGE: Always clickable, regardless of color
         btn.onclick = () => openPcModal(id);
 
-        // Define status logic
-        const isOccupied = (data.reserved && data.reserved.map(String).includes(id.toString())) || 
-                    (data.active && data.active.map(String).includes(id.toString()));
+        // Data Mapping
+        const isMaint    = data.maintenance && data.maintenance.map(String).includes(pcId);
+        const isOccupied = (data.active && data.active.map(String).includes(pcId)) || 
+                        (data.reserved && data.reserved.map(String).includes(pcId));
+        const isUnavail  = data.unavailable && data.unavailable.map(String).includes(pcId);
+        const isPending  = data.pending && data.pending.map(String).includes(pcId);
 
-        const isPending = data.pending && data.pending.map(String).includes(id.toString());
-
-        const isMaint = (data.maintenance && data.maintenance.map(String).includes(id.toString())) || 
-                        (data.warning && data.warning.map(String).includes(id.toString()));
-
-        // Apply visual classes (ONLY one status at a time)
-        if (isOccupied) {
-            btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
+        // Apply Colors
+        if (isMaint || isOccupied) {
+            // Red: Maintenance or Occupied
+            btn.className = btn.className.replace('btn-success', 'btn-danger');
         } else if (isPending) {
+            // Blue: Pending Request
             btn.className = btn.className.replace('btn-success', 'btn-primary');
-        } else if (isMaint) {
+        } else if (isUnavail) {
+            // Yellow: Unavailable (Now visible)
             btn.className = btn.className.replace('btn-success', 'btn-warning') + " text-dark";
         }
+        // Default is Green (btn-success)
 
         return btn;
     }

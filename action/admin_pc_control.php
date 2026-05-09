@@ -98,3 +98,37 @@ if (isset($_GET['action']) && $_GET['action'] == 'reject') {
     header('Location: ../admin_module/admin_reservation.php?response=Rejected');
     exit();
 }
+
+
+// admin pc control (admin can: set pc to available,unavailable,maintenance)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $lab    = $_POST['lab_name'] ?? '';
+    $pc     = $_POST['pc_number'] ?? '';
+    $status = $_POST['status'] ?? ''; 
+
+    if (empty($lab) || empty($pc) || empty($status)) {
+        echo json_encode(["success" => false, "error" => "Missing data"]);
+        exit;
+    }
+
+    if ($status === 'available') {
+        // Remove the record to make the PC green
+        $sql = "DELETE FROM pc_status WHERE lab_name = ? AND pc_number = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "ss", $lab, $pc);
+    } else {
+        // Handles 'unavailable' (Yellow) and 'maintenance' (Red)
+        $sql = "INSERT INTO pc_status (lab_name, pc_number, status) 
+                VALUES (?, ?, ?) 
+                ON DUPLICATE KEY UPDATE status = VALUES(status)";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "sss", $lab, $pc, $status);
+    }
+
+    if (mysqli_stmt_execute($stmt)) {
+        echo json_encode(["success" => true]);
+    } else {
+        echo json_encode(["success" => false, "error" => mysqli_error($conn)]);
+    }
+    mysqli_stmt_close($stmt);
+}

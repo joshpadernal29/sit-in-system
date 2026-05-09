@@ -57,7 +57,7 @@ $posts = getPost($conn, 1);
 </head>
 
 <body class="bg-light">
-    <?php include("../includes/adminHeader.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
 
     <main class="container py-4">
         <div class="row g-3 mb-4">
