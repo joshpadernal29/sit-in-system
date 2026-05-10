@@ -86,73 +86,104 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* ================= SIDEBAR COMPATIBILITY ================= */
+        .main-content-wrapper {
+            margin-left: 260px; /* width of sidebar */
+            transition: margin-left 0.3s ease;
+        }
+
+        /* When sidebar is collapsed */
+        .sidebar.collapsed ~ .main-content-wrapper {
+            margin-left: 80px;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 991px) {
+            .main-content-wrapper {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Make inbox-list scrollable and detail pane fill height */
+        .inbox-wrapper {
+            height: calc(100vh - 65px);
+        }
+
+        .inbox-list {
+            flex-shrink: 0;
+        }
+
+        .inbox-detail {
+            flex: 1;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
 
-    <?php include("../includes/studentHeader.php"); ?>
+    <?php include("../includes/student_sidebar.php"); ?>
 
-    <div class="inbox-wrapper d-flex">
-        
-        <aside class="inbox-list d-flex flex-column">
-            <div class="p-3 sticky-top bg-white border-bottom shadow-sm">
-                <form action="" method="GET" class="row g-2">
-                    <div class="col-12">
-                        <div class="input-group input-group-sm border rounded-pill overflow-hidden bg-light">
-                            <span class="input-group-text border-0 bg-transparent ps-3"><i class="bi bi-calendar-event"></i></span>
-                            <input type="date" name="date" class="form-control border-0 bg-transparent shadow-none" value="<?= htmlspecialchars($date); ?>">
+    <div class="main-content-wrapper">
+        <div class="inbox-wrapper d-flex">
+            <aside class="inbox-list d-flex flex-column">
+                <div class="p-3 sticky-top bg-white border-bottom shadow-sm">
+                    <form action="" method="GET" class="row g-2">
+                        <div class="col-12">
+                            <div class="input-group input-group-sm border rounded-pill overflow-hidden bg-light">
+                                <span class="input-group-text border-0 bg-transparent ps-3"><i class="bi bi-calendar-event"></i></span>
+                                <input type="date" name="date" class="form-control border-0 bg-transparent shadow-none" value="<?= htmlspecialchars($date); ?>">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-8">
-                        <select name="priority" class="form-select form-select-sm rounded-pill border bg-light px-3 shadow-none">
-                            <option value="">All Priorities</option>
-                            <option value="urgent" <?= ($priority=='urgent')?'selected':'';?>>Urgent</option>
-                            <option value="academic" <?= ($priority=='academic')?'selected':'';?>>Academic</option>
-                            <option value="general" <?= ($priority=='general')?'selected':'';?>>General</option>
-                        </select>
-                    </div>
-                    <div class="col-4">
-                        <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold shadow-sm">Apply</button>
-                    </div>
-                </form>
-            </div>
-
-            <div class="flex-grow-1 py-2">
-                <?php foreach($posts as $post): ?>
-                <div class="list-item p-3 d-flex align-items-center" 
-                     id="item-<?= $post['id']; ?>"
-                     onclick="loadAnnouncement(this, <?= htmlspecialchars(json_encode($post)); ?>)">
-                    
-                    <div class="avatar-box rounded-circle bg-white d-flex align-items-center justify-content-center border shadow-sm">
-                        <img src="../assets/ccsmainlogo2.png" style="width: 25px;">
-                    </div>
-
-                    <div class="ms-3 overflow-hidden w-100">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;"><?= htmlspecialchars($post['title']); ?></h6>
-                            <span id="dot-<?= $post['id']; ?>" class="badge rounded-circle p-1 bg-primary d-none" style="height: 8px; width: 8px;"> </span>
+                        <div class="col-8">
+                            <select name="priority" class="form-select form-select-sm rounded-pill border bg-light px-3 shadow-none">
+                                <option value="">All Priorities</option>
+                                <option value="urgent" <?= ($priority=='urgent')?'selected':'';?>>Urgent</option>
+                                <option value="academic" <?= ($priority=='academic')?'selected':'';?>>Academic</option>
+                                <option value="general" <?= ($priority=='general')?'selected':'';?>>General</option>
+                            </select>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <p class="mb-0 text-muted small text-truncate" style="max-width: 150px;"><?= htmlspecialchars($post['message']); ?></p>
-                            <small class="text-muted fw-bold" style="font-size: 0.7rem;"><?= date('M d', strtotime($post['date_posted'])); ?></small>
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold shadow-sm">Apply</button>
                         </div>
-                    </div>
+                    </form>
                 </div>
-                <div class="mx-4 border-bottom opacity-50"></div>
-                <?php endforeach; ?>
-            </div>
-        </aside>
 
-        <article class="inbox-detail d-flex flex-column" id="detailPane">
-            <div class="m-auto text-center opacity-75">
-                <i class="bi bi-chat-square-quote display-1 text-light-emphasis mb-3"></i>
-                <h4 class="fw-bold">No Announcement Selected</h4>
-                <p class="text-muted">Click on a post from the sidebar to view details.</p>
-            </div>
-        </article>
+                <div class="flex-grow-1 py-2">
+                    <?php foreach($posts as $post): ?>
+                    <div class="list-item p-3 d-flex align-items-center" 
+                        id="item-<?= $post['id']; ?>"
+                        onclick="loadAnnouncement(this, <?= htmlspecialchars(json_encode($post)); ?>)">
+                        
+                        <div class="avatar-box rounded-circle bg-white d-flex align-items-center justify-content-center border shadow-sm">
+                            <img src="../assets/ccsmainlogo2.png" style="width: 25px;">
+                        </div>
 
+                        <div class="ms-3 overflow-hidden w-100">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 text-truncate fw-bold text-dark" style="font-size: 0.9rem;"><?= htmlspecialchars($post['title']); ?></h6>
+                                <span id="dot-<?= $post['id']; ?>" class="badge rounded-circle p-1 bg-primary d-none" style="height: 8px; width: 8px;"> </span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="mb-0 text-muted small text-truncate" style="max-width: 150px;"><?= htmlspecialchars($post['message']); ?></p>
+                                <small class="text-muted fw-bold" style="font-size: 0.7rem;"><?= date('M d', strtotime($post['date_posted'])); ?></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mx-4 border-bottom opacity-50"></div>
+                    <?php endforeach; ?>
+                </div>
+            </aside>
+
+            <article class="inbox-detail d-flex flex-column" id="detailPane">
+                <div class="m-auto text-center opacity-75">
+                    <i class="bi bi-chat-square-quote display-1 text-light-emphasis mb-3"></i>
+                    <h4 class="fw-bold">No Announcement Selected</h4>
+                    <p class="text-muted">Click on a post from the sidebar to view details.</p>
+                </div>
+            </article>
+        </div>
     </div>
-
     <script>
         function loadAnnouncement(element, data) {
             document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
