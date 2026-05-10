@@ -274,9 +274,9 @@ body{
             </div>
 
         </div>
-
+        <!--LOGOUT-->
         <form action="../action/logout_logic.php" method="post">
-            <button class="btn btn-primary w-100 mt-2">
+            <button class="btn btn-primary w-100 mt-2" name='log_out'">
                 <i class="bi bi-box-arrow-right me-1"></i>
                 <span class="logout-text">Logout</span>
             </button>
@@ -285,11 +285,6 @@ body{
     </div>
 
 </aside>
-
-<!-- ================= MAIN ================= -->
-<main class="main-content">
-    <h3>Dashboard Content</h3>
-</main>
 
 <!-- ================= SCRIPT ================= -->
 <script>
