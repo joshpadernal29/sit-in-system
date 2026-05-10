@@ -220,7 +220,7 @@ body{
     <!-- NAV (ADMIN VERSION) -->
     <div class="sidebar-nav">
         <a href="adminDashboard.php" class="nav-link">
-            <i class="bi bi-speedometer2"></i>
+            <i class="bi bi-grid-1x2-fill"></i>
             <span>Dashboard</span>
         </a>
 
