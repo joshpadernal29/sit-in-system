@@ -40,9 +40,22 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root { --slate-blue: #f8fafc; --msg-active: #ffffff; --border-color: #e2e8f0; }
-        body { height: 100vh; overflow: hidden; font-family: 'Inter', sans-serif; background: #fff; margin: 0; }
+        body{
+            min-height:100vh;
+            overflow-x:hidden;
+            font-family:'Inter',sans-serif;
+            background:#fff;
+            margin:0;
+        }
         
-        .inbox-wrapper { height: calc(100vh - 65px); } 
+        .inbox-wrapper{
+            height:calc(100vh - 3rem);
+            overflow:hidden;
+        }
+
+        #detailPane{
+            display:flex;
+        }
         
         /* Sidebar - Slate background for contrast against white cards */
         .inbox-list { 
@@ -81,42 +94,25 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         }
 
-        .inbox-detail { flex: 1; overflow-y: auto; background: #ffffff; }
+        .inbox-detail{
+            flex:1;
+            overflow-y:auto;
+            background:#fff;
+            position:relative;
+        }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
-        /* ================= SIDEBAR COMPATIBILITY ================= */
-        .main-content-wrapper {
-            margin-left: 260px; /* width of sidebar */
-            transition: margin-left 0.3s ease;
+        .main-content{
+            margin-left:260px;
+            height:100vh;
+            transition:.3s ease;
         }
 
-        /* When sidebar is collapsed */
-        .sidebar.collapsed ~ .main-content-wrapper {
-            margin-left: 80px;
-        }
-
-        /* Mobile responsiveness */
-        @media (max-width: 991px) {
-            .main-content-wrapper {
-                margin-left: 0 !important;
-            }
-        }
-
-        /* Make inbox-list scrollable and detail pane fill height */
-        .inbox-wrapper {
-            height: calc(100vh - 65px);
-        }
-
-        .inbox-list {
-            flex-shrink: 0;
-        }
-
-        .inbox-detail {
-            flex: 1;
-            overflow-y: auto;
+        .sidebar.collapsed ~ .main-content{
+            margin-left:80px;
         }
     </style>
 </head>
@@ -124,7 +120,7 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
     <?php include("../includes/student_sidebar.php"); ?>
 
-    <div class="main-content-wrapper">
+    <div class="main-content">
         <div class="inbox-wrapper d-flex">
             <aside class="inbox-list d-flex flex-column">
                 <div class="p-3 sticky-top bg-white border-bottom shadow-sm">
@@ -184,6 +180,7 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             </article>
         </div>
     </div>
+
     <script>
         function loadAnnouncement(element, data) {
             document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
@@ -224,7 +221,7 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
        
         document.addEventListener('DOMContentLoaded', function () {
             // We get the latestId from PHP in this page too
-            const currentAnnouncementId = "<?php echo $latest_id; ?>";
+            const currentAnnouncementId = "<?php echo isset($latest_id) ? $latest_id : 0; ?>";
             
             if (currentAnnouncementId !== "0") {
                 // Save this ID to localStorage to stop the blinking in the header
