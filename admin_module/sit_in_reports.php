@@ -143,13 +143,13 @@ $user_registered = countStudents($conn);
             <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
                 <div class="section-title mb-0"><i class="bi bi-table me-2 text-primary"></i>Sit-in Logs</div>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-danger px-3"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
-                    <button class="btn btn-sm btn-outline-success px-3"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="exportToPDF()"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+                    <button class="btn btn-sm btn-outline-success px-3" onclick="exportToExcel()"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
                 </div>
             </div>
             <!--GENERATED REPORT-->
             <div class="table-responsive mt-4">
-                <table class="table table-bordered table-striped">
+                <table id="Generated_report" class="table table-bordered table-striped">
                     <thead class="table-dark">
                         <tr>
                             <th>Student ID</th>
@@ -205,5 +205,80 @@ $user_registered = countStudents($conn);
 
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!--FOR exporting to PDF/excel file (reports)-->
+    <!-- For Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- For PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        // export to excel
+        function exportToExcel() {
+            // Select your table by ID
+            const table = document.getElementById("Generated_report");
+            
+            // Convert table to a workbook
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Sit-in Report" });
+            
+            // Trigger the download
+            XLSX.writeFile(wb, "sit_in_Report.xlsx");
+        }
+
+        // export to pdf
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // 1. Setup Dimensions
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const img = new Image();
+            img.src = '../assets/ccsmainlogo2.png'; // Make sure this path is correct
+
+            img.onload = function() {
+                // --- HEADER SECTION ---
+                
+                // 2. Center the Logo (assuming logo is 20mm wide)
+                const logoWidth = 20;
+                const logoX = (pageWidth - logoWidth) / 2;
+                doc.addImage(img, 'PNG', logoX, 10, logoWidth, 20); 
+
+                // 3. Center the Main Title
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.text("UC MAIN CCS LAB", pageWidth / 2, 38, { align: "center" });
+
+                // 4. Center the Report Type & Date
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.text("Sanciangko St., Cebu City, Philippines", pageWidth / 2, 44, { align: "center" });
+                
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "bold");
+                doc.text("SIT-IN SYSTEM GENERATED REPORT", pageWidth / 2, 52, { align: "center" });
+
+                // 5. Add a separator line
+                doc.setLineWidth(0.5);
+                doc.line(15, 55, pageWidth - 15, 55);
+
+                // --- TABLE SECTION ---
+                
+                doc.autoTable({ 
+                    html: '#Generated_report',
+                    startY: 60, // Start below the header info
+                    theme: 'grid',
+                    headStyles: { fillColor: [1, 33, 105] }, // UC Blue color (approx)
+                    styles: { fontSize: 9, cellPadding: 3 },
+                    // This ensures the table headers don't repeat over our custom logo on page 2
+                    margin: { top: 30 } 
+                });
+
+                // 6. Save File
+                doc.save("UC_Main_CCS_LAB_Report.pdf");
+            };
+        }
+
+
+    </script>
 </body>
 </html>
