@@ -82,18 +82,17 @@ function getSystemLogs($conn) {
 // capture the action from the url querystring
 
 // for approve request
-if (isset($_GET['action']) && $_GET['action'] == 'approve') {
-    // get id from the url
-    $id = (int)$_GET['id']; // parse to int to match db type
-    $sql = "UPDATE reservations SET status = 'approved', action = 'approved' WHERE id = $id";
+if (isset($_POST['approve'])) {
+    $student_pk = (int)$_POST['request_id']; // student pk
+    $sql = "UPDATE reservations SET status = 'approved', action = 'approved' WHERE id = $student_pk";
     mysqli_query($conn,$sql);
     header('Location: ../admin_module/admin_reservation.php?response=Approved');
     exit();
 }
 // for reject request
-if (isset($_GET['action']) && $_GET['action'] == 'reject') {
-    $id = (int)$_GET['id'];
-    $sql = "UPDATE reservations SET status = 'rejected', action = 'rejected' WHERE id = $id";
+if (isset($_POST['reject'])) {
+    $student_pk = (int)$_POST['request_id']; // student pk
+    $sql = "UPDATE reservations SET status = 'rejected', action = 'rejected' WHERE id = $student_pk";
     mysqli_query($conn,$sql);
     header('Location: ../admin_module/admin_reservation.php?response=Rejected');
     exit();
