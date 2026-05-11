@@ -6,7 +6,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 include("../action/admin_report.php"); // logic file for generate reports
 include("../config/database.php");
+include("../action/Data_count.php"); // get data for total sit_ins active sessions ....
 
+// for data cards
+$active_sessions = currentSitIns($conn);
+$total_Sessions = getTotalSessions($conn);
+$user_registered = countStudents($conn);
 
 ?>
 
@@ -116,19 +121,19 @@ include("../config/database.php");
             <div class="col-lg-4">
                 <div class="stats-card">
                     <div class="stats-icon bg-primary-subtle text-primary"><i class="bi bi-clipboard-data"></i></div>
-                    <div><h3 class="fw-bold mb-0">1,245</h3><small class="text-muted">Total Sit-ins</small></div>
+                    <div><h3 class="fw-bold mb-0"><?= $total_Sessions ?></h3><small class="text-muted">Total Sit-ins</small></div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="stats-card">
                     <div class="stats-icon bg-success-subtle text-success"><i class="bi bi-person-check-fill"></i></div>
-                    <div><h3 class="fw-bold mb-0">86</h3><small class="text-muted">Active Sessions</small></div>
+                    <div><h3 class="fw-bold mb-0"><?= $active_sessions ?></h3><small class="text-muted">Active Sessions</small></div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="stats-card">
-                    <div class="stats-icon bg-danger-subtle text-danger"><i class="bi bi-pc-display"></i></div>
-                    <div><h3 class="fw-bold mb-0">Lab 524</h3><small class="text-muted">Peak Laboratory</small></div>
+                    <div class="stats-icon bg-danger-subtle text-danger"><i class="bi bi-people"></i></div>
+                    <div><h3 class="fw-bold mb-0"><?= $user_registered ?></h3><small class="text-muted">Registered Users</small></div>
                 </div>
             </div>
         </div>
