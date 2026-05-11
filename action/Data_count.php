@@ -48,7 +48,6 @@ function getTotalSessions($conn) {
         $result = mysqli_stmt_get_result($getData);
         $row = mysqli_fetch_assoc($result);
         $total_sessions = $row['total_sessions'];// asign the single value to the total_sessions variable 
-        mysqli_close($conn);
 
         return $total_sessions;
     }
