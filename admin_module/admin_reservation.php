@@ -153,8 +153,64 @@ $logsResult = getSystemLogs($conn);
                                 </div>
                                 <div class="card-body p-2" style="max-height:500px; overflow:auto;">
                                     <?php while($pendingRequest = mysqli_fetch_assoc($row)): ?>
-                                        <div class="p-2 border mb-2 bg-light">
-                                            <div class="fw-bold small"><?= htmlspecialchars($pendingRequest['fullname']) ?></div>
+                                        <div class="p-3 border rounded mb-3 bg-light shadow-sm">
+                                            <!-- Header: Name & Lab -->
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-bold text-primary">
+                                                    <i class="fas fa-user me-1"></i> <?= htmlspecialchars($pendingRequest['fullname']) ?>
+                                                </span>
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-flask me-1"></i> LAB-<?= htmlspecialchars($pendingRequest['lab_name']) ?>
+                                                </span>
+                                            </div>
+
+                                            <!-- Details: PC Name and Schedule -->
+                                            <div class="row g-0 mt-3 pt-2 border-top align-items-center">
+                                                <!-- Left Side: PC Info -->
+                                                <div class="col-5 border-end">
+                                                    <div class="small text-muted mb-1 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.8px; font-weight: 700;">
+                                                        PC Reserved
+                                                    </div>
+                                                    <div class="d-inline-flex align-items-center px-2 py-1 rounded bg-white border">
+                                                        <i class="fas fa-desktop me-2 text-primary" style="font-size: 0.85rem;"></i> 
+                                                        <span class="fw-bold text-dark small"><?= htmlspecialchars($pendingRequest['pc_number']) ?></span>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Right Side: Schedule Info -->
+                                                <div class="col-7 ps-3">
+                                                    <div class="small text-muted mb-1 text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.8px; font-weight: 700;">
+                                                        Scheduled Date & Time
+                                                    </div>
+                                                    <div class="d-flex flex-column">
+                                                        <div class="fw-semibold text-dark small mb-0">
+                                                            <i class="far fa-calendar-check me-1 text-success"></i>
+                                                            <?= date('M d, Y', strtotime($pendingRequest['schedule_date'])) ?>
+                                                        </div>
+                                                        <div class="text-muted" style="font-size: 0.8rem;">
+                                                            <i class="far fa-clock me-1"></i>
+                                                            <?= date('h:i A', strtotime($pendingRequest['schedule_time'])) ?>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Action Buttons Form -->
+                                            <form action="../action/admin_pc_control.php" method="post" class="mt-3">
+                                                <input type="hidden" name="request_id" value="<?= $pendingRequest['id'] ?>">
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <button type="submit" name="approve" value="approve" class="btn btn-sm btn-success w-100 fw-bold">
+                                                            <i class="fas fa-check-circle me-1"></i> Approve
+                                                        </button>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <button type="submit" name="reject" value="reject" class="btn btn-sm btn-danger w-100 fw-bold">
+                                                            <i class="fas fa-times-circle me-1"></i> Reject
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
                                         </div>
                                     <?php endwhile; ?>
                                 </div>
