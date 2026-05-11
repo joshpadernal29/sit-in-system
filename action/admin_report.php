@@ -48,16 +48,16 @@ if (isset($_GET['generate_report'])) {
     $sql .= " ORDER BY sr.login_time DESC";
 
     // Prepare and Execute
-    $stmt = mysqli_prepare($conn,$sql);
-    if ($stmt) {
+    $getData = mysqli_prepare($conn,$sql);
+    if ($getData) {
         if (!empty($filters)) {
-            $stmt = mysqli_stmt_bind_param($stmt,$types,...$filters);
+            mysqli_stmt_bind_param($getData,$types,...$filters);
         }
     
-        $stmt = mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
 
-        mysqli_stmt_close($stmt);
+        mysqli_stmt_close($getData);
     }
     
 }

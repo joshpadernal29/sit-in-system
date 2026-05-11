@@ -3,6 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 $current_page = basename($_SERVER['PHP_SELF']);
+
+include("../action/admin_report.php"); // logic file for generate reports
+include("../config/database.php");
+
+
 ?>
 
 <!DOCTYPE html>
@@ -75,32 +80,32 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label text-muted small fw-bold">Start Date</label>
-                        <input type="date" class="form-control custom-input">
+                        <input type="date" class="form-control custom-input" name="start_date">
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label text-muted small fw-bold">End Date</label>
-                        <input type="date" class="form-control custom-input">
+                        <input type="date" class="form-control custom-input" name="end_date">
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label text-muted small fw-bold">Laboratory</label>
-                        <select class="form-select custom-input">
-                            <option>All Laboratories</option>
-                            <option>Lab 544</option>
-                            <option>Lab 542</option>
-                            <option>Lab 526</option>
+                        <select class="form-select custom-input" name="lab_name">
+                            <option value="All">All Laboratories</option>
+                            <option value="Lab 544">Lab 544</option>
+                            <option value="Lab 542">Lab 542</option>
+                            <option value="Lab 526">Lab 526</option>
                         </select>
                     </div>
                     <div class="col-lg-3 col-md-6">
                         <label class="form-label text-muted small fw-bold">Status</label>
-                        <select class="form-select custom-input">
-                            <option>All Status</option>
-                            <option>Completed</option>
-                            <option>Active</option>
+                        <select class="form-select custom-input" name="sit_in_status">
+                            <option value="All">All Status</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Active">Active</option>
                         </select>
                     </div>
                 </div>
                 <div class="mt-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary px-4 fw-bold">Generate Report</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold" name="generate_report">Generate Report</button>
                     <button type="reset" class="btn btn-light border px-4">Reset</button>
                 </div>
             </form>
@@ -137,28 +142,56 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <button class="btn btn-sm btn-outline-success px-3"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
                 </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="table align-middle custom-table">
-                    <thead>
+            <!--GENERATED REPORT-->
+            <div class="table-responsive mt-4">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
                         <tr>
                             <th>Student ID</th>
                             <th>Name</th>
-                            <th>Laboratory</th>
+                            <th>Labaratory</th>
                             <th>Login</th>
                             <th>Logout</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="fw-bold">2023-0012</td>
-                            <td>Juan Dela Cruz</td>
-                            <td>Lab 524</td>
-                            <td>08:00 AM</td>
-                            <td>10:00 AM</td>
-                            <td><span class="badge bg-success-subtle text-success px-3 py-2">Completed</span></td>
-                        </tr>
+                        <?php 
+                        if ($result instanceof mysqli_result && mysqli_num_rows($result) > 0):
+                            while ($row = mysqli_fetch_assoc($result)): 
+                        ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['student_id_str']); ?></td>
+                                <td><?php echo htmlspecialchars($row['fullname']); ?></td>
+                                <td><?php echo htmlspecialchars($row['lab']); ?></td>
+                                <td><?php echo date('M d, Y h:i A', strtotime($row['login_time'])); ?></td>
+                                <td>
+                                    <?php 
+                                        echo $row['logout_time'] 
+                                            ? date('M d, Y h:i A', strtotime($row['logout_time'])) 
+                                            : '<span class="badge bg-warning">Still In</span>'; 
+                                    ?>
+                                </td>
+                                <td>
+                                    <span class="badge <?php echo $row['status'] == 'Completed' ? 'bg-success' : 'bg-primary'; ?>">
+                                        <?php echo htmlspecialchars($row['status']); ?>
+                                    </span>
+                                </td>
+                            </tr>
+                        <?php 
+                            endwhile; 
+                        else: 
+                        ?>
+                            <tr> 
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <?php if (isset($_GET['generate_report'])): ?>
+                                        No records found for the selected filters.
+                                    <?php else: ?>
+                                        Select a date range and click "Generate Report" to view data.
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -167,10 +200,5 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- 
-       NOTE: The JavaScript for the sidebar toggle should ideally live inside 
-       your sidebar.php or a common footer.js so it works on every page.
-    -->
 </body>
 </html>
