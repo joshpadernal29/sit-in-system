@@ -252,6 +252,11 @@ body{
             <span>Announcements</span>
         </a>
 
+        <a href="student_testimonial.php" class="nav-link">
+            <i class="bi bi-chat-right-quote"></i>
+            <span>Testimonial</span>
+        </a>
+
     </div>
 
     <!-- FOOTER -->
