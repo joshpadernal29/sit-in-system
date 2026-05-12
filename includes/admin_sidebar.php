@@ -258,6 +258,12 @@ body{
             <i class="bi bi-ticket-detailed"></i>
             <span>Admin Reservation Management</span>
         </a>   
+
+        <a class="nav-link" href="admin_testimonial.php">
+            <i class="bi bi-chat-right-quote"></i>
+            <span>Manage Testimonials</span>
+        </a>
+
     </div>
 
     <!-- FOOTER -->
