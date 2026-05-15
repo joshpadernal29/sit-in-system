@@ -236,7 +236,7 @@ body{
 
         <a href="sit_in_list.php" class="nav-link">
             <i class="bi bi-person-video3"></i>
-            <span>Sit-in</span>
+            <span>Current Sit-in</span>
         </a>
 
         <a href="sit_in_reports.php" class="nav-link">
