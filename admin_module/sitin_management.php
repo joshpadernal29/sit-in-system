@@ -98,6 +98,14 @@ if (isset($_GET['search_id'])) {
                         </form>
                     </div>
                 </div>
+                <?php elseif (!empty($search_query)): ?>
+                <div class="alert alert-danger d-flex align-items-center shadow-sm border rounded-3 p-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-danger"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">No Student Found</h6>
+                        <p class="mb-0 small">We couldn't find any student matching the ID: <strong><?php echo htmlspecialchars($search_query); ?></strong>. Please double-check your entry and try again.</p>
+                    </div>
+                </div>
                 <?php endif; ?>
             </div>
         </div>
