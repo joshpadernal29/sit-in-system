@@ -207,7 +207,7 @@ body{
 
         <!-- LOGO TOGGLE -->
         <div class="sidebar-brand" id="logoToggle">
-            <img src="../assets/uclogo2.png">
+            <img src="../assets/ccsmainlogo2.png">
         </div>
 
         <!-- BUTTON -->
