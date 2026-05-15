@@ -98,8 +98,7 @@ $result = getAllTestimonials($conn);
                         <span class="text-muted small px-2">Show:</span>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-secondary px-3" name="all_requests">All</button>
-                            <button class="btn btn-outline-secondary px-3" name="pending_requests">Pending</button>
-                            <button class="btn btn-outline-secondary px-3 shadow-sm" name="approved_requests">Approved</button>
+                            <button class="btn btn-outline-secondary px-3" name="featured_requests">Featured</button>
                         </div>
                     </form
                 </div>
@@ -144,42 +143,41 @@ $result = getAllTestimonials($conn);
                                             }
                                         ?>
                                     </td>   
-                                    <!--TESTIOMIAL STATUS-->
-                                    <td class="text-center">
-                                        <?php 
-                                        $status = strtolower($row['status']);
-                                        if ($status == 'pending'): ?>
-                                            <span class="status-badge bg-warning-subtle text-dark border border-warning">
-                                                <i class="bi bi-clock-history me-1"></i> Pending
-                                            </span>
-                                        <?php elseif ($status == 'approved' || $status == 'published'): ?>
-                                            <span class="status-badge bg-success-subtle text-success border border-success">
-                                                <i class="bi bi-check-circle me-1"></i> Published
+                                    <!-- TESTIMONIAL STATUS -->
+                                    <td class="text-center align-middle">
+                                        <?php if ((int)$row['is_featured'] === 1): ?>
+                                            <!-- Featured Badge -->
+                                            <span class="status-badge bg-primary-subtle text-primary border border-primary fw-semibold px-2 py-1 rounded">
+                                                <i class="bi bi-star-fill me-1"></i> Featured
                                             </span>
                                         <?php else: ?>
-                                            <span class="status-badge bg-danger-subtle text-danger border border-danger">
-                                                <i class="bi bi-x-octagon me-1"></i> Rejected
+                                            <!-- Unfeatured Badge -->
+                                            <span class="status-badge bg-secondary-subtle text-secondary border border-secondary fw-semibold px-2 py-1 rounded">
+                                                <i class="bi bi-eye-slash me-1"></i> Unfeatured
                                             </span>
                                         <?php endif; ?>
                                     </td>
                                     <!--ACTION BUTTONS-->
-                                    <td class="text-center"> <!-- Changed from text-end to text-center -->
+                                    <td class="text-center">
                                         <form method="POST" action="" class="d-inline-flex justify-content-center gap-2">
+                                            <!-- Hidden input for the student pk and testimonial pk -->
                                             <input type="hidden" name="feedback_id" value="<?= $row['student_pk']; ?>">
+                                            <input type="hidden" name="testimonial_id" value="<?= $row['id']; ?>">
 
-                                            <?php if ($row['is_featured'] == 0): ?>
-                                                <button type="submit" name="action" value="feature" class="btn btn-sm btn-primary shadow-sm">
-                                                    <i class="bi bi-megaphone-fill"></i> 
-                                                    <span class="d-none d-xl-inline">Post to Landing</span>
-                                                </button>
-                                            <?php else: ?>
-                                                <button type="submit" name="action" value="unfeature" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-archive-fill"></i> 
-                                                    <span class="d-none d-xl-inline">Remove</span>
-                                                </button>
-                                            <?php endif; ?>
+                                            <!-- 1. Feature Button -->
+                                            <button type="submit" name="action" value="feature" class="btn btn-sm btn-success shadow-sm" title="Mark as Featured">
+                                                <i class="bi bi-megaphone-fill"></i> 
+                                                <span class="d-none d-xl-inline">Feature</span>
+                                            </button>
 
-                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-light border text-danger" onclick="return confirm('Delete permanently?')">
+                                            <!-- 2. Unfeature Button -->
+                                            <button type="submit" name="action" value="unfeature" class="btn btn-sm btn-outline-secondary" title="Remove Feature Status">
+                                                <i class="bi bi-archive-fill"></i> 
+                                                <span class="d-none d-xl-inline">Unfeature</span>
+                                            </button>
+
+                                            <!-- 3. Delete Button -->
+                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-light border text-danger" title="Delete Permanently" onclick="return confirm('Delete permanently?')">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
