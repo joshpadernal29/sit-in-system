@@ -1,3 +1,15 @@
+<?php
+include("config/database.php");
+include("action/testimonials.php");
+
+// get featured testimonials
+$testimonials = getFeaturedTestimonials($conn,3); // limit to 3 testimnials
+$featured_testimonials = [];
+while ($row = mysqli_fetch_assoc($testimonials)) {
+    $featured_testimonials[] = $row;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 
@@ -155,7 +167,7 @@
         </div>
     </section>
 
-    <!-- 3. REDESIGNED CLEAN TESTIMONIALS SECTION -->
+    <!-- 3. DYNAMIC CLEAN TESTIMONIALS SECTION -->
     <section id="community" class="py-5 bg-body">
         <div class="container px-5 my-5">
             <div class="row justify-content-between align-items-center mb-5">
@@ -170,51 +182,54 @@
 
             <!-- Elegant Typography Centered Grid -->
             <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-warning small mb-3"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-                            <p class="text-body small lh-base mb-4">"The absolute best feature is reserving a PC ahead of time. I can lock down my preferred development computer terminal straight from my mobile browser."</p>
-                        </div>
-                        <div class="d-flex align-items-center pt-3 border-top border-light-subtle">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2.5 small" style="width: 32px; height: 32px; font-size: 0.75rem;">JD</div>
-                            <div>
-                                <h6 class="mb-0 fw-bold small">John Doe</h6>
-                                <span class="text-body-secondary d-block" style="font-size: 0.7rem;">IT Major</span>
+                <?php if (empty($featured_testimonials)): ?>
+                    <!-- Fallback view if no testimonials are currently flagged as featured -->
+                    <div class="col-12 text-center py-5">
+                        <p class="text-body-secondary italic mb-0">No featured testimonials found at this moment.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($featured_testimonials as $item): ?>
+                        <div class="col-md-4">
+                            <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <!-- Dynamic Star Rating Render engine -->
+                                    <div class="text-warning small mb-3">
+                                        <?php 
+                                        $rating = floatval($item['rating']);
+                                        for ($i = 1; $i <= 5; $i++) {
+                                            if ($i <= $rating) {
+                                                echo '<i class="bi bi-star-fill"></i>';
+                                            } elseif ($i - 0.5 <= $rating) {
+                                                echo '<i class="bi bi-star-half"></i>';
+                                            } else {
+                                                echo '<i class="bi bi-star"></i>';
+                                            }
+                                        }
+                                        ?>
+                                    </div>
+                                    <p class="text-body small lh-base mb-4">
+                                        "<?= htmlspecialchars($item['content']) ?>"
+                                    </p>
+                                </div>
+                                <div class="d-flex align-items-center pt-3 border-top border-light-subtle">
+                                    <?php
+                                    $fullname = !empty($item['fullname']) ? trim($item['fullname']) : 'Anonymous';                    
+                                    $defaultIconPath = "../assets/default_profile.jpg";
+                                    ?>
+                                    <div class="me-3 flex-shrink-0" style="width: 32px; height: 32px;">
+                                        <img src="<?= $defaultIconPath ?>" 
+                                            alt="<?= htmlspecialchars($fullname) ?>'s profile picture" 
+                                            class="rounded-circle border border-light-subtle w-100 h-100 object-fit-cover">
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h6 class="mb-0 fw-bold small text-truncate"><?= htmlspecialchars($fullname) ?></h6>
+                                        <span class="text-body-secondary d-block text-truncate" style="font-size: 0.7rem;"><?= htmlspecialchars($item['course_year']) ?></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-warning small mb-3"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
-                            <p class="text-body small lh-base mb-4">"Registering was practically instant. Being able to track my remaining balance directly inside my portal completely beats manual logbooks."</p>
-                        </div>
-                        <div class="d-flex align-items-center pt-3 border-top border-light-subtle">
-                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2.5 small" style="width: 32px; height: 32px; font-size: 0.75rem;">MS</div>
-                            <div>
-                                <h6 class="mb-0 fw-bold small">Maria Santos</h6>
-                                <span class="text-body-secondary d-block" style="font-size: 0.7rem;">CS Student</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div class="text-warning small mb-3"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></div>
-                            <p class="text-body small lh-base mb-4">"Adding specific room-level feedback during check-out lets the administrators know right away if a keyboard or mouse breaks down on a certain node position."</p>
-                        </div>
-                        <div class="d-flex align-items-center pt-3 border-top border-light-subtle">
-                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2.5 small" style="width: 32px; height: 32px; font-size: 0.75rem;">AS</div>
-                            <div>
-                                <h6 class="mb-0 fw-bold small">Alex Smith</h6>
-                                <span class="text-body-secondary d-block" style="font-size: 0.7rem;">CpE Senior</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </section>
