@@ -70,19 +70,39 @@ body{
     border-bottom:1px solid var(--bs-border-color-translucent);
 }
 
-/* LOGO (clickable) */
-.sidebar-brand{
+/* LOGO WRAPPER ENGINE (Symmetrical to Login/Register Circles) */
+.sidebar-brand-wrapper {
     cursor:pointer;
+    width: 50px;
+    height: 50px;
+    background-color: transparent; /* Seamless with sidebar bg in light mode */
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, width 0.3s, height 0.3s;
 }
 
-.sidebar-brand img{
-    width:38px;
-    height:38px;
-    transition: transform 0.2s ease;
+.sidebar-brand-wrapper img {
+    position: relative;
+    z-index: 10 !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
-[data-bs-theme="dark"] .sidebar-brand img {
-    filter: brightness(1.1) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.2));
+/* --- Dark Mode Configuration Override for Sidebar Disk --- */
+[data-bs-theme="dark"] .sidebar-brand-wrapper {
+    background-color: #ffffff !important; /* Pure white backing disk */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Adjust top padding distribution when collapsed to maintain perfect balance */
+.sidebar.collapsed .sidebar-top {
+    justify-content: center;
+    padding: 1rem 0;
 }
 
 /* ================= TOGGLE BUTTON (FIXED) ================= */
@@ -121,7 +141,7 @@ body{
 
     transition:.2s;
     margin-bottom:6px;
-    position: relative; /* Added relative positioning to handle notification badges properly */
+    position: relative;
 }
 
 /* hide text when collapsed */
@@ -231,8 +251,8 @@ body{
     <!-- TOP -->
     <div class="sidebar-top">
 
-        <!-- LOGO (TOGGLES SIDEBAR) -->
-        <div class="sidebar-brand" id="logoToggle">
+        <!-- UNIFIED CIRCULAR LOGO WRAPPER CONTAINER -->
+        <div class="sidebar-brand-wrapper rounded-circle" id="logoToggle">
             <img src="../assets/ccsmainlogo2.png" alt="Logo">
         </div>
 
