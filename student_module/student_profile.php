@@ -54,17 +54,17 @@ if ($student === null) {
                         <div class="profile-header-bg"></div>
                         <div class="card-body text-center profile-avatar-container">
                             <img src="../assets/default_profile.jpg" class="rounded-circle border border-4 border-white shadow-sm mb-3" width="120" height="120">
-                            <h4 class="fw-bold mb-1"><?= $student['firstname'] . " " . $student['lastname']; ?></h4>
-                            <p class="text-muted small mb-3"><?= $student['student_id']; ?></p>
+                            <h4 class="fw-bold mb-1"><?= htmlspecialchars($student['firstname'] . " " . $student['lastname']); ?></h4>
+                            <p class="text-muted small mb-3"><?= htmlspecialchars($student['student_id']); ?></p>
                             <hr>
                             <div class="text-start px-3">
                                 <label class="small text-uppercase fw-bold text-muted">Current Course</label>
-                                <p class="fw-semibold"><?= $student['course'] . " - Year " . $student['year_level']; ?></p>
+                                <p class="fw-semibold"><?= htmlspecialchars($student['course'] . " - Year " . $student['year_level']); ?></p>
                             </div>
                             <hr>
                             <div class="text-start px-3">
                                 <label class="small text-uppercase fw-bold text-muted">Sessions Available</label>
-                                <p class="fw-semibold"><?= $student['sit_ins']; ?></p>
+                                <p class="fw-semibold"><?= htmlspecialchars($student['sit_ins']); ?></p>
                             </div>
                         </div>
                     </div>
@@ -77,12 +77,22 @@ if ($student === null) {
                             <a href="studentDashboard.php" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
                         </div>
 
+                        <!-- FEEDBACK NOTIFICATION ALERTS -->
                         <?php if (isset($_GET['update']) && $_GET['update'] == 'success'): ?>
                             <div class="alert alert-success d-flex align-items-center"><i class="bi bi-check-circle-fill me-2"></i>Profile updated successfully!</div>
+                        <?php elseif (isset($_GET['error'])): ?>
+                            <div class="alert alert-danger d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                <?php
+                                    if($_GET['error'] == 'password_mismatch') echo "Error: Passwords do not match.";
+                                    elseif($_GET['error'] == 'password_too_short') echo "Error: Password must be at least 8 characters long.";
+                                    else echo "An error occurred while updating your records.";
+                                ?>
+                            </div>
                         <?php endif; ?>
 
-                        <form action="../action/student_profile_logic.php" method="POST">
-                            <input type="hidden" name="id_to_update" value="<?= $student['student_id']; ?>">
+                        <form action="../action/student_profile_logic.php" method="POST" id="profileForm">
+                            <input type="hidden" name="id_to_update" value="<?= htmlspecialchars($student['student_id']); ?>">
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label fw-semibold text-muted">First Name</label>
@@ -113,6 +123,27 @@ if ($student === null) {
                                         <option value="4" <?= ($student['year_level'] == '4') ? 'selected' : ''; ?>>4th Year</option>
                                     </select>
                                 </div>
+
+                                <!-- PASSWORD COMPONENT SECTION -->
+                                <div class="col-12 mt-4">
+                                    <div class="p-3 bg-body-tertiary border rounded-3">
+                                        <h5 class="fw-bold mb-1 text-body">Security Settings</h5>
+                                        <p class="text-muted small mb-3">Leave these fields completely blank if you do not want to alter your current dashboard password.</p>
+                                        
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold text-muted">New Password</label>
+                                                <input type="password" name="password" id="password" class="form-control" placeholder="Min. 6 characters">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold text-muted">Confirm New Password</label>
+                                                <input type="password" name="confirm_password" id="confirm_password" class="form-control" placeholder="Re-type password">
+                                                <div class="invalid-feedback">Passwords do not match!</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="col-12 mt-4 pt-3 border-top">
                                     <button type="submit" name="update_profile" class="btn btn-primary btn-lg px-5">Save Changes</button>
                                 </div>
@@ -125,5 +156,28 @@ if ($student === null) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- FRONTEND JAVASCRIPT VALIDATION INTERCEPTOR -->
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', function (e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const confirmInput = document.getElementById('confirm_password');
+
+            if (password.length > 0) {
+                if (password.length < 6) {
+                    e.preventDefault();
+                    alert('Password change blocked: The password Length must be at least 6 characters long.');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    confirmInput.classList.add('is-invalid');
+                } else {
+                    confirmInput.classList.remove('is-invalid');
+                }
+            }
+        });
+    </script>
 </body>
 </html>
