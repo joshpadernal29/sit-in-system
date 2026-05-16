@@ -1,5 +1,5 @@
 <?php
-include("../config/database.php");
+include(__DIR__. "/../config/database.php");
 
 // submit testimonial (student)
 $message = "";
@@ -113,4 +113,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $_SERVER['PHP_SELF']);
         exit();
     }
+}
+
+// Fetch only the testimonials that have been explicitly featured by the admin setup
+function getFeaturedTestimonials($conn,$limit) {
+    $sql = "SELECT  t.id,
+                    t.student_pk,
+                    t.content,
+                    t.rating,
+                    CONCAT(st.firstname, ' ' ,st.lastname) AS fullname,
+                    CONCAT(st.course, '-' ,st.year_level) AS course_year
+                    FROM testimonials t
+                    LEFT JOIN students st ON t.student_pk = st.id
+                    WHERE status = 'featured' AND is_featured = 1
+                    ORDER BY t.id DESC
+                    LIMIT ?";
+    $getData = mysqli_prepare($conn,$sql);
+    if ($getData) {
+        mysqli_stmt_bind_param($getData,'i',$limit);
+        mysqli_stmt_execute($getData);
+        $result = mysqli_stmt_get_result($getData);
+        mysqli_stmt_close($getData);
+        return $result;
+    } 
+    return false;
 }
