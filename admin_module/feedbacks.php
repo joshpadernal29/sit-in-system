@@ -3,8 +3,21 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 include('../config/database.php');
 include('../action/sit_in.php');
 
-$feedback_list = getFeedbacks($conn); 
+// Grab the filter parameter from the URL query string if it exists
+$filter_cat = $_GET['filter_cat'] ?? '';
+
+// Pass the filter category directly into your updated backend function
+$feedback_list = getFeedbacks($conn, $filter_cat); 
 $total_rows = mysqli_num_rows($feedback_list);
+
+// Fetch all the IDs into an array for JavaScript badge tracking
+$all_ids = [];
+if($total_rows > 0) {
+    while($row = mysqli_fetch_assoc($feedback_list)) {
+        $all_ids[] = $row['id'];
+    }
+    mysqli_data_seek($feedback_list, 0); // Reset pointer back to zero for the HTML loop
+}
 ?>
 
 <!DOCTYPE html>
@@ -29,7 +42,6 @@ body{
     --sidebar-collapsed: 80px;
 }
 
-/* SHIFT CONTENT TO FIT SIDEBAR */
 .inbox-wrapper{
     margin-left: var(--sidebar-width);
     display:flex;
@@ -39,7 +51,6 @@ body{
     transition: margin-left .3s ease;
 }
 
-/* when sidebar collapses */
 .sidebar.collapsed ~ .inbox-wrapper{
     margin-left: var(--sidebar-collapsed);
 }
@@ -52,7 +63,6 @@ body{
     background:#ffffff;
 }
 
-/* sticky filter */
 .inbox-list .p-3{
     position: sticky;
     top: 0;
@@ -95,6 +105,10 @@ body{
     bottom:0;
     width:4px;
     background:#0d6efd;
+}
+
+.unread-feedback-highlight {
+    background-color: rgba(13, 110, 253, 0.03);
 }
 
 /* ================= AVATAR ================= */
@@ -154,44 +168,53 @@ body{
         <div class="p-3">
             <form method="GET" class="row g-2">
                 <div class="col-8">
+                    <!-- Kept clean fallback tracking using current inline ternary variables -->
                     <select name="filter_cat" class="form-select form-select-sm bg-light border-0 rounded-3">
                         <option value="">All Categories</option>
-                        <option value="Hardware">Hardware</option>
-                        <option value="Software">Software</option>
-                        <option value="Environment">Environment</option>
+                        <option value="Hardware" <?= ($filter_cat == 'Hardware') ? 'selected' : ''; ?>>Hardware</option>
+                        <option value="Software" <?= ($filter_cat == 'Software') ? 'selected' : ''; ?>>Software</option>
+                        <option value="Environment" <?= ($filter_cat == 'Environment') ? 'selected' : ''; ?>>Environment</option>
                     </select>
                 </div>
                 <div class="col-4">
-                    <button class="btn btn-sm btn-primary w-100 rounded-3">Filter</button>
+                    <button type="submit" class="btn btn-sm btn-primary w-100 rounded-3">Filter</button>
                 </div>
             </form>
         </div>
 
-        <?php if($total_rows > 0): ?>
-            <?php while($row = mysqli_fetch_assoc($feedback_list)): ?>
-                <div class="list-item"
-                     onclick="showDetail(this, <?php echo htmlspecialchars(json_encode($row)); ?>)">
+        <div id="feedbackItemsContainer">
+            <?php if($total_rows > 0): ?>
+                <?php while($row = mysqli_fetch_assoc($feedback_list)): ?>
+                    <div class="list-item" 
+                         id="feedback-item-<?= $row['id']; ?>"
+                         onclick="showDetail(this, <?php echo htmlspecialchars(json_encode($row)); ?>)">
 
-                    <div class="d-flex justify-content-between mb-1">
-                        <span class="cat-pill bg-primary-subtle text-primary">
-                            <?php echo $row['category']; ?>
-                        </span>
-                        <small class="text-muted">
-                            <?php echo date('M d, Y | h:i A', strtotime($row['submitted_at'])); ?>
-                        </small>
+                        <div class="d-flex justify-content-between mb-1 align-items-center">
+                            <span class="cat-pill bg-primary-subtle text-primary">
+                                <?php echo $row['category']; ?>
+                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span id="badge-admin-<?= $row['id']; ?>" class="badge rounded-pill bg-danger d-none animate-fade-in" style="font-size: 0.6rem;">NEW</span>
+                                <small class="text-muted">
+                                    <?php echo date('M d, Y | h:i A', strtotime($row['submitted_at'])); ?>
+                                </small>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-1">
+                            <?php echo htmlspecialchars($row['fullname']); ?>
+                        </h6>
+
+                        <p class="text-muted small mb-0 text-truncate">
+                            <?php echo htmlspecialchars($row['message']); ?>
+                        </p>
+
                     </div>
-
-                    <h6 class="fw-bold mb-1">
-                        <?php echo htmlspecialchars($row['fullname']); ?>
-                    </h6>
-
-                    <p class="text-muted small mb-0 text-truncate">
-                        <?php echo htmlspecialchars($row['message']); ?>
-                    </p>
-
-                </div>
-            <?php endwhile; ?>
-        <?php endif; ?>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="p-4 text-center text-muted small">No feedback found matching filter parameters.</div>
+            <?php endif; ?>
+        </div>
 
     </aside>
 
@@ -206,15 +229,43 @@ body{
 </div>
 
 <script>
+let readFeedbacks = JSON.parse(localStorage.getItem('readFeedbackIds')) || [];
+
+function initBadges() {
+    const systemIds = <?php echo json_encode($all_ids); ?> || [];
+    
+    systemIds.forEach(id => {
+        if (!readFeedbacks.includes(id)) {
+            const badge = document.getElementById('badge-admin-' + id);
+            const cardElement = document.getElementById('feedback-item-' + id);
+            
+            if (badge) badge.classList.remove('d-none');
+            if (cardElement) cardElement.add('unread-feedback-highlight');
+        }
+    });
+}
+
 function showDetail(element, data) {
     document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
     element.classList.add('active');
+
+    const badge = document.getElementById('badge-admin-' + data.id);
+    if(badge) badge.classList.add('d-none');
+    
+    element.classList.remove('unread-feedback-highlight');
+
+    if (!readFeedbacks.includes(data.id)) {
+        readFeedbacks.push(data.id);
+        localStorage.setItem('readFeedbackIds', JSON.stringify(readFeedbacks));
+    }
 
     const date = new Date(data.submitted_at);
     const formattedDate = date.toLocaleDateString('en-US', {
         month:'long', day:'numeric', year:'numeric',
         hour:'2-digit', minute:'2-digit', hour12:true
     });
+    
+    window.dispatchEvent(new Event('storage'));
 
     document.getElementById('detailPane').innerHTML = `
         <div class="d-flex align-items-center mb-4">
@@ -234,6 +285,8 @@ function showDetail(element, data) {
         </div>
     `;
 }
+
+document.addEventListener('DOMContentLoaded', initBadges);
 </script>
 
 </body>

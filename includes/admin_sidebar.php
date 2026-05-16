@@ -3,7 +3,21 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+include(__DIR__ . '/../config/database.php');
+
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// 1. Query the database to fetch ALL existing feedback IDs
+$feedback_id_query = "SELECT id FROM feedbacks";
+$feedback_id_result = mysqli_query($conn, $feedback_id_query);
+$all_feedback_ids = [];
+
+if ($feedback_id_result) {
+    while ($row = mysqli_fetch_assoc($feedback_id_result)) {
+        $all_feedback_ids[] = (int)$row['id'];
+    }
+}
+$all_feedback_ids_json = json_encode($all_feedback_ids);
 ?>
 
 <!DOCTYPE html>
@@ -41,6 +55,7 @@ body{
     flex-direction:column;
 
     transition:.3s ease;
+    z-index: 1040;
 }
 
 /* COLLAPSED */
@@ -85,6 +100,7 @@ body{
 .sidebar-nav{
     flex:1;
     padding:1rem;
+    overflow-y: auto;
 }
 
 .nav-link{
@@ -101,6 +117,7 @@ body{
     transition:.2s;
     margin-bottom:6px;
     text-decoration:none;
+    position: relative; /* Setup positioning scope context for badge placement alignment */
 }
 
 /* hover */
@@ -219,52 +236,59 @@ body{
 
     <!-- NAV (ADMIN VERSION) -->
     <div class="sidebar-nav">
-        <a href="adminDashboard.php" class="nav-link">
+        <a href="adminDashboard.php" class="nav-link <?= ($current_page == 'adminDashboard.php') ? 'active' : ''; ?>">
             <i class="bi bi-grid-1x2-fill"></i>
             <span>Dashboard</span>
         </a>
 
-        <a href="sitin_management.php" class="nav-link">
+        <a href="sitin_management.php" class="nav-link <?= ($current_page == 'sitin_management.php') ? 'active' : ''; ?>">
             <i class="bi bi-search"></i>
             <span>Search Student</span>
         </a>
 
-        <a href="studentList.php" class="nav-link">
+        <a href="studentList.php" class="nav-link <?= ($current_page == 'studentList.php') ? 'active' : ''; ?>">
             <i class="bi bi-people"></i>
             <span>Students</span>
         </a>
 
-        <a href="sit_in_list.php" class="nav-link">
+        <a href="sit_in_list.php" class="nav-link <?= ($current_page == 'sit_in_list.php') ? 'active' : ''; ?>">
             <i class="bi bi-person-video3"></i>
             <span>Current Sit-in</span>
         </a>
 
-        <a href="sit_in_reports.php" class="nav-link">
+        <a href="sit_in_reports.php" class="nav-link <?= ($current_page == 'sit_in_reports.php') ? 'active' : ''; ?>">
             <i class="bi bi-file-earmark-bar-graph"></i>
             <span>Generate  Report</span>
         </a>
 
-        <a class="nav-link" href="sit_in_records.php">
+        <a href="sit_in_records.php" class="nav-link <?= ($current_page == 'sit_in_records.php') ? 'active' : ''; ?>">
             <i class="bi bi-card-list"></i>
             <span>Sit-in Records</span>
         </a>
 
-        <a class="nav-link" href="feedbacks.php">
+        <!-- ================= FEEDBACK NAVIGATION WITH DYNAMIC BADGES ================= -->
+        <a href="feedbacks.php" class="nav-link <?= ($current_page == 'feedbacks.php') ? 'active' : ''; ?>">
             <i class="bi bi-chat-left-text"></i>
             <span>Student Feedbacks</span>
+
+            <!-- Expanded State Counter Pill -->
+            <span id="feedbackCountBadge" class="badge rounded-pill bg-danger ms-auto d-none" style="font-size: 0.75rem;">0</span>
+            
+            <!-- Collapsed State Floating Dot Minimalist Pip Indicator -->
+            <span id="feedbackDotBadge" class="position-absolute top-0 start-50 translate-middle p-1 bg-danger border border-light rounded-circle d-none" style="margin-left: 10px; margin-top: 10px;"></span>
         </a>
 
-        <a class="nav-link" href="admin_reservation.php">
+        <a href="admin_reservation.php" class="nav-link <?= ($current_page == 'admin_reservation.php') ? 'active' : ''; ?>">
             <i class="bi bi-ticket-detailed"></i>
             <span>Admin Reservation Management</span>
         </a>   
 
-        <a class="nav-link" href="admin_testimonial.php">
+        <a href="admin_testimonial.php" class="nav-link <?= ($current_page == 'admin_testimonial.php') ? 'active' : ''; ?>">
             <i class="bi bi-chat-right-quote"></i>
             <span>Manage Testimonials</span>
         </a>
 
-        <a class="nav-link" href="software_import.php">
+        <a href="software_import.php" class="nav-link <?= ($current_page == 'software_import.php') ? 'active' : ''; ?>">
             <i class="bi bi-plugin"></i>
             <span>Software Import</span>
         </a>
@@ -308,15 +332,67 @@ body{
     const toggle = document.getElementById("toggleSidebar");
     const logo = document.getElementById("logoToggle");
 
+    // Helper visibility engine to manage navbar layouts state matching responsiveness configurations
+    function updateBadgeLayouts() {
+        const countPill = document.getElementById('feedbackCountBadge');
+        const dotIndicator = document.getElementById('feedbackDotBadge');
+
+        if (!countPill || !dotIndicator) return;
+
+        const dynamicUnreadCount = parseInt(countPill.innerText) || 0;
+
+        if (dynamicUnreadCount > 0) {
+            if (sidebar.classList.contains('collapsed')) {
+                countPill.classList.add('d-none');
+                dotIndicator.classList.remove('d-none');
+            } else {
+                countPill.classList.remove('d-none');
+                dotIndicator.classList.add('d-none');
+            }
+        } else {
+            countPill.classList.add('d-none');
+            dotIndicator.classList.add('d-none');
+        }
+    }
+
     // toggle button (only expanded visible)
-    toggle.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-    });
+    if (toggle) {
+        toggle.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+            updateBadgeLayouts();
+        });
+    }
 
     // logo always toggles
-    logo.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-    });
+    if (logo) {
+        logo.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+            updateBadgeLayouts();
+        });
+    }
+
+    // ================= DYNAMIC UNREAD COUNTER PARSER ENGINE =================
+    function processSidebarFeedbackCount() {
+        const totalSystemIds = <?= $all_feedback_ids_json; ?> || [];
+        const checkedReadLogs = JSON.parse(localStorage.getItem('readFeedbackIds')) || [];
+
+        // Count how many IDs exist in the system database array that are NOT present in the client log
+        const calculateUnread = totalSystemIds.filter(id => !checkedReadLogs.includes(id));
+        const unreadVolume = calculateUnread.length;
+
+        const countPill = document.getElementById('feedbackCountBadge');
+        if (countPill) {
+            countPill.innerText = unreadVolume;
+        }
+
+        updateBadgeLayouts();
+    }
+
+    // Initialize checking process on page DOM load event sequence
+    document.addEventListener('DOMContentLoaded', processSidebarFeedbackCount);
+    
+    // Watch cross-window events if storage changes are executed elsewhere dynamically
+    window.addEventListener('storage', processSidebarFeedbackCount);
 </script>
 
 </body>

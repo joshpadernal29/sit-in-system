@@ -107,11 +107,25 @@ if (isset($_POST['logout_student'])) {
     }
 }
 
-function getFeedbacks($conn) {
-    $sql = "SELECT fb.message, fb.category, s.student_id, CONCAT(s.firstname, ' ', s.lastname) AS fullname, sr.lab, fb.submitted_at 
+function getFeedbacks($conn, $category = '') {
+    $sql = "SELECT fb.id, fb.message, fb.category, s.student_id, CONCAT(s.firstname, ' ', s.lastname) AS fullname, sr.lab, fb.submitted_at 
             FROM feedbacks fb
             JOIN students s ON fb.student_id = s.id
-            JOIN sit_in_records sr ON fb.record_id = sr.id
-            ORDER BY fb.submitted_at DESC";
-    return mysqli_query($conn, $sql);
+            JOIN sit_in_records sr ON fb.record_id = sr.id";
+    
+    // If a specific category filter is requested, append the WHERE clause
+    if (!empty($category)) {
+        $sql .= " WHERE fb.category = ?";
+    }
+    
+    $sql .= " ORDER BY fb.submitted_at DESC";
+    
+    $stmt = mysqli_prepare($conn, $sql);
+    
+    if (!empty($category)) {
+        mysqli_stmt_bind_param($stmt, "s", $category);
+    }
+    
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
 }
