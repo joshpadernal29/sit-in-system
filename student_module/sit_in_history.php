@@ -134,7 +134,7 @@ foreach($history as $h){
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
 
     <meta charset="UTF-8">
@@ -150,11 +150,6 @@ foreach($history as $h){
     :root{
         --primary:#0d6efd;
         --dark:#0046af;
-        --bg:#f5f7fb;
-    }
-
-    body{
-        background:var(--bg);
     }
 
     .main-content{
@@ -175,43 +170,34 @@ foreach($history as $h){
     }
 
     .stats-card{
-        background:#fff;
         border:none;
         border-radius:22px;
         padding:1.5rem;
-        box-shadow:0 4px 20px rgba(0,0,0,.04);
+        box-shadow:0 4px 20px rgba(0,0,0,.03);
         height:100%;
     }
 
     .history-card{
-        background:#fff;
         border:none;
         border-radius:24px;
         overflow:hidden;
-        box-shadow:0 4px 20px rgba(0,0,0,.04);
+        box-shadow:0 4px 20px rgba(0,0,0,.03);
     }
 
     .table thead th{
-        background:#f8f9fa;
         border:none;
         padding:1rem;
         font-size:.8rem;
         text-transform:uppercase;
-        color:#6c757d;
     }
 
     .table tbody td{
         padding:1rem;
         vertical-align:middle;
-        border-color:#f1f3f5;
-    }
-
-    .table tbody tr:hover{
-        background:#f8fbff;
     }
 
     .lab-badge{
-        background:#eef4ff;
+        background: rgba(13, 110, 253, 0.12);
         color:#0d6efd;
         padding:.45rem .9rem;
         border-radius:30px;
@@ -220,7 +206,6 @@ foreach($history as $h){
     }
 
     .focus-box{
-        background:#f8f9fa;
         padding:.6rem .9rem;
         border-radius:12px;
         display:inline-block;
@@ -228,7 +213,7 @@ foreach($history as $h){
     }
 
     .badge-soft{
-        background:#eef4ff;
+        background: rgba(13, 110, 253, 0.12);
         color:#0d6efd;
         padding:.45rem .9rem;
         border-radius:30px;
@@ -241,11 +226,17 @@ foreach($history as $h){
         border-radius:10px;
         color:#0d6efd;
         margin:0 3px;
+        background: var(--bs-secondary-bg);
     }
 
     .pagination .active .page-link{
-        background:#0d6efd;
-        color:#fff;
+        background:#0d6efd !important;
+        color:#fff !important;
+    }
+    
+    .pagination .disabled .page-link {
+        background: var(--bs-tertiary-bg);
+        opacity: 0.6;
     }
 
     .modal-content{
@@ -276,7 +267,7 @@ foreach($history as $h){
 
 </head>
 
-<body>
+<body class="bg-body-tertiary text-body">
 
 <?php include("../includes/student_sidebar.php"); ?>
 
@@ -284,7 +275,7 @@ foreach($history as $h){
 
     <div class="container-fluid">
 
-        <div class="hero-card mb-4">
+        <div class="hero-card mb-4 shadow-sm">
 
             <div class="row align-items-center">
 
@@ -320,17 +311,17 @@ foreach($history as $h){
 
             <div class="col-md-4">
 
-                <div class="stats-card">
+                <div class="stats-card bg-body border border-light-subtle">
 
-                    <small class="text-muted fw-bold text-uppercase">
+                    <small class="text-secondary fw-bold text-uppercase">
                         Sessions Used
                     </small>
 
-                    <h2 class="fw-bold mt-2">
+                    <h2 class="fw-bold text-body mt-2">
                         <?= $used_sessions ?>
                     </h2>
 
-                    <div class="progress mt-4" style="height:8px;border-radius:20px;">
+                    <div class="progress mt-4" style="height:8px;border-radius:20px; background-color: var(--bs-secondary-bg);">
                         <div class="progress-bar" style="width:<?= $percentage ?>%"></div>
                     </div>
 
@@ -340,13 +331,13 @@ foreach($history as $h){
 
             <div class="col-md-4">
 
-                <div class="stats-card">
+                <div class="stats-card bg-body border border-light-subtle">
 
-                    <small class="text-muted fw-bold text-uppercase">
+                    <small class="text-secondary fw-bold text-uppercase">
                         Total Hours
                     </small>
 
-                    <h2 class="fw-bold mt-2">
+                    <h2 class="fw-bold text-body mt-2">
                         <?= number_format($total_hours,1) ?>
                     </h2>
 
@@ -356,9 +347,9 @@ foreach($history as $h){
 
             <div class="col-md-4">
 
-                <div class="stats-card">
+                <div class="stats-card bg-body border border-light-subtle">
 
-                    <small class="text-muted fw-bold text-uppercase">
+                    <small class="text-secondary fw-bold text-uppercase">
                         Remaining
                     </small>
 
@@ -372,17 +363,17 @@ foreach($history as $h){
 
         </div>
 
-        <div class="history-card">
+        <div class="history-card bg-body border border-light-subtle">
 
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 p-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 p-4 border-bottom border-light-subtle">
 
                 <div>
 
-                    <h5 class="fw-bold mb-1">
+                    <h5 class="fw-bold text-body mb-1">
                         Recent Activity
                     </h5>
 
-                    <div class="text-muted small">
+                    <div class="text-secondary small">
                         <?= $total_records ?> total records
                     </div>
 
@@ -392,7 +383,7 @@ foreach($history as $h){
 
                     <input type="date"
                     name="date"
-                    class="form-control"
+                    class="form-control bg-body text-body border-secondary-subtle"
                     value="<?= htmlspecialchars($date_filter); ?>">
 
                     <button class="btn btn-primary">
@@ -409,17 +400,17 @@ foreach($history as $h){
 
             <div class="table-responsive">
 
-                <table class="table align-middle mb-0">
+                <table class="table table-hover align-middle mb-0">
 
-                    <thead>
+                    <thead class="table-dark-subtle">
 
-                        <tr>
-                            <th>Date</th>
-                            <th>Laboratory</th>
-                            <th>Focus</th>
-                            <th>Duration</th>
-                            <th>Status</th>
-                            <th class="text-center">Action</th>
+                        <tr class="bg-body-tertiary">
+                            <th class="text-secondary bg-body-tertiary">Date</th>
+                            <th class="text-secondary bg-body-tertiary">Laboratory</th>
+                            <th class="text-secondary bg-body-tertiary">Focus</th>
+                            <th class="text-secondary bg-body-tertiary">Duration</th>
+                            <th class="text-secondary bg-body-tertiary">Status</th>
+                            <th class="text-center text-secondary bg-body-tertiary">Action</th>
                         </tr>
 
                     </thead>
@@ -432,9 +423,9 @@ foreach($history as $h){
 
                                 <td colspan="6" class="text-center py-5">
 
-                                    <i class="bi bi-clock-history display-5 text-muted opacity-25"></i>
+                                    <i class="bi bi-clock-history display-5 text-secondary opacity-25"></i>
 
-                                    <div class="mt-3 text-muted">
+                                    <div class="mt-3 text-secondary">
                                         No records found.
                                     </div>
 
@@ -448,19 +439,19 @@ foreach($history as $h){
 
                             <tr>
 
-                                <td>
+                                <td class="text-body border-light-subtle">
 
                                     <div class="fw-semibold">
                                         <?= date('M d, Y',strtotime($record['login_time'])); ?>
                                     </div>
 
-                                    <div class="small text-muted">
+                                    <div class="small text-secondary">
                                         <?= date('h:i A',strtotime($record['login_time'])); ?>
                                     </div>
 
                                 </td>
 
-                                <td>
+                                <td class="border-light-subtle">
 
                                     <span class="lab-badge">
                                         <?= htmlspecialchars($record['lab'] ?? 'N/A'); ?>
@@ -468,15 +459,15 @@ foreach($history as $h){
 
                                 </td>
 
-                                <td>
+                                <td class="border-light-subtle">
 
-                                    <div class="focus-box">
+                                    <div class="focus-box bg-body-tertiary text-body border border-light-subtle">
                                         <?= htmlspecialchars($record['language'] ?? 'General Lab'); ?>
                                     </div>
 
                                 </td>
 
-                                <td>
+                                <td class="border-light-subtle">
 
                                     <?php if($record['logout_time']): ?>
 
@@ -486,7 +477,7 @@ foreach($history as $h){
 
                                     <?php else: ?>
 
-                                        <span class="badge bg-warning rounded-pill px-3 py-2">
+                                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
                                             Ongoing
                                         </span>
 
@@ -494,7 +485,7 @@ foreach($history as $h){
 
                                 </td>
 
-                                <td>
+                                <td class="border-light-subtle">
 
                                     <?php if($record['logout_time']): ?>
 
@@ -512,7 +503,7 @@ foreach($history as $h){
 
                                 </td>
 
-                                <td class="text-center">
+                                <td class="text-center border-light-subtle">
 
                                     <?php if($record['feedback_submitted']): ?>
 
@@ -551,9 +542,9 @@ foreach($history as $h){
 
             <?php if($total_pages>1): ?>
 
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 p-4 border-top">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 p-4 border-top border-light-subtle">
 
-                <div class="small text-muted">
+                <div class="small text-secondary">
                     Showing page <?= $page ?> of <?= $total_pages ?>
                 </div>
 
@@ -606,11 +597,12 @@ foreach($history as $h){
 
 </div>
 
+<!-- FEEDBACK MODAL -->
 <div class="modal fade" id="feedbackModal" tabindex="-1">
 
     <div class="modal-dialog modal-dialog-centered">
 
-        <div class="modal-content shadow-lg">
+        <div class="modal-content bg-body text-body shadow-lg border border-light-subtle">
 
             <div class="modal-header border-0 pt-4 px-4">
 
@@ -628,7 +620,7 @@ foreach($history as $h){
 
                     <input type="hidden" name="session_id" id="modal_session_id">
 
-                    <label class="form-label small fw-bold text-uppercase text-muted">
+                    <label class="form-label small fw-bold text-uppercase text-secondary">
                         Category
                     </label>
 
@@ -651,7 +643,7 @@ foreach($history as $h){
 
                     </div>
 
-                    <textarea class="form-control bg-light border-0 rounded-4 mb-3"
+                    <textarea class="form-control bg-body-tertiary text-body border-secondary-subtle rounded-4 mb-3"
                     name="feedback_text"
                     rows="4"
                     placeholder="Report issues or suggestions..."></textarea>
@@ -673,24 +665,15 @@ foreach($history as $h){
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-
 const feedbackModal=document.getElementById('feedbackModal');
-
 if(feedbackModal){
-
     feedbackModal.addEventListener('show.bs.modal',event=>{
-
         const button=event.relatedTarget;
         const sessionId=button.getAttribute('data-session-id');
-
         const modalInput=feedbackModal.querySelector('#modal_session_id');
-
         modalInput.value=sessionId;
-
     });
-
 }
-
 </script>
 
 </body>

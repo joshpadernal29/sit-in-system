@@ -10,7 +10,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
 /* ================= BASE ================= */
 body{
     margin:0;
-    background:#f5f7fb;
 }
 
 /* ================= SIDEBAR ================= */
@@ -37,13 +36,13 @@ body{
     width:260px;
     height:100vh;
 
-    background:#fff;
-    border-right:1px solid #e9ecef;
+    border-right:1px solid var(--bs-border-color);
 
     display:flex;
     flex-direction:column;
 
     transition:.3s ease;
+    z-index: 1040;
 }
 
 /* COLLAPSED STATE */
@@ -57,7 +56,7 @@ body{
     align-items:center;
     justify-content:space-between;
     padding:1rem;
-    border-bottom:1px solid #eee;
+    border-bottom:1px solid var(--bs-border-color-translucent);
 }
 
 /* LOGO (clickable) */
@@ -68,12 +67,18 @@ body{
 .sidebar-brand img{
     width:38px;
     height:38px;
+    transition: transform 0.2s ease;
+}
+
+[data-bs-theme="dark"] .sidebar-brand img {
+    filter: brightness(1.1) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.2));
 }
 
 /* ================= TOGGLE BUTTON (FIXED) ================= */
 .toggle-btn{
     border:none;
-    background:#f1f4ff;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
     border-radius:10px;
     padding:6px 10px;
 
@@ -89,6 +94,7 @@ body{
 .sidebar-nav{
     flex:1;
     padding:1rem;
+    overflow-y: auto;
 }
 
 .nav-link{
@@ -100,14 +106,15 @@ body{
     border-radius:12px;
 
     font-weight:600;
-    color:#495057;
+    color: var(--bs-secondary-color);
 
     transition:.2s;
     margin-bottom:6px;
 }
 
 /* hide text when collapsed */
-.sidebar.collapsed .nav-link span{
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .theme-label {
     display:none;
 }
 
@@ -118,19 +125,19 @@ body{
 
 /* hover */
 .nav-link:hover{
-    background:#f1f4ff;
-    color:#0d6efd;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-primary);
 }
 
 .nav-link.active{
-    background:#0d6efd;
-    color:#fff;
+    background: var(--bs-primary) !important;
+    color:#fff !important;
 }
 
 /* ================= FOOTER ================= */
 .sidebar-footer{
     padding:1rem;
-    border-top:1px solid #eee;
+    border-top:1px solid var(--bs-border-color-translucent);
 }
 
 .user-card{
@@ -138,7 +145,7 @@ body{
     align-items:center;
     gap:10px;
 
-    background:#f8f9fa;
+    background: var(--bs-secondary-bg);
     padding:.8rem;
     border-radius:12px;
 }
@@ -151,7 +158,7 @@ body{
     min-height:40px;
 
     border-radius:50%;
-    background:#0d6efd;
+    background: var(--bs-primary);
 
     display:flex;
     align-items:center;
@@ -204,17 +211,17 @@ body{
 </style>
 </head>
 
-<body>
+<body class="bg-body-tertiary text-body">
 
 <!-- ================= SIDEBAR ================= -->
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar bg-body" id="sidebar">
 
     <!-- TOP -->
     <div class="sidebar-top">
 
         <!-- LOGO (TOGGLES SIDEBAR) -->
         <div class="sidebar-brand" id="logoToggle">
-            <img src="../assets/ccsmainlogo2.png">
+            <img src="../assets/ccsmainlogo2.png" alt="Logo">
         </div>
 
         <!-- TOGGLE BUTTON (ONLY IN EXPANDED) -->
@@ -227,35 +234,41 @@ body{
     <!-- NAV -->
     <div class="sidebar-nav">
 
-        <a href="studentDashboard.php" class="nav-link">
+        <a href="studentDashboard.php" class="nav-link <?= ($current_page == 'studentDashboard.php') ? 'active' : ''; ?>">
             <i class="bi bi-grid-1x2-fill"></i>
             <span>Dashboard</span>
         </a>
 
-        <a href="student_profile.php" class="nav-link">
+        <a href="student_profile.php" class="nav-link <?= ($current_page == 'student_profile.php') ? 'active' : ''; ?>">
             <i class="bi bi-person-circle"></i>
             <span>My Profile</span>
         </a>
 
-        <a href="sit_in_history.php" class="nav-link">
+        <a href="sit_in_history.php" class="nav-link <?= ($current_page == 'sit_in_history.php') ? 'active' : ''; ?>">
             <i class="bi bi-clock-history"></i>
             <span>History</span>
         </a>
 
-        <a href="student_reservation.php" class="nav-link">
+        <a href="student_reservation.php" class="nav-link <?= ($current_page == 'student_reservation.php') ? 'active' : ''; ?>">
             <i class="bi bi-calendar-check"></i>
             <span>Reservation</span>
         </a>
 
-        <a href="student_announcement.php" class="nav-link">
+        <a href="student_announcement.php" class="nav-link <?= ($current_page == 'student_announcement.php') ? 'active' : ''; ?>">
             <i class="bi bi-megaphone"></i>
             <span>Announcements</span>
         </a>
 
-        <a href="student_testimonial.php" class="nav-link">
+        <a href="student_testimonial.php" class="nav-link <?= ($current_page == 'student_testimonial.php') ? 'active' : ''; ?>">
             <i class="bi bi-chat-right-quote"></i>
             <span>Testimonial</span>
         </a>
+
+        <!-- ================= DARK MODE UTILITY BUTTON ================= -->
+        <button class="nav-link border-0 bg-transparent w-100 text-start" id="themeToggleBtn">
+            <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+            <span class="theme-label">Dark Mode</span>
+        </button>
 
     </div>
 
@@ -270,18 +283,18 @@ body{
 
             <div class="user-info">
                 <div class="fw-bold" style="font-size:.8rem;">
-                    <?= $student['firstname']." ".$student['lastname']; ?>
+                    <?= htmlspecialchars($student['firstname']." ".$student['lastname']); ?>
                 </div>
 
-                <div class="text-muted" style="font-size:.7rem;">
-                    <?= $student['course']." ".$student['year_level']; ?>
+                <div class="text-secondary" style="font-size:.7rem;">
+                    <?= htmlspecialchars($student['course']." ".$student['year_level']); ?>
                 </div>
             </div>
 
         </div>
         <!--LOGOUT-->
         <form action="../action/logout_logic.php" method="post">
-            <button class="btn btn-primary w-100 mt-2" name='log_out'">
+            <button class="btn btn-primary w-100 mt-2" name="log_out">
                 <i class="bi bi-box-arrow-right me-1"></i>
                 <span class="logout-text">Logout</span>
             </button>
@@ -293,22 +306,60 @@ body{
 
 <!-- ================= SCRIPT ================= -->
 <script>
-
 const sidebar = document.getElementById("sidebar");
 const toggleBtn = document.getElementById("toggleSidebar");
 const logo = document.getElementById("logoToggle");
 
-// hamburger (only in expanded)
-toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
+// Hamburger (only in expanded state)
+if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+    });
+}
 
-// logo toggle (always works)
-logo.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-});
+// Logo toggle functionality
+if (logo) {
+    logo.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+    });
+}
 
+// ================= THEME ARCHITECTURE ENGINE =================
+const htmlElement = document.documentElement;
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const themeIcon = document.getElementById('themeIcon');
+const themeLabel = document.querySelector('.theme-label');
+
+const savedTheme = localStorage.getItem('theme');
+const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+setTheme(initialTheme);
+
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = htmlElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    });
+}
+
+function setTheme(theme) {
+    htmlElement.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('theme', theme);
+
+    if (!themeIcon || !themeLabel) return;
+
+    if (theme === 'dark') {
+        themeIcon.className = 'bi bi-sun-fill text-warning';
+        themeLabel.innerText = 'Light Mode';
+    } else {
+        themeIcon.className = 'bi bi-moon-stars-fill text-primary';
+        themeLabel.innerText = 'Dark Mode';
+    }
+}
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
