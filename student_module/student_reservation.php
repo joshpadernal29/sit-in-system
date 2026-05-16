@@ -35,6 +35,12 @@ $student_pk = $student['id'];
                 margin-left:0 !important;
             }
         }
+
+        /* Software Profile badge sizing */
+        .software-tag {
+            font-size: 0.68rem;
+            letter-spacing: 0.2px;
+        }
     </style>
 </head>
 <body class="bg-body-tertiary text-body">
@@ -43,6 +49,8 @@ $student_pk = $student['id'];
 
 <div class="main-content-wrapper">
     <div class="container-fluid px-4 py-4">
+        
+        <!-- HEADER PANEL -->
         <div class="row mb-4">
             <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center bg-body p-4 border border-light-subtle shadow-sm">
                 <div>
@@ -60,12 +68,18 @@ $student_pk = $student['id'];
             </div>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card border border-light-subtle rounded-0 shadow-sm">
-                    <div class="card-body p-5 bg-body">
+        <!-- MAIN MONITORING & ENVIRONMENT DATA LAYOUT -->
+        <div class="row g-4 justify-content-center">
+            
+            <!-- LEFT COLUMN: TARGET LAB GRID & STATUS LEGEND -->
+            <div class="col-xl-8">
+                <div class="card border border-light-subtle rounded-0 shadow-sm mb-4">
+                    <div class="card-body p-4 p-md-5 bg-body">
                         <div id="studentGridContainer" class="d-flex flex-wrap justify-content-center gap-4"></div>
-                        <div class="d-flex flex-wrap gap-4 justify-content-center mt-4">
+                        
+                        <hr class="my-4 opacity-10">
+                        
+                        <div class="d-flex flex-wrap gap-4 justify-content-center">
                             <span class="small fw-bold text-success"><i class="bi bi-square-fill me-1"></i> Available</span>
                             <span class="small fw-bold text-danger"><i class="bi bi-square-fill me-1"></i> Occupied / Active</span>
                             <span class="small fw-bold text-primary"><i class="bi bi-square-fill me-1"></i> Pending</span>
@@ -74,9 +88,26 @@ $student_pk = $student['id'];
                     </div>
                 </div>
             </div>
+
+            <!-- RIGHT COLUMN: LAB ENVIRONMENT SOFTWARE APPLICATIONS PROFILES -->
+            <div class="col-xl-4">
+                <div class="card border border-light-subtle rounded-0 shadow-sm h-100">
+                    <div class="card-header bg-dark text-white rounded-0 py-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold small text-uppercase"><i class="bi bi-cpu-fill me-2 text-info"></i>Lab Software Available</span>
+                        <span class="badge bg-secondary rounded-0 shadow-sm small" id="softwareCountLabel">0 Apps</span>
+                    </div>
+                    <div class="card-body bg-body p-3" style="max-height: 480px; overflow-y: auto;">
+                        <div class="row g-2" id="softwareAppGrid">
+                            <!-- Real-time software application arrays populate dynamically here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <!-- APPLICATION RESERVATION MODAL -->
     <div class="modal fade" id="resModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-body text-body border border-light-subtle rounded-0 shadow-lg">
@@ -151,47 +182,96 @@ $student_pk = $student['id'];
         const lab = document.getElementById('labSwitcher').value;
         const studentId = <?php echo $_SESSION['student_id'] ?? '0'; ?>;
         
-        const response = await fetch(`../action/get_lab_status.php?lab=${lab}`);
-        const data = await response.json();
+        // Execute both layout and software sync operations
+        fetchSoftwareInventory(lab);
         
-        studentHasPending = (data.student_pending && data.student_pending.includes(studentId));
+        try {
+            const response = await fetch(`../action/get_lab_status.php?lab=${lab}`);
+            const data = await response.json();
+            
+            studentHasPending = (data.student_pending && data.student_pending.includes(studentId));
 
-        const gridContainer = document.getElementById('studentGridContainer');
-        gridContainer.innerHTML = ''; 
-        
-        let pcCounter = 1;
-        const numIslands = Math.ceil(data.total / 8);
+            const gridContainer = document.getElementById('studentGridContainer');
+            gridContainer.innerHTML = ''; 
+            
+            let pcCounter = 1;
+            const numIslands = Math.ceil(data.total / 8);
 
-        for (let isl = 0; isl < numIslands; isl++) {
-            const island = document.createElement('div');
-            island.className = "d-flex gap-2 mb-3 border border-light-subtle p-2 bg-body-tertiary";
+            for (let isl = 0; isl < numIslands; isl++) {
+                const island = document.createElement('div');
+                island.className = "d-flex gap-2 mb-3 border border-light-subtle p-2 bg-body-tertiary";
 
-            const leftBank = document.createElement('div');
-            leftBank.className = "d-flex flex-column gap-2";
-            for (let i = 0; i < 4; i++) {
-                if (pcCounter <= data.total) {
-                    leftBank.appendChild(createPCUnit(pcCounter, data));
-                    pcCounter++;
+                const leftBank = document.createElement('div');
+                leftBank.className = "d-flex flex-column gap-2";
+                for (let i = 0; i < 4; i++) {
+                    if (pcCounter <= data.total) {
+                        leftBank.appendChild(createPCUnit(pcCounter, data));
+                        pcCounter++;
+                    }
                 }
+
+                const spine = document.createElement('div');
+                spine.className = "bg-secondary rounded-pill opacity-50";
+                spine.style.width = "5px";
+
+                const rightBank = document.createElement('div');
+                rightBank.className = "d-flex flex-column gap-2";
+                for (let i = 0; i < 4; i++) {
+                    if (pcCounter <= data.total) {
+                        rightBank.appendChild(createPCUnit(pcCounter, data));
+                        pcCounter++;
+                    }
+                }
+
+                island.appendChild(leftBank);
+                island.appendChild(spine);
+                island.appendChild(rightBank);
+                gridContainer.appendChild(island);
+            }
+        } catch (error) {
+            console.error("Failed syncing floor plan grid context:", error);
+        }
+    }
+
+    // Fetches and updates the installed application catalog for the student view
+    async function fetchSoftwareInventory(labId) {
+        try {
+            const response = await fetch(`../action/get_lab_software.php?lab=${labId}`);
+            const softwareList = await response.json();
+            
+            const appGrid = document.getElementById('softwareAppGrid');
+            document.getElementById('softwareCountLabel').innerText = `${softwareList.length} Apps`;
+            appGrid.innerHTML = '';
+
+            if (softwareList.length === 0) {
+                appGrid.innerHTML = `
+                    <div class="col-12 text-center py-5 text-muted">
+                        <i class="bi bi-app-indicator display-6 opacity-25"></i>
+                        <p class="small mb-0 mt-2">No applications deployed in this lab setup.</p>
+                    </div>`;
+                return;
             }
 
-            const spine = document.createElement('div');
-            spine.className = "bg-secondary rounded-pill opacity-50";
-            spine.style.width = "5px";
-
-            const rightBank = document.createElement('div');
-            rightBank.className = "d-flex flex-column gap-2";
-            for (let i = 0; i < 4; i++) {
-                if (pcCounter <= data.total) {
-                    rightBank.appendChild(createPCUnit(pcCounter, data));
-                    pcCounter++;
-                }
-            }
-
-            island.appendChild(leftBank);
-            island.appendChild(spine);
-            island.appendChild(rightBank);
-            gridContainer.appendChild(island);
+            softwareList.forEach(app => {
+                const item = document.createElement('div');
+                item.className = "col-12";
+                item.innerHTML = `
+                    <div class="p-2 border border-light-subtle bg-body-tertiary d-flex align-items-center">
+                        <div class="p-2 bg-dark text-white me-2 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                            <i class="bi bi-box-seam small"></i>
+                        </div>
+                        <div class="overflow-hidden flex-grow-1">
+                            <div class="fw-bold text-truncate small mb-0" style="font-size: 0.78rem;">${app.software_name}</div>
+                            <div class="d-flex gap-1 mt-1">
+                                <span class="badge bg-body text-body border border-secondary-subtle software-tag">v${app.version}</span>
+                                <span class="badge bg-light-subtle text-muted border border-light-subtle software-tag text-uppercase">${app.license_type}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                appGrid.appendChild(item);
+            });
+        } catch (err) {
+            console.error("Error updating software inventory component:", err);
         }
     }
 
@@ -199,21 +279,18 @@ $student_pk = $student['id'];
         const pcId = id.toString(); 
         const btn = document.createElement('div');
         
-        // 1. Base Styles (Default Green)
         btn.className = "btn btn-success d-flex align-items-center justify-content-center border-secondary rounded-0 shadow-sm fw-bold p-0";
         btn.style.width = "46px";
         btn.style.height = "46px";
         btn.style.fontSize = "0.65rem";
         btn.innerText = `PC-${id}`;
 
-        // 2. Data Mapping
         const isMaint    = data.maintenance && data.maintenance.map(String).includes(pcId);
         const isUnavail  = data.unavailable && data.unavailable.map(String).includes(pcId);
         const isOccupied = (data.active && data.active.map(String).includes(pcId)) || 
                         (data.reserved && data.reserved.map(String).includes(pcId));
         const isPending  = data.pending && data.pending.map(String).includes(pcId);
 
-        // 3. Color Logic & Click Permission
         if (isMaint || isOccupied) {
             btn.className = btn.className.replace('btn-success', 'btn-danger') + " pe-none";
         } 
