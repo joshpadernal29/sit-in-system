@@ -15,104 +15,177 @@ include("action/login_logic.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <title>login page</title>
+    <title>Login - CCS Sit-in Monitoring</title>
     <style>
-        /* Automatically applies only when dark mode is turned on */
+        /* Smooth Global Theme Transitions */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Forces Equal Structural Columns inside the Large Unified Card Layout */
+        .login-card .row.g-0 {
+            min-height: 620px; /* Forces both left and right sides to stretch to this minimum height */
+        }
+
+        /* Enhanced Dark Mode Card Properties */
+        [data-bs-theme="dark"] .login-card {
+            background-color: var(--bs-body-bg) !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.6) !important;
+        }
+
+        /* Form Control Improvements under Dark Mode */
+        [data-bs-theme="dark"] .form-control {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(255, 255, 255, 0.18) !important;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus {
+            border-color: #0d6efd !important;
+            background-color: rgba(255, 255, 255, 0.04) !important;
+        }
+
+        /* Focus Ring Glow Animation */
+        .form-floating .form-control {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        .form-floating .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.2);
+        }
+
+        /* --- Circular Logo Wrapper Properties --- */
+        .logo-wrapper {
+            width: 190px;
+            height: 190px;
+            background-color: transparent; /* Invisible by default in light mode */
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* Establishes stacking layer */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Force the logo image to layer cleanly and retain scale constraints */
+        .login-page-logo {
+            position: relative;
+            z-index: 10 !important; /* Forces image completely above the background layer container */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* --- Dark Mode Configuration Override --- */
+        [data-bs-theme="dark"] .logo-wrapper {
+            background-color: #ffffff !important; /* Pure white background disk */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
         [data-bs-theme="dark"] .login-page-logo {
-            /* This adds a crisp white glow around your PNG shapes and boosts brightness */
-            filter: brightness(1.2) drop-shadow(0px 0px 12px rgba(255, 255, 255, 0.25));
+            filter: contrast(1.05) brightness(1.00); /* Keeps color clarity over white circle */
         }
     </style>
 </head>
 
-<body class="bg-body text-body">
+<body class="bg-body-tertiary text-body">
+    
     <!--navbar-->
     <?php include("includes/header.html") ?>
     <!--end of navbar-->
     
     <!--main content-->
-    <main class="bg-body-tertiary">
-        <div class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
-            <div class="row w-100 justify-content-center align-items-center g-4">
-
-                <div class="col-12 col-lg-6 text-center mb-3 mb-lg-0">
-                    <!-- Added 'login-page-logo' class here to connect with our style fix -->
-                    <img src="assets/ccsmainlogo2.png" alt="CCS Logo" class="img-fluid mb-3 login-page-logo"
-                        style="max-width: 180px; width: 40%;">
-                    <h1 class="fw-bold text-body">CCS Sit-in Monitoring</h1>
-                    <p class="text-secondary d-none d-md-block">Ensuring an organized laboratory experience for every
-                        student.</p>
-                </div>
-
-                <div class="col-12 col-md-8 col-lg-5">
-                    <div class="card border border-light-subtle bg-body shadow-lg p-2 p-md-3 rounded-4">
-                        <div class="card-body">
-                            <div class="mb-4 text-center text-lg-start">
-                                <h2 class="fw-bold text-body h4">User Login</h2>
-                                <p class="text-muted small">Please enter your credentials to access the system.</p>
-                            </div>
-                            <!--login form-->
-                            <form action="action/login_logic.php" method="POST">
-                                <div class="form-floating mb-3">
-                                    <input type="text" class="form-control bg-body-tertiary border-0" id="student-id" name="user_id" required>
-                                    <label for="student-id" class="text-secondary">ID Number</label>
-                                </div>
-
-                                <div class="form-floating mb-3">
-                                    <input type="password" class="form-control bg-body-tertiary border-0" id="pwd" name="user_password" required>
-                                    <label for="pwd" class="text-secondary">Password</label>
-                                </div>
-
-                                <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input shadow-none" type="checkbox" id="remember"
-                                            name="remember">
-                                        <label class="form-check-label small text-secondary" for="remember">
-                                            Remember me
-                                        </label>
-                                    </div>
-                                    <a href="#" class="small text-primary text-decoration-none fw-bold">Forgot
-                                        Password?</a>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button type="submit"
-                                        class="btn btn-primary btn-lg shadow-sm fw-bold py-3 rounded-3" name="user_login">LOGIN</button>
-                                </div>
-
-                                <div class="text-center mt-4">
-                                    <p class="small text-muted">Don't have an account?
-                                        <a href="register.php"
-                                            class="text-primary fw-bold text-decoration-none d-block d-sm-inline mt-2 mt-sm-0">Register
-                                            here</a>
-                                    </p>
-                                </div>
-                            </form>
-                            <!--login form end-->
+    <main>
+        <div class="container min-vh-100 d-flex align-items-center justify-content-center py-5">
+            
+            <!-- Large Unified Card Container -->
+            <div class="card login-card border border-secondary-subtle bg-body shadow-lg rounded-4 overflow-hidden w-100" style="max-width: 1100px;">
+                <div class="row g-0">
+                    
+                    <!-- Left Column: Center-aligned Branding Pane (Equal Vertical Stretch) -->
+                    <div class="col-12 col-md-6 bg-body-secondary d-flex flex-column justify-content-center align-items-center p-4 p-md-5 border-end border-secondary-subtle text-center">
+                        <!-- Dynamic Circular Logo Wrapper -->
+                        <div class="logo-wrapper mb-4 rounded-circle">
+                            <img src="assets/ccsmainlogo2.png" alt="CCS Logo" class="img-fluid login-page-logo">
                         </div>
+                        <h1 class="fw-bold text-body display-6 mb-3">CCS Sit-in Monitoring</h1>
+                        <p class="text-body-secondary lead fs-6 mb-0 px-xl-4">
+                            Ensuring an organized, structured laboratory space environment for every computing student.
+                        </p>
                     </div>
+
+                    <!-- Right Column: Form Block (Equal Vertical Stretch) -->
+                    <div class="col-12 col-md-6 d-flex flex-column justify-content-center p-4 p-md-5">
+                        
+                        <div class="mb-4 text-center text-md-start">
+                            <h2 class="fw-bold text-body h4 mb-1">User Login</h2>
+                            <p class="text-body-secondary small mb-0">Please enter your credentials to access the system.</p>
+                        </div>
+                        
+                        <!--login form-->
+                        <form action="action/login_logic.php" method="POST">
+                            
+                            <!-- User Identity Field -->
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control border border-secondary-subtle" id="student-id" name="user_id" placeholder="ID Number" required>
+                                <label for="student-id" class="text-body-secondary">ID Number</label>
+                            </div>
+
+                            <!-- Security Code / Password Field -->
+                            <div class="form-floating mb-3">
+                                <input type="password" class="form-control border border-secondary-subtle" id="pwd" name="user_password" placeholder="Password" required>
+                                <label for="pwd" class="text-body-secondary">Password</label>
+                            </div>
+
+                            <!-- Accessibility & Session Persistence Controls -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input shadow-none" type="checkbox" id="remember" name="remember">
+                                    <label class="form-check-label small text-body-secondary" for="remember">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="small text-primary text-decoration-none fw-bold">Forgot Password?</a>
+                            </div>
+
+                            <!-- Action Intent Submission Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-bold py-3 rounded-3 fs-6" name="user_login">LOGIN</button>
+                            </div>
+
+                            <!-- Secondary Routing Onboarding Link -->
+                            <div class="text-center mt-3">
+                                <p class="small text-body-secondary mb-0">Don't have an account?
+                                    <a href="register.php" class="text-primary fw-bold text-decoration-none ms-1">Register here</a>
+                                </p>
+                            </div>
+                        </form>
+                        <!--login form end-->
+                        
+                    </div>
+
                 </div>
             </div>
+            <!-- End of Unified Card Container -->
+
         </div>
     </main>
     <!--end of main content-->
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Synchronized Hybrid Theme Management Engine -->
+    <!-- Native Theme Context Orchestration Engine -->
     <script>
         const htmlElement = document.documentElement;
         const themeToggleBtn = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
-        
-        const mainNavbar = document.getElementById('mainNavbar');
-        const navbarLinks = document.getElementById('navbarLinks');
-        const regBtn = document.getElementById('regBtn');
 
+        // Parse default environmental profiles
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
         const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        
         setTheme(initialTheme);
 
         if (themeToggleBtn) {
@@ -127,85 +200,16 @@ include("action/login_logic.php");
             htmlElement.setAttribute('data-bs-theme', theme);
             localStorage.setItem('theme', theme);
 
-            if (!mainNavbar) return;
-
+            if (!themeIcon) return;
+            
             if (theme === 'dark') {
-                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
-                if (themeToggleBtn) {
-                    themeToggleBtn.title = 'Switch to Light Mode';
-                    themeToggleBtn.classList.remove('text-white');
-                    themeToggleBtn.classList.add('text-body');
-                }
-                
-                mainNavbar.classList.remove('bg-primary', 'navbar-dark');
-                mainNavbar.classList.add('bg-body-tertiary', 'navbar-light');
-                
-                if (navbarLinks) {
-                    navbarLinks.style.setProperty('--bs-navbar-active-color', 'var(--bs-primary)');
-                    navbarLinks.style.setProperty('--bs-nav-underline-border-width', '3px');
-                }
-                
-                // SAFE CLASS ADJUSTMENT: Modifies text colors without discarding routing/events
-                document.querySelectorAll('#navbarLinks .nav-link').forEach(link => {
-                    link.classList.add('text-body-secondary');
-                    link.classList.remove('text-white', 'text-white-50');
-                });
-                
-                if (regBtn) {
-                    regBtn.classList.remove('btn-light', 'text-primary');
-                    regBtn.classList.add('btn-primary');
-                }
-                
-                const brandText = document.querySelector('.navbar-brand .lh-1 span');
-                const brandSub = document.querySelector('.navbar-brand .lh-1 small');
-                if (brandText) {
-                    brandText.classList.remove('text-white');
-                    brandText.classList.add('text-body');
-                }
-                if (brandSub) {
-                    brandSub.classList.remove('text-white-50');
-                    brandSub.classList.add('text-body-secondary');
-                }
+                themeIcon.className = 'bi bi-sun-fill';
+                if (themeToggleBtn) themeToggleBtn.title = 'Switch to Light Mode';
             } else {
-                if (themeIcon) themeIcon.className = 'bi bi-moon-stars-fill';
-                if (themeToggleBtn) {
-                    themeToggleBtn.title = 'Switch to Dark Mode';
-                    themeToggleBtn.classList.remove('text-body');
-                    themeToggleBtn.classList.add('text-white');
-                }
-                
-                mainNavbar.classList.remove('bg-body-tertiary', 'navbar-light');
-                mainNavbar.classList.add('bg-primary', 'navbar-dark');
-                
-                if (navbarLinks) {
-                    navbarLinks.style.setProperty('--bs-navbar-active-color', '#fff');
-                    navbarLinks.style.setProperty('--bs-nav-underline-border-width', '3px');
-                }
-                
-                // SAFE CLASS ADJUSTMENT: Modifies text colors without discarding routing/events
-                document.querySelectorAll('#navbarLinks .nav-link').forEach(link => {
-                    link.classList.remove('text-body-secondary');
-                    link.classList.add('text-white-50');
-                });
-                
-                if (regBtn) {
-                    regBtn.classList.remove('btn-primary');
-                    regBtn.classList.add('btn-light', 'text-primary');
-                }
-                
-                const brandText = document.querySelector('.navbar-brand .lh-1 span');
-                const brandSub = document.querySelector('.navbar-brand .lh-1 small');
-                if (brandText) {
-                    brandText.classList.remove('text-body');
-                    brandText.classList.add('text-white');
-                }
-                if (brandSub) {
-                    brandSub.classList.remove('text-body-secondary');
-                    brandSub.classList.add('text-white-50');
-                }
+                themeIcon.className = 'bi bi-moon-stars-fill';
+                if (themeToggleBtn) themeToggleBtn.title = 'Switch to Dark Mode';
             }
         }
     </script>
 </body>
-
 </html>
