@@ -77,6 +77,12 @@ $logsResult = getSystemLogs($conn);
             z-index: 2;
         }
 
+        /* Custom badge sizes for software list */
+        .software-tag {
+            font-size: 0.72rem;
+            letter-spacing: 0.3px;
+        }
+
         body {
             overflow-x: hidden;
         }
@@ -132,8 +138,11 @@ $logsResult = getSystemLogs($conn);
                 <!-- ================= PC CONTROL TAB ================= -->
                 <div class="tab-pane fade show active" id="pc-control">
                     <div class="row g-3">
-                        <!-- GRID DISPLAY -->
-                        <div class="col-xl-8">
+                        
+                        <!-- LEFT COLUMN: GRID DISPLAY + SOFTWARE INVENTORY CARD -->
+                        <div class="col-xl-8 d-flex flex-column gap-3">
+                            
+                            <!-- GRID MONITORING CONTAINER -->
                             <div class="card border border-dark shadow-sm">
                                 <div class="card-header bg-dark text-white d-flex justify-content-between">
                                     <span id="labHeading" class="fw-bold">LAB-544 MONITORING</span>
@@ -143,9 +152,23 @@ $logsResult = getSystemLogs($conn);
                                     <div id="adminGridContainer" class="d-flex flex-wrap justify-content-center gap-3"></div>
                                 </div>
                             </div>
+
+                            <!-- NEW ADDITION: LAB ENVIRONMENT SOFTWARE APPLICATIONS PROFILES -->
+                            <div class="card border border-dark shadow-sm">
+                                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold"><i class="bi bi-cpu me-2"></i>Available Lab Software Suite</span>
+                                    <span class="badge bg-light text-dark shadow-sm" id="softwareCountLabel">0 Apps Configured</span>
+                                </div>
+                                <div class="card-body bg-white" style="max-height: 280px; overflow-y: auto;">
+                                    <div class="row g-2" id="softwareAppGrid">
+                                        <!-- Real-time elements are appended here asynchronously -->
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <!-- QUEUE LIST -->
+                        <!-- RIGHT COLUMN: QUEUE LIST -->
                         <div class="col-xl-4">
                             <div class="card border border-dark shadow-sm">
                                 <div class="card-header bg-secondary text-white">
@@ -157,10 +180,10 @@ $logsResult = getSystemLogs($conn);
                                             <!-- Header: Name & Lab -->
                                             <div class="d-flex justify-content-between align-items-center mb-1">
                                                 <span class="fw-bold text-primary">
-                                                    <i class="fas fa-user me-1"></i> <?= htmlspecialchars($pendingRequest['fullname']) ?>
+                                                    <i class="bi bi-user me-1"></i> <?= htmlspecialchars($pendingRequest['fullname']) ?>
                                                 </span>
                                                 <span class="badge bg-secondary">
-                                                    <i class="fas fa-flask me-1"></i> LAB-<?= htmlspecialchars($pendingRequest['lab_name']) ?>
+                                                    <i class="bi bi-flask me-1"></i> LAB-<?= htmlspecialchars($pendingRequest['lab_name']) ?>
                                                 </span>
                                             </div>
 
@@ -172,7 +195,7 @@ $logsResult = getSystemLogs($conn);
                                                         PC Reserved
                                                     </div>
                                                     <div class="d-inline-flex align-items-center px-2 py-1 rounded bg-white border">
-                                                        <i class="fas fa-desktop me-2 text-primary" style="font-size: 0.85rem;"></i> 
+                                                        <i class="bi bi-display me-2 text-primary" style="font-size: 0.85rem;"></i> 
                                                         <span class="fw-bold text-dark small"><?= htmlspecialchars($pendingRequest['pc_number']) ?></span>
                                                     </div>
                                                 </div>
@@ -184,11 +207,11 @@ $logsResult = getSystemLogs($conn);
                                                     </div>
                                                     <div class="d-flex flex-column">
                                                         <div class="fw-semibold text-dark small mb-0">
-                                                            <i class="far fa-calendar-check me-1 text-success"></i>
+                                                            <i class="bi bi-calendar-check me-1 text-success"></i>
                                                             <?= date('M d, Y', strtotime($pendingRequest['schedule_date'])) ?>
                                                         </div>
                                                         <div class="text-muted" style="font-size: 0.8rem;">
-                                                            <i class="far fa-clock me-1"></i>
+                                                            <i class="bi bi-clock me-1"></i>
                                                             <?= date('h:i A', strtotime($pendingRequest['schedule_time'])) ?>
                                                         </div>
                                                     </div>
@@ -201,12 +224,12 @@ $logsResult = getSystemLogs($conn);
                                                 <div class="row g-2">
                                                     <div class="col-6">
                                                         <button type="submit" name="approve" value="approve" class="btn btn-sm btn-success w-100 fw-bold">
-                                                            <i class="fas fa-check-circle me-1"></i> Approve
+                                                            <i class="bi bi-check-circle me-1"></i> Approve
                                                         </button>
                                                     </div>
                                                     <div class="col-6">
                                                         <button type="submit" name="reject" value="reject" class="btn btn-sm btn-danger w-100 fw-bold">
-                                                            <i class="fas fa-times-circle me-1"></i> Reject
+                                                            <i class="bi bi-times-circle me-1"></i> Reject
                                                         </button>
                                                     </div>
                                                 </div>
@@ -320,6 +343,9 @@ $logsResult = getSystemLogs($conn);
             const lab = document.getElementById('labSwitcher').value;
             document.getElementById('labHeading').innerText = lab + " MONITORING";
 
+            // Fetch Software Inventory concurrently with PC configurations
+            fetchSoftwareInventory(lab);
+
             try {
                 const res = await fetch(`../action/get_lab_status.php?lab=${lab}`);
                 const data = await res.json();
@@ -358,6 +384,49 @@ $logsResult = getSystemLogs($conn);
                 }
             } catch (error) {
                 console.error("Sync failed:", error);
+            }
+        }
+
+        // Asynchronously populate the newly imported software metrics
+        async function fetchSoftwareInventory(labId) {
+            try {
+                const response = await fetch(`../action/get_lab_software.php?lab=${labId}`);
+                const softwareList = await response.json();
+                
+                const appGrid = document.getElementById('softwareAppGrid');
+                document.getElementById('softwareCountLabel').innerText = `${softwareList.length} Apps Configured`;
+                appGrid.innerHTML = '';
+
+                if(softwareList.length === 0) {
+                    appGrid.innerHTML = `
+                        <div class="col-12 text-center py-4 text-muted">
+                            <i class="bi bi-app-indicator display-6 opacity-25"></i>
+                            <p class="small mb-0 mt-1">No applications linked to this lab instance repository.</p>
+                        </div>`;
+                    return;
+                }
+
+                softwareList.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = "col-md-6 col-lg-4";
+                    card.innerHTML = `
+                        <div class="p-2 border rounded bg-light shadow-sm d-flex align-items-center h-100">
+                            <div class="p-2 rounded bg-dark-subtle me-2">
+                                <i class="bi bi-box-seam-fill text-dark small"></i>
+                            </div>
+                            <div class="overflow-hidden flex-grow-1">
+                                <div class="fw-bold text-dark text-truncate small mb-0">${app.software_name}</div>
+                                <div class="text-secondary text-truncate" style="font-size:0.7rem;">${app.developer}</div>
+                                <div class="mt-1 d-flex gap-1 flex-wrap">
+                                    <span class="badge bg-white text-dark border software-tag">v${app.version}</span>
+                                    <span class="badge bg-secondary-subtle text-dark border software-tag">${app.license_type}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    appGrid.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Failed loading software manifest profile logs:", err);
             }
         }
 

@@ -264,6 +264,11 @@ body{
             <span>Manage Testimonials</span>
         </a>
 
+        <a class="nav-link" href="software_import.php">
+            <i class="bi bi-plugin"></i>
+            <span>Software Import</span>
+        </a>
+
     </div>
 
     <!-- FOOTER -->
