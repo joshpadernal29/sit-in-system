@@ -72,10 +72,16 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         }
         .list-item:hover { background-color: var(--bs-secondary-bg-subtle); }
         .list-item.active { 
-            background-color: var(--bs-body-bg); 
-            border-color: var(--bs-border-color-translucent);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: var(--bs-body-bg) !important; 
+            border-color: var(--bs-border-color-translucent) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
             transform: translateX(4px);
+        }
+        
+        /* Highlight styling for the absolute newest post */
+        .latest-announcement-highlight {
+            background-color: rgba(var(--bs-primary-rgb), 0.05);
+            border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
         }
         
         .avatar-box { width: 48px; height: 48px; flex-shrink: 0; }
@@ -144,8 +150,11 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 </div>
 
                 <div class="flex-grow-1 py-2">
-                    <?php foreach($posts as $post): ?>
-                    <div class="list-item p-3 d-flex align-items-center" 
+                    <?php 
+                    foreach($posts as $index => $post): 
+                        $isLatest = ($index === 0 && empty($date) && empty($priority));
+                    ?>
+                    <div class="list-item p-3 d-flex align-items-center <?= $isLatest ? 'latest-announcement-highlight' : ''; ?>" 
                         id="item-<?= $post['id']; ?>"
                         onclick="loadAnnouncement(this, <?= htmlspecialchars(json_encode($post)); ?>)">
                         
@@ -155,8 +164,15 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
                         <div class="ms-3 overflow-hidden w-100">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 text-truncate fw-bold text-body" style="font-size: 0.9rem;"><?= htmlspecialchars($post['title']); ?></h6>
-                                <span id="dot-<?= $post['id']; ?>" class="badge rounded-circle p-1 bg-primary d-none" style="height: 8px; width: 8px;"> </span>
+                                <h6 class="mb-0 text-truncate fw-bold text-body" style="font-size: 0.9rem;">
+                                    <?= htmlspecialchars($post['title']); ?>
+                                </h6>
+                                <?php if ($isLatest): ?>
+                                    <!-- Added dynamic ID here so JS can target it -->
+                                    <span id="badge-<?= $post['id']; ?>" class="badge rounded-pill bg-primary px-2 py-1 shadow-sm" style="font-size: 0.65rem; letter-spacing: 0.5px;">NEW</span>
+                                <?php else: ?>
+                                    <span id="dot-<?= $post['id']; ?>" class="badge rounded-circle p-1 bg-primary d-none" style="height: 8px; width: 8px;"> </span>
+                                <?php endif; ?>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <p class="mb-0 text-secondary small text-truncate" style="max-width: 150px;"><?= htmlspecialchars($post['message']); ?></p>
@@ -180,12 +196,38 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     </div>
 
     <script>
+        // Track announcements read during this active page session
+        const readSessionAnnouncements = new Set();
+
         function loadAnnouncement(element, data) {
             document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
+            // 1. Hide the regular notification dot if it exists
             const dot = document.getElementById('dot-' + data.id);
             if(dot) dot.classList.add('d-none');
+
+            // 2. Hide the "NEW" badge immediately upon clicking
+            const badge = document.getElementById('badge-' + data.id);
+            if(badge) {
+                badge.classList.add('d-none');
+                
+                // Only trigger a badge decrement if this specific new post hasn't been read yet
+                if (!readSessionAnnouncements.has(data.id)) {
+                    readSessionAnnouncements.add(data.id);
+                    
+                    // Sync with localStorage
+                    const currentLastRead = parseInt(localStorage.getItem('lastReadId')) || 0;
+                    if (data.id > currentLastRead) {
+                        localStorage.setItem('lastReadId', data.id);
+                        // Dispatch event to instantly notify the sidebar to recalculate
+                        window.dispatchEvent(new Event('storage'));
+                    }
+                }
+            }
+            
+            // 3. Remove the background highlight styling
+            element.classList.remove('latest-announcement-highlight');
             
             const pane = document.getElementById('detailPane');
             const colors = { urgent: 'danger', academic: 'primary', general: 'success' };
@@ -222,12 +264,21 @@ $posts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             document.getElementById('detailPane').classList.remove('active');
             document.querySelectorAll('.list-item').forEach(el => el.classList.remove('active'));
         }
-       
+
+        // Automatically clear out numbers when checking the master list feed if a high anchor ID exists
         document.addEventListener('DOMContentLoaded', function () {
-            const currentAnnouncementId = "<?php echo isset($latest_id) ? $latest_id : 0; ?>";
-            
-            if (currentAnnouncementId !== "0") {
-                localStorage.setItem('lastReadId', currentAnnouncementId);
+            const wrapper = document.querySelector('.flex-grow-1.py-2');
+            if (wrapper) {
+                const firstItem = wrapper.querySelector('.list-item');
+                if (firstItem) {
+                    // Extract the first item's true ID string structure (e.g., "item-42" -> 42)
+                    const absoluteLatestId = parseInt(firstItem.id.replace('item-', ''));
+                    if (!isNaN(absoluteLatestId)) {
+                        // If the user loads this page, assume they have caught up with everything up to this item
+                        localStorage.setItem('lastReadId', absoluteLatestId);
+                        window.dispatchEvent(new Event('storage'));
+                    }
+                }
             }
         });
     </script>

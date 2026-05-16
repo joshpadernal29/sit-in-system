@@ -7,6 +7,17 @@ include("../config/database.php");
 include("../action/student_profile_logic.php");
 
 $current_page = basename($_SERVER['PHP_SELF']);
+
+// 1. Fetch all active announcement IDs applicable to this student from the backend database
+$course = isset($student['course']) ? strtolower($student['course']) : 'all';
+$count_query = "SELECT id FROM announcements WHERE is_active = 1 AND (target_audience = 'all' OR target_audience = ?)";
+$count_stmt = $conn->prepare($count_query);
+$count_stmt->bind_param("s", $course);
+$count_stmt->execute();
+$active_ids = $count_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Map rows to a simple flat JSON array of integers: [12, 11, 10...]
+$announcement_ids_json = json_encode(array_column($active_ids, 'id'));
 ?>
 
 <!DOCTYPE html>
@@ -110,6 +121,7 @@ body{
 
     transition:.2s;
     margin-bottom:6px;
+    position: relative; /* Added relative positioning to handle notification badges properly */
 }
 
 /* hide text when collapsed */
@@ -254,9 +266,16 @@ body{
             <span>Reservation</span>
         </a>
 
+        <!-- ================= ANNOUNCEMENTS LINK WITH BADGES ================= -->
         <a href="student_announcement.php" class="nav-link <?= ($current_page == 'student_announcement.php') ? 'active' : ''; ?>">
             <i class="bi bi-megaphone"></i>
             <span>Announcements</span>
+            
+            <!-- Number Counter (Shows when Expanded) -->
+            <span id="unreadCountBadge" class="badge rounded-pill bg-danger ms-auto d-none animate-fade-in" style="font-size: 0.75rem;">0</span>
+            
+            <!-- Mini Indicator Dot (Shows on top corner of icon when Collapsed) -->
+            <span id="unreadDotBadge" class="position-absolute top-0 start-50 translate-middle p-1 bg-danger border border-light rounded-circle d-none" style="margin-left: 10px; margin-top: 10px;"></span>
         </a>
 
         <a href="student_testimonial.php" class="nav-link <?= ($current_page == 'student_testimonial.php') ? 'active' : ''; ?>">
@@ -310,10 +329,34 @@ const sidebar = document.getElementById("sidebar");
 const toggleBtn = document.getElementById("toggleSidebar");
 const logo = document.getElementById("logoToggle");
 
+// Helper tracking for Responsive UI visibility changes
+function updateBadgeVisibility() {
+    const textBadge = document.getElementById('unreadCountBadge');
+    const dotBadge = document.getElementById('unreadDotBadge');
+    
+    if (!textBadge || !dotBadge) return;
+    
+    const count = parseInt(textBadge.innerText) || 0;
+    
+    if (count > 0) {
+        if (sidebar.classList.contains('collapsed')) {
+            textBadge.classList.add('d-none');
+            dotBadge.classList.remove('d-none');
+        } else {
+            textBadge.classList.remove('d-none');
+            dotBadge.classList.add('d-none');
+        }
+    } else {
+        textBadge.classList.add('d-none');
+        dotBadge.classList.add('d-none');
+    }
+}
+
 // Hamburger (only in expanded state)
 if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
         sidebar.classList.toggle("collapsed");
+        updateBadgeVisibility();
     });
 }
 
@@ -321,8 +364,27 @@ if (toggleBtn) {
 if (logo) {
     logo.addEventListener("click", () => {
         sidebar.classList.toggle("collapsed");
+        updateBadgeVisibility();
     });
 }
+
+// ================= UNREAD ANNOUNCEMENT ENGINE =================
+document.addEventListener('DOMContentLoaded', () => {
+    // Array of database announcement IDs from PHP array engine
+    const backendIds = <?= $announcement_ids_json; ?>;
+    const lastReadId = parseInt(localStorage.getItem('lastReadId')) || 0;
+
+    // Filter out items that are strictly larger/newer than the client's last read anchor ID
+    const unreadItems = backendIds.filter(id => parseInt(id) > lastReadId);
+    const unreadCount = unreadItems.length;
+
+    const countBadge = document.getElementById('unreadCountBadge');
+    if (countBadge && unreadCount > 0) {
+        countBadge.innerText = unreadCount;
+    }
+    
+    updateBadgeVisibility();
+});
 
 // ================= THEME ARCHITECTURE ENGINE =================
 const htmlElement = document.documentElement;
