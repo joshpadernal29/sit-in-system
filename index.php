@@ -176,7 +176,7 @@ while ($row = mysqli_fetch_assoc($testimonials)) {
                     <h2 class="display-5 fw-bold mt-1 mb-0" style="letter-spacing: -1px;">Student Perspectives</h2>
                 </div>
                 <div class="col-md-5 text-center text-md-start mt-2 mt-md-0">
-                    <p class="text-body-secondary m-0">Real opinions shared by developers and engineering students utilizing the sit-in tracking framework daily.</p>
+                    <p class="text-body-secondary m-0">Real opinions shared by  students utilizing the sit-in monitoring system daily.</p>
                 </div>
             </div>
 
