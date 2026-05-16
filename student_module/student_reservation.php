@@ -6,6 +6,39 @@ include("../config/database.php");
 include("../action/studentData.php"); // student session
 include("../action/sit_in_reserve.php");
 $student_pk = $student['id']; 
+
+// =========================================================================
+// ACTION HANDLER: STUDENT CANCEL / DISABLE ACTIONS
+// =========================================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation_state'])) {
+    $target_res_id = intval($_POST['reservation_id']);
+    $intended_action = $_POST['update_reservation_state']; // 'cancel' or 'disable'
+    
+    if ($intended_action === 'cancel') {
+        // Only allow cancellation if the request is still pending
+        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected', action = 'rejected' WHERE id = ? AND student_pk_id = ? AND status = 'pending'");
+        $stmt->bind_param("ii", $target_res_id, $student_pk);
+        $stmt->execute();
+        $stmt->close();
+    } elseif ($intended_action === 'disable') {
+        // Change approved request to un-active / discarded state context
+        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected' WHERE id = ? AND student_pk_id = ? AND status = 'approved'");
+        $stmt->bind_param("ii", $target_res_id, $student_pk);
+        $stmt->execute();
+        $stmt->close();
+    }
+    // Refresh to update UI states
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
+
+// Fetch current active / pending session logs for this student
+$log_query = "SELECT * FROM reservations WHERE student_pk_id = ? ORDER BY id DESC LIMIT 5";
+$stmt_log = $conn->prepare($log_query);
+$stmt_log->bind_param("i", $student_pk);
+$stmt_log->execute();
+$reservation_logs = $stmt_log->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_log->close();
 ?>
 
 <!DOCTYPE html>
@@ -85,6 +118,74 @@ $student_pk = $student['id'];
                             <span class="small fw-bold text-primary"><i class="bi bi-square-fill me-1"></i> Pending</span>
                             <span class="small fw-bold text-warning"><i class="bi bi-square-fill me-1"></i> Maintenance</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- NEW CONTAINER SECTION: STUDENT ACTIVITY MONITORING LOGS -->
+                <div class="card border border-light-subtle rounded-0 shadow-sm mt-4">
+                    <div class="card-header bg-body border-bottom border-light-subtle py-3">
+                        <span class="fw-bold text-body small text-uppercase"><i class="bi bi-clock-history me-2 text-primary"></i>My Reservation History</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-body" style="font-size: 0.85rem;">
+                            <thead class="bg-body-tertiary">
+                                <tr>
+                                    <th class="text-secondary small text-uppercase py-3 ps-3 bg-body-tertiary">PC Node</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Lab System</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Date & Time</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Status</th>
+                                    <th class="text-secondary small text-uppercase py-3 pe-3 text-end bg-body-tertiary">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($reservation_logs)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted small">
+                                            <i class="bi bi-calendar-x display-6 opacity-25 mb-2 d-block"></i>
+                                            No recent registration logs compiled for this workspace.
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($reservation_logs as $log): ?>
+                                        <tr>
+                                            <td class="ps-3 fw-bold border-light-subtle">PC-<?= htmlspecialchars($log['pc_number']) ?></td>
+                                            <td class="border-light-subtle text-uppercase fw-semibold">LAB <?= htmlspecialchars($log['lab_name']) ?></td>
+                                            <td class="border-light-subtle text-secondary">
+                                                <?= htmlspecialchars($log['schedule_date']) ?> @ <?= htmlspecialchars($log['schedule_time']) ?>
+                                            </td>
+                                            <td class="border-light-subtle">
+                                                <?php if ($log['status'] === 'pending'): ?>
+                                                    <span class="badge bg-primary rounded-0 text-uppercase" style="font-size:0.65rem;">Pending Approval</span>
+                                                <?php elseif ($log['status'] === 'approved' || $log['status'] === 'active'): ?>
+                                                    <span class="badge bg-success rounded-0 text-uppercase" style="font-size:0.65rem;">Approved / Live</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary rounded-0 text-uppercase" style="font-size:0.65rem;"><?= htmlspecialchars($log['status']) ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="pe-3 text-end border-light-subtle">
+                                                <form method="POST" action="" onsubmit="return confirm('Are you sure you want to execute this state amendment?');" class="m-0 p-0">
+                                                    <input type="hidden" name="reservation_id" value="<?= $log['id'] ?>">
+                                                    
+                                                    <?php if ($log['status'] === 'pending'): ?>
+                                                        <button type="submit" name="update_reservation_state" value="cancel" class="btn btn-sm btn-outline-danger rounded-0 py-0 px-2 fw-bold" style="font-size:0.75rem;">
+                                                            <i class="bi bi-x-square me-1"></i>CANCEL
+                                                        </button>
+                                                    <?php elseif ($log['status'] === 'approved'): ?>
+                                                        <button type="submit" name="update_reservation_state" value="disable" class="btn btn-sm btn-outline-secondary rounded-0 py-0 px-2 fw-bold" style="font-size:0.75rem;">
+                                                            <i class="bi bi-slash-circle me-1"></i>DISABLE
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <button type="button" class="btn btn-sm btn-light border-0 text-muted rounded-0 py-0 px-2 disabled small" style="font-size:0.75rem;">
+                                                            LOCKED
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
