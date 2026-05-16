@@ -21,11 +21,45 @@ $chartDataString = implode(',', $rows);
 $sit_in_rate = sit_in_rate($conn,$student_id);
 
 $data = [['Date', 'Sessions']];
-foreach ($sit_in_rate as $row) {
-    $data[] = [(string)$row['sit_in_date'], (int)$row['sit_in_rate']];
+
+// Check if we actually got records back from the function
+if (!empty($sit_in_rate)) {
+    foreach ($sit_in_rate as $row) {
+        $data[] = [(string)$row['sit_in_date'], (int)$row['sit_in_rate']];
+    }
+} else {
+    // SAFEGUARD: If it's a new student with 0 records, inject a baseline zero row.
+    // Today's date as a string for Axis #0, and 0 as an integer for Axis #1.
+    $data[] = [date('Y-m-d'), 0];
 }
 
 $jsonTable = json_encode($data);
+
+// total hours 
+$student_pk=isset($student['id']) ? $student['id'] : 0;
+$limit=5;
+$page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+if($page<1){
+    $page=1;
+}
+
+$date_filter=$_GET['date'] ?? '';
+$total_records=getTotalRecords($conn,$student_pk,$date_filter);
+$total_pages=ceil($total_records/$limit);
+
+if($page>$total_pages && $total_pages>0){
+    $page=$total_pages;
+}
+
+$start_from=($page-1)*$limit;
+$history=getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit);
+$total_hours=0;
+
+foreach($history as $h){
+    $total_hours+=$h['duration_hours'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -225,7 +259,7 @@ observer.observe(document.documentElement, { attributes: true, attributeFilter: 
                 <div class="col-md-4">
                     <div class="kpi-card bg-body border border-light-subtle">
                         <div class="kpi-label text-secondary">Total Lab Hours</div>
-                        <div class="kpi-value text-body">12.5</div>
+                        <div class="kpi-value text-body"><?= number_format($total_hours,1) ?></div>
                     </div>
                 </div>
 

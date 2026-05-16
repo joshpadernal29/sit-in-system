@@ -4,92 +4,10 @@ if(session_status()===PHP_SESSION_NONE){
 }
 
 include("../action/studentData.php");
-
-function getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit){
-
-    $history=[];
-
-    $sql="SELECT 
-            sr.id,
-            sr.student_pk_id,
-            sr.lab,
-            sr.login_time,
-            sr.logout_time,
-            sr.language,
-            COALESCE(f.id,0) AS feedback_submitted,
-            TIMESTAMPDIFF(MINUTE,sr.login_time,sr.logout_time)/60 AS duration_hours
-        FROM sit_in_records sr
-        LEFT JOIN feedbacks f ON sr.id=f.record_id
-        WHERE sr.student_pk_id=?";
-
-    if(!empty($date_filter)){
-        $sql.=" AND DATE(sr.login_time)=?";
-    }
-
-    $sql.=" ORDER BY sr.login_time DESC LIMIT ?,?";
-
-    $stmt=mysqli_prepare($conn,$sql);
-
-    if($stmt){
-
-        if(!empty($date_filter)){
-
-            mysqli_stmt_bind_param($stmt,'isii',$student_pk,$date_filter,$start_from,$limit);
-
-        }else{
-
-            mysqli_stmt_bind_param($stmt,'iii',$student_pk,$start_from,$limit);
-
-        }
-
-        mysqli_stmt_execute($stmt);
-
-        $result=mysqli_stmt_get_result($stmt);
-
-        while($row=mysqli_fetch_assoc($result)){
-            $history[]=$row;
-        }
-
-        mysqli_stmt_close($stmt);
-    }
-
-    return $history;
-}
-
-function getTotalRecords($conn,$student_pk,$date_filter){
-
-    $sql="SELECT COUNT(*) as total 
-        FROM sit_in_records 
-        WHERE student_pk_id=?";
-
-    if(!empty($date_filter)){
-        $sql.=" AND DATE(login_time)=?";
-    }
-
-    $stmt=mysqli_prepare($conn,$sql);
-
-    if(!empty($date_filter)){
-
-        mysqli_stmt_bind_param($stmt,'is',$student_pk,$date_filter);
-
-    }else{
-
-        mysqli_stmt_bind_param($stmt,'i',$student_pk);
-
-    }
-
-    mysqli_stmt_execute($stmt);
-
-    $result=mysqli_stmt_get_result($stmt);
-    $row=mysqli_fetch_assoc($result);
-
-    return $row['total'];
-}
+include("../action/Data_count.php");
 
 $student_pk=isset($student['id']) ? $student['id'] : 0;
-
 $limit=5;
-
 $page=isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
 if($page<1){
@@ -97,9 +15,7 @@ if($page<1){
 }
 
 $date_filter=$_GET['date'] ?? '';
-
 $total_records=getTotalRecords($conn,$student_pk,$date_filter);
-
 $total_pages=ceil($total_records/$limit);
 
 if($page>$total_pages && $total_pages>0){
