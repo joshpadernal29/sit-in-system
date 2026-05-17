@@ -1,35 +1,36 @@
 <header class="sticky-top shadow-sm">
-    <!-- Added id="mainNavbar" so the script can change its background dynamically -->
+    <!-- Main Responsive Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary py-2" id="mainNavbar">
         <div class="container">
             <!-- Brand Logo and Title -->
             <a class="navbar-brand d-flex align-items-center" href="index.php">
-                <div class="bg-white rounded-circle shadow d-flex align-items-center justify-content-center p-1 me-3"
-                    style="width: 65px; height: 65px; border: 2px solid rgba(255,255,255,0.3);">
+                <div class="bg-white rounded-circle shadow d-flex align-items-center justify-content-center p-1 me-2 me-sm-3 logo-container"
+                    style="border: 2px solid rgba(255,255,255,0.3);">
                     <img src="assets/uclogo2.png" class="rounded-circle"
                         style="width: 100%; height: 100%; object-fit: contain;" alt="UC Logo">
                 </div>
 
                 <div class="lh-1">
-                    <span class="fw-bold d-block mb-0 h6 text-white" style="letter-spacing: 0.5px;">
+                    <span class="fw-bold d-block mb-0 style-title text-white"
+                        style="letter-spacing: 0.5px; font-size: calc(0.8rem + 0.3vw);">
                         SIT-IN MONITORING SYSTEM
                     </span>
-                    <small class="text-white-50 text-uppercase fw-semibold"
-                        style="font-size: 0.65rem; letter-spacing: 1px;">
+                    <small class="text-white-50 text-uppercase fw-semibold style-subtitle"
+                        style="font-size: 0.6rem; letter-spacing: 1px;">
                         University of Cebu Main-Campus
                     </small>
                 </div>
             </a>
 
-            <!-- Mobile Toggler -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <!-- Mobile Toggler (FIXED: Added programmatic hook id="customNavbarToggler") -->
+            <button class="navbar-toggler border-0 p-2" type="button" id="customNavbarToggler" aria-controls="mainNav"
+                aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <!-- Navbar Links and Buttons Container -->
             <div class="collapse navbar-collapse" id="mainNav">
-                <!-- FIXED: Changed href attributes to include index.php so they work from login.php and register.php -->
-                <ul class="navbar-nav mx-auto nav-underline mb-3 mb-lg-0" id="navbarLinks">
+                <ul class="navbar-nav mx-auto nav-underline my-3 my-lg-0 text-center text-lg-start" id="navbarLinks">
                     <li class="nav-item"><a class="nav-link fw-medium px-3" href="index.php#home">Home</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium px-3" href="index.php#about">About</a></li>
                     <li class="nav-item"><a class="nav-link fw-medium px-3" href="index.php#community">Community</a>
@@ -37,13 +38,14 @@
                 </ul>
 
                 <!-- Action Buttons & Theme Controller -->
-                <div class="d-grid d-lg-flex align-items-center gap-3 pb-3 pb-lg-0">
-                    <button class="btn btn-link text-white p-0 text-center order-last order-lg-first fs-5"
+                <div
+                    class="d-grid d-lg-flex align-items-center justify-content-center justify-content-lg-end gap-3 pb-3 pb-lg-0 text-center">
+                    <button
+                        class="btn btn-link text-white p-2 text-center order-last order-lg-first fs-5 mx-auto mx-lg-0"
                         id="themeToggle" type="button" title="Toggle Theme">
                         <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
                     </button>
 
-                    <!-- Added id="loginLink" to easily hook into the theme changer engine -->
                     <a href="login.php" id="loginLink"
                         class="btn btn-link text-white text-decoration-none fw-medium px-2 text-center">Login</a>
                     <a href="register.php" class="btn btn-light text-primary fw-bold px-4 rounded-pill shadow-sm"
@@ -54,22 +56,64 @@
     </nav>
 </header>
 
+<!-- Embedded CSS Style Overrides -->
+<style>
+    .logo-container {
+        width: 48px;
+        height: 48px;
+    }
+
+    @media (min-width: 992px) {
+        .logo-container {
+            width: 65px;
+            height: 65px;
+        }
+    }
+
+    .navbar-dark .nav-link {
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    .navbar-dark .nav-link:hover,
+    .navbar-dark .nav-link.active {
+        color: #ffffff !important;
+    }
+
+    .navbar-light .nav-link {
+        color: var(--bs-body-color) !important;
+    }
+</style>
+
 <!-- Bootstrap Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Hybrid Theme Management Engine -->
+<!-- Cleaned Theme & Programmatic Menu Controller -->
 <script>
+    // 1. Programmatic Bootstrap Collapse Initializer (Bypasses double-loading issues)
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuTarget = document.getElementById('mainNav');
+        const menuToggler = document.getElementById('customNavbarToggler');
+
+        if (menuTarget && menuToggler) {
+            // Instantiate Bootstrap's built-in manual constructor directly
+            const bsCollapse = new bootstrap.Collapse(menuTarget, { toggle: false });
+
+            menuToggler.addEventListener('click', function () {
+                bsCollapse.toggle();
+            });
+        }
+    });
+
+    // 2. Hybrid Theme Management Engine
     const htmlElement = document.documentElement;
     const themeToggleBtn = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
 
-    // Header Element Hooks
     const mainNavbar = document.getElementById('mainNavbar');
     const navbarLinks = document.getElementById('navbarLinks');
     const regBtn = document.getElementById('regBtn');
-    const loginLink = document.getElementById('loginLink'); // Added direct hook
+    const loginLink = document.getElementById('loginLink');
 
-    // Check local storage or system preference on load
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
@@ -86,67 +130,64 @@
         htmlElement.setAttribute('data-bs-theme', theme);
         localStorage.setItem('theme', theme);
 
+        const brandTitle = document.querySelector('.navbar-brand .style-title');
+        const brandSubtitle = document.querySelector('.navbar-brand .style-subtitle');
+
         if (theme === 'dark') {
-            // 🌙 Transition to Sleek Dark Header Layout
             themeIcon.className = 'bi bi-sun-fill';
             themeToggleBtn.title = 'Switch to Light Mode';
 
-            // Swap Navbar Container Classes
             mainNavbar.classList.remove('bg-primary', 'navbar-dark');
             mainNavbar.classList.add('bg-body-tertiary', 'navbar-light');
 
-            // Fine-tune header link states and active underline tokens for dark mode visibility
             navbarLinks.style.setProperty('--bs-navbar-active-color', 'var(--bs-primary)');
             navbarLinks.style.setProperty('--bs-nav-underline-border-width', '3px');
-            document.querySelectorAll('#navbarLinks .nav-link').forEach(link => {
-                link.classList.add('text-body-secondary');
-                link.classList.remove('text-white', 'text-white-50');
-            });
 
-            // Change register button to match dark styling smoothly
             regBtn.classList.remove('btn-light', 'text-primary');
             regBtn.classList.add('btn-primary');
 
             themeToggleBtn.classList.remove('text-white');
             themeToggleBtn.classList.add('text-body');
 
-            document.querySelector('.navbar-brand .lh-1 span').className = 'fw-bold d-block mb-0 h6 text-body';
-            document.querySelector('.navbar-brand .lh-1 small').className = 'text-body-secondary text-uppercase fw-semibold';
+            if (brandTitle) {
+                brandTitle.classList.remove('text-white');
+                brandTitle.classList.add('text-body');
+            }
+            if (brandSubtitle) {
+                brandSubtitle.classList.remove('text-white-50');
+                brandSubtitle.classList.add('text-body-secondary');
+            }
 
-            // FIXED: Safe logic to alter text color for the login link
             if (loginLink) {
                 loginLink.classList.remove('text-white');
                 loginLink.classList.add('text-body');
             }
 
         } else {
-            // ☀️ Snap back to the Original UC Blue Layout
             themeIcon.className = 'bi bi-moon-stars-fill';
             themeToggleBtn.title = 'Switch to Dark Mode';
 
-            // Revert Navbar Background Container
             mainNavbar.classList.remove('bg-body-tertiary', 'navbar-light');
             mainNavbar.classList.add('bg-primary', 'navbar-dark');
 
-            // Revert Underline Properties to crisp white
             navbarLinks.style.setProperty('--bs-navbar-active-color', '#fff');
             navbarLinks.style.setProperty('--bs-nav-underline-border-width', '3px');
-            document.querySelectorAll('#navbarLinks .nav-link').forEach(link => {
-                link.classList.remove('text-body-secondary');
-                link.classList.add('text-white-50'); // Inactive links go slightly translucent white
-            });
 
-            // Revert Register button
             regBtn.classList.remove('btn-primary');
             regBtn.classList.add('btn-light', 'text-primary');
 
             themeToggleBtn.classList.remove('text-body');
             themeToggleBtn.classList.add('text-white');
 
-            document.querySelector('.navbar-brand .lh-1 span').className = 'fw-bold d-block mb-0 h6 text-white';
-            document.querySelector('.navbar-brand .lh-1 small').className = 'text-white-50 text-uppercase fw-semibold';
+            if (brandTitle) {
+                brandTitle.classList.remove('text-body');
+                brandTitle.classList.add('text-white');
+            }
+            if (brandSubtitle) {
+                brandSubtitle.classList.remove('text-body-secondary');
+                brandSubtitle.classList.add('text-white-50');
+            }
 
-            // FIXED: Safe logic to revert text color for the login link
             if (loginLink) {
                 loginLink.classList.remove('text-body');
                 loginLink.classList.add('text-white');
