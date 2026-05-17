@@ -214,7 +214,7 @@ while ($row = mysqli_fetch_assoc($testimonials)) {
                                 <div class="d-flex align-items-center pt-3 border-top border-light-subtle">
                                     <?php
                                     $fullname = !empty($item['fullname']) ? trim($item['fullname']) : 'Anonymous';                    
-                                    $defaultIconPath = "../assets/default_profile.jpg";
+                                    $defaultIconPath = "assets/default_profile.jpg";
                                     ?>
                                     <div class="me-3 flex-shrink-0" style="width: 32px; height: 32px;">
                                         <img src="<?= $defaultIconPath ?>" 
