@@ -143,13 +143,30 @@ body{
         <div class="col-lg-8">
 
             <div class="card shadow-sm p-4">
-
                 <form action="../action/crud_functions.php" method="POST">
-
                     <input type="hidden" name="id" value="<?php echo $student['id']; ?>">
-
+                    <!-- MESSAGE ALERT BANNER -->
+                    <?php if (isset($_GET['msg'])): ?>
+                        <div class="col-md-12 mb-3">
+                            <?php if ($_GET['msg'] == 'confirm_required'): ?>
+                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Please confirm your new password.
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <?php elseif ($_GET['msg'] == 'password_mismatch'): ?>
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-x-circle-fill me-2"></i> Passwords do not match! Please try again.
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <?php elseif ($_GET['msg'] == 'success'): ?>
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Student profile updated successfully!
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
                     <div class="row g-3">
-
                         <div class="col-md-12">
                             <label class="form-label">Student ID</label>
                             <input type="text" name="student_id" class="form-control bg-light"
@@ -186,15 +203,28 @@ body{
                             </select>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <label class="form-label">Sit-ins</label>
                             <input type="number" name="sit_ins" class="form-control"
                                    value="<?php echo $student['sit_ins']; ?>">
                         </div>
 
+                        <!-- NEW PASSWORD FIELDS -->
+                        <div class="col-md-6">
+                            <label class="form-label">New Password</label>
+                            <input type="password" name="password" class="form-control" 
+                                   placeholder="Leave blank to keep current password">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password" name="confirm_password" class="form-control" 
+                                   placeholder="Repeat new password">
+                        </div>
+
                     </div>
 
-                    <!-- BUTTONS (RESTORED) -->
+                    <!-- BUTTONS -->
                     <div class="action-buttons">
 
                         <button type="submit" name="update_student" class="btn btn-primary">

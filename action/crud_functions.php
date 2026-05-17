@@ -47,6 +47,9 @@ function editStudent($conn) {
     $course = $_POST['course'];
     $year_level = $_POST['year_level'];
     $sit_ins = $_POST['sit_ins'];
+    
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
 
     $sql = "UPDATE students SET 
             student_id = ?, 
@@ -54,18 +57,51 @@ function editStudent($conn) {
             lastname = ?, 
             course = ?, 
             year_level = ?, 
-            sit_ins = ? 
-            WHERE id = ?";
+            sit_ins = ?";
+            
+    $updating_password = false;
     
+    // Check if the password field has content
+    if (!empty($password)) {
+        
+        // 1. Check if Confirm Password is empty
+        if (empty($confirm_password)) {
+            header("Location: ../admin_module/edit_student.php?id=" . $id . "&msg=confirm_required");
+            exit();
+        }
+        
+        // 2. Check if they mismatch
+        if ($password !== $confirm_password) {
+            header("Location: ../admin_module/edit_student.php?id=" . $id . "&msg=password_mismatch");
+            exit();
+        }
+        
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $sql .= ", password = ?";
+        $updating_password = true;
+    }
+
+    $sql .= " WHERE id = ?";
     $stmt = mysqli_prepare($conn, $sql);
 
     if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "sssssii", 
-            $student_id, $firstname, $lastname, $course, $year_level, $sit_ins, $id
-        );
+        if ($updating_password) {
+            mysqli_stmt_bind_param($stmt, "sssssisi", 
+                $student_id, $firstname, $lastname, $course, $year_level, $sit_ins, $hashed_password, $id
+            );
+        } else {
+            mysqli_stmt_bind_param($stmt, "sssssii", 
+                $student_id, $firstname, $lastname, $course, $year_level, $sit_ins, $id
+            );
+        }
+        
         $success = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-        return $success;
+        
+        if ($success) {
+            header("Location: ../admin_module/edit_student.php?id=" . $id . "&msg=success");
+            exit();
+        }
     }
     return false;
 }
