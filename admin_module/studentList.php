@@ -107,11 +107,12 @@ main.container-fluid{
 
         <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
 
+            <!-- CHANGED: Added id="searchInput" to the input element -->
             <div class="input-group shadow-sm" style="max-width: 280px;">
                 <span class="input-group-text bg-white border-end-0">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" class="form-control border-start-0 ps-0" placeholder="Search students...">
+                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search ID or name...">
             </div>
 
             <a class="btn btn-primary shadow-sm" href="add_student.php">
@@ -144,12 +145,14 @@ main.container-fluid{
                     </tr>
                 </thead>
 
-                <tbody>
+                <!-- CHANGED: Added id="studentTableBody" to map rows -->
+                <tbody id="studentTableBody">
                     <?php if (!empty($students)): ?>
                         <?php foreach($students as $student): ?>
-                        <tr>
+                        <tr class="student-row">
+                            <!-- CHANGED: Added custom data attributes for seamless searching -->
                             <td class="ps-4">
-                                <span class="student-id fw-bold">
+                                <span class="student-id fw-bold search-id">
                                     <?php echo htmlspecialchars($student['student_id']); ?>
                                 </span>
                             </td>
@@ -160,7 +163,7 @@ main.container-fluid{
                                          class="rounded-circle me-3 border">
 
                                     <div class="lh-1">
-                                        <div class="fw-bold text-dark mb-1">
+                                        <div class="fw-bold text-dark mb-1 search-name">
                                             <?php echo htmlspecialchars($student['firstname'] . " " . $student['lastname']); ?>
                                         </div>
                                         <small class="text-muted">Verified Registry</small>
@@ -204,13 +207,21 @@ main.container-fluid{
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr>
+                        <tr id="noDataRow">
                             <td colspan="5" class="text-center py-5">
                                 <i class="bi bi-people text-muted opacity-25" style="font-size: 3rem;"></i>
                                 <p class="text-muted mt-2">No students found in the database.</p>
                             </td>
                         </tr>
                     <?php endif; ?>
+                    
+                    <!-- Fallback row if filtering yields no UI matching items -->
+                    <tr id="noMatchRow" style="display: none;">
+                        <td colspan="5" class="text-center py-5">
+                            <i class="bi bi-search text-muted opacity-25" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No results match your search.</p>
+                        </td>
+                    </tr>
                 </tbody>
 
             </table>
@@ -248,5 +259,37 @@ main.container-fluid{
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- NEW: Real-time Javascript Search Engine Feature -->
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#studentTableBody .student-row');
+    const noMatchRow = document.getElementById('noMatchRow');
+    let matchesFound = 0;
+
+    rows.forEach(row => {
+        const studentId = row.querySelector('.search-id').textContent.toLowerCase();
+        const studentName = row.querySelector('.search-name').textContent.toLowerCase();
+
+        // Check if input matches either ID or Name
+        if (studentId.includes(filter) || studentName.includes(filter)) {
+            row.style.display = '';
+            matchesFound++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Handle "No Match Found" display logic
+    if (noMatchRow) {
+        if (matchesFound === 0 && rows.length > 0) {
+            noMatchRow.style.display = '';
+        } else {
+            noMatchRow.style.display = 'none';
+        }
+    }
+});
+</script>
 </body>
 </html>
