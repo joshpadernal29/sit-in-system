@@ -146,7 +146,7 @@ include("action/login_logic.php");
                                         Remember me
                                     </label>
                                 </div>
-                                <a href="#" class="small text-primary text-decoration-none fw-bold">Forgot Password?</a>
+                                <a href="javascript:void(0);" class="small text-primary text-decoration-none fw-bold" onclick="alert('Approach a Lab Admin for password Reset');">Forgot Password?</a>
                             </div>
 
                             <!-- Action Intent Submission Button -->
