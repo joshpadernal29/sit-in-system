@@ -27,6 +27,18 @@ if (!$student) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
+        /* ================= ADAPTIVE THEME STYLES ================= */
+        body {
+            background: #f5f7fb;
+            margin: 0;
+            transition: background 0.3s ease;
+        }
+
+        body[data-theme="dark"] {
+            background: #121212 !important;
+            color: #e0e0e0 !important;
+        }
+
         /* Maintain Header Superiority for Dropdowns */
         header, .navbar {
             z-index: 1050 !important;
@@ -36,6 +48,14 @@ if (!$student) {
         .delete-card {
             max-width: 500px;
             margin: 60px auto;
+            border: 0;
+            border-radius: 16px;
+            background-color: #ffffff;
+            transition: background-color 0.3s ease;
+        }
+
+        body[data-theme="dark"] .delete-card {
+            background-color: #1e1e1e !important;
         }
 
         .warning-icon {
@@ -51,19 +71,37 @@ if (!$student) {
             margin: 0 auto 1.5rem;
         }
 
+        /* Preview box adjustments */
         .student-preview-box {
             background-color: #f8f9fa;
             border: 1px dashed #dee2e6;
             border-radius: 12px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body[data-theme="dark"] .student-preview-box {
+            background-color: #2d2d2d !important;
+            border-color: #444444 !important;
+        }
+
+        /* Dark mode typography fixes */
+        body[data-theme="dark"] .text-dark {
+            color: #ffffff !important;
+        }
+
+        /* Card Footer styling */
+        body[data-theme="dark"] .card-footer {
+            background-color: #242424 !important;
+            border-top: 1px solid #333333 !important;
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
     <?php include("../includes/admin_sidebar.php"); ?>
 
     <main class="container">
-        <div class="card border-0 shadow-lg rounded-4 delete-card overflow-hidden">
+        <div class="card shadow-lg delete-card overflow-hidden">
             <div class="card-body p-5 text-center">
                 
                 <div class="warning-icon">
@@ -93,7 +131,7 @@ if (!$student) {
                         <button type="submit" name="confirm_delete" class="btn btn-danger btn-lg py-3 fw-bold shadow-sm">
                             <i class="bi bi-trash3 me-2"></i> Permanently Delete
                         </button>
-                        <a href="studentList.php" class="btn btn-light btn-lg py-3 border">
+                        <a href="studentList.php" class="btn btn-light btn-lg py-3 border target-cancel-btn">
                             No, Keep Student
                         </a>
                     </div>
@@ -108,5 +146,44 @@ if (!$student) {
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- LIVE MONITOR SCRIPT: Listens to live theme toggles from your current sidebar setup -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const body = document.body;
+            const cancelBtn = document.querySelector(".target-cancel-btn");
+
+            // 1. Instantly apply Bootstrap 5 dark mode properties based on the sidebar's choice
+            const syncBootstrapTheme = () => {
+                if (body.getAttribute("data-theme") === "dark") {
+                    body.setAttribute("data-bs-theme", "dark");
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove("btn-light");
+                        cancelBtn.classList.add("btn-outline-secondary");
+                    }
+                } else {
+                    body.setAttribute("data-bs-theme", "light");
+                    if (cancelBtn) {
+                        cancelBtn.classList.remove("btn-outline-secondary");
+                        cancelBtn.classList.add("btn-light");
+                    }
+                }
+            };
+
+            // Initial sync on load
+            syncBootstrapTheme();
+
+            // 2. Watch for changes when users tap the theme switcher icon inside the sidebar panel
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === "data-theme") {
+                        syncBootstrapTheme();
+                    }
+                });
+            });
+
+            observer.observe(body, { attributes: true });
+        });
+    </script>
 </body>
 </html>

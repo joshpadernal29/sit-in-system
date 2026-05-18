@@ -24,62 +24,113 @@ if (!$student) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
 <style>
-body{
-    background:#f5f7fb;
-    margin:0;
+/* ================= ADAPTIVE EDIT PAGE STYLES ================= */
+
+/* When sidebar sets body to dark mode, dynamically change background */
+body[data-theme="dark"] {
+    background: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Fallback/Light background */
+body {
+    background: #f5f7fb;
+    margin: 0;
 }
 
 /* sidebar spacing */
-.main-content{
-    margin-left:260px;
-    padding:2rem;
+.main-content {
+    margin-left: 260px;
+    padding: 2rem;
+    transition: margin-left .3s ease;
 }
 
-.page-wrap{
-    max-width:1100px;
-    margin:0 auto;
+.sidebar.collapsed ~ .main-content {
+    margin-left: 80px;
+}
+
+.page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
 /* title spacing */
-.top-title{
-    margin-bottom:1.2rem;
+.top-title {
+    margin-bottom: 1.2rem;
 }
 
-/* PROFILE CARD FIX */
-.profile-card{
-    text-align:center;
-    padding:2rem 1.5rem;
-    display:flex;
-    flex-direction:column;
-    align-items:center; /* centers everything */
+/* PROFILE CARD */
+.profile-card {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+/* Adapt cards based on the body's data-theme attribute */
+body[data-theme="dark"] .card {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+.card {
+    border: 0;
+    border-radius: 16px;
+    background-color: #ffffff;
 }
 
 /* avatar */
-.avatar-preview{
-    width:90px;
-    height:90px;
-    border-radius:50%;
-    object-fit:cover;
-    border:3px solid #fff;
-    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+.avatar-preview {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+body[data-theme="dark"] .avatar-preview {
+    border: 3px solid #1e1e1e;
+}
+body:not([data-theme="dark"]) .avatar-preview {
+    border: 3px solid #fff;
 }
 
-/* form */
-.form-label{
-    font-size:.85rem;
-    font-weight:600;
-    color:#495057;
+/* Form labels and fields customization for dark mode */
+.form-label {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #495057;
+}
+body[data-theme="dark"] .form-label {
+    color: #e0e0e0;
 }
 
-.action-buttons{
-    display:flex;
-    gap:.75rem;
-    margin-top:1.8rem;
+body[data-theme="dark"] .form-control,
+body[data-theme="dark"] .form-select {
+    background-color: #2d2d2d;
+    border-color: #333333;
+    color: #e0e0e0;
+}
+body[data-theme="dark"] .form-control:focus,
+body[data-theme="dark"] .form-select:focus {
+    background-color: #2d2d2d;
+    color: #fff;
 }
 
-.card{
-    border:0;
-    border-radius:16px;
+/* Readonly / Static Student ID field styling */
+body[data-theme="dark"] .student-id-input {
+    background-color: #242424 !important;
+}
+
+.action-buttons {
+    display: flex;
+    gap: .75rem;
+    margin-top: 1.8rem;
+}
+
+@media(max-width: 991px) {
+    .main-content {
+        margin-left: 0 !important;
+    }
 }
 </style>
 </head>
@@ -109,7 +160,6 @@ body{
         <div class="col-lg-4">
             <div class="card shadow-sm profile-card">
 
-                <!-- CENTERED IMAGE FIX -->
                 <div class="d-flex justify-content-center w-100 mb-3">
                     <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($student['firstname'].'+'.$student['lastname']); ?>&background=0d6efd&color=fff&size=128"
                          class="avatar-preview">
@@ -145,6 +195,7 @@ body{
             <div class="card shadow-sm p-4">
                 <form action="../action/crud_functions.php" method="POST">
                     <input type="hidden" name="id" value="<?php echo $student['id']; ?>">
+                    
                     <!-- MESSAGE ALERT BANNER -->
                     <?php if (isset($_GET['msg'])): ?>
                         <div class="col-md-12 mb-3">
@@ -166,10 +217,11 @@ body{
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
+                    
                     <div class="row g-3">
                         <div class="col-md-12">
                             <label class="form-label">Student ID</label>
-                            <input type="text" name="student_id" class="form-control bg-light"
+                            <input type="text" name="student_id" class="form-control bg-light student-id-input"
                                    value="<?php echo htmlspecialchars($student['student_id']); ?>">
                         </div>
 
@@ -231,7 +283,7 @@ body{
                             <i class="bi bi-save me-2"></i> Save Changes
                         </button>
 
-                        <a href="studentList.php" class="btn btn-light border">
+                        <a href="studentList.php" class="btn btn-light border text-dark">
                             Cancel
                         </a>
 
@@ -249,5 +301,36 @@ body{
 
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- LIVE MONITOR SCRIPT: Listens to live theme toggles from your current sidebar setup -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+
+        // 1. Instantly apply Bootstrap 5 dark mode theme variable if sidebar sets custom data-theme
+        const syncBootstrapTheme = () => {
+            if (body.getAttribute("data-theme") === "dark") {
+                body.setAttribute("data-bs-theme", "dark");
+            } else {
+                body.setAttribute("data-bs-theme", "light");
+            }
+        };
+
+        // Initial sync on load
+        syncBootstrapTheme();
+
+        // 2. Watch for real-time attribute adjustments when users click the sidebar toggle button
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    syncBootstrapTheme();
+                }
+            });
+        });
+
+        observer.observe(body, { attributes: true });
+    });
+</script>
 </body>
 </html>
