@@ -12,3 +12,7 @@ CREATE TABLE `students` (
     `sit_ins` INT DEFAULT 30, -- New column with default 30
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE students 
+ADD COLUMN accumulated_points FLOAT DEFAULT 0.0,
+ADD COLUMN sessions_earned INT DEFAULT 0;
