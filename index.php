@@ -8,6 +8,68 @@ $featured_testimonials = [];
 while ($row = mysqli_fetch_assoc($testimonials)) {
     $featured_testimonials[] = $row;
 }
+
+// 2. FETCH LIVE LEADERBOARD DATA (Crucial fix to eliminate the error)
+$lb_sql = "SELECT CONCAT(firstname, ' ', lastname) AS name, student_id, accumulated_points 
+           FROM students 
+           WHERE accumulated_points > 0 
+           ORDER BY accumulated_points DESC 
+           LIMIT 10";
+
+$top_players = []; // Keeps it safe even if database is empty
+
+if (isset($conn)) {
+    $lb_result = mysqli_query($conn, $lb_sql);
+    if ($lb_result) {
+        while ($row = mysqli_fetch_assoc($lb_result)) {
+            $top_players[] = $row;
+        }
+    }
+}
+
+/**
+ * Assigns a hilarious tech-meme rank title, styling, and proper UI icons
+ * based on the student's lifetime accumulated performance points.
+ */
+function getGamingRank($points) {
+    if ($points >= 150) {
+        return [
+            'title' => 'Ascended Caffeine Entity', 
+            'icon'  => 'bi-cup-hot-fill',
+            'class' => 'bg-dark text-info border-info fw-bold'
+        ];
+    } elseif ($points >= 100) {
+        return [
+            'title' => 'Ultimate Vibe Coder', 
+            'icon'  => 'bi-headset',
+            'class' => 'bg-danger text-white border-danger-subtle fw-semibold'
+        ];
+    } elseif ($points >= 50) {
+        return [
+            'title' => 'Dual-Monitor Overlord', 
+            'icon'  => 'bi-display-fill',
+            'class' => 'bg-success text-white border-success-subtle'
+        ];
+    } elseif ($points >= 25) {
+        return [
+            'title' => 'Git Commit Spammer', 
+            'icon'  => 'bi-git',
+            'class' => 'bg-info-subtle text-info border-info-subtle'
+        ];
+    } elseif ($points >= 10) {
+        return [
+            'title' => 'Localhost Specialist', 
+            'icon'  => 'bi-house-gear-fill',
+            'class' => 'bg-warning text-dark border-warning'
+        ];
+    } else {
+        return [
+            'title' => 'Semicolon Searching Cadet', 
+            'icon'  => 'bi-search',
+            'class' => 'bg-danger-subtle text-danger border-danger'
+        ];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -61,13 +123,14 @@ while ($row = mysqli_fetch_assoc($testimonials)) {
             <div class="row justify-content-center">
                 <div class="col-lg-9 col-xl-8">
                     <span class="badge bg-primary-subtle text-primary mb-4 px-3 py-2 rounded-pill fw-semibold border border-primary-subtle">
-                        <i class="bi bi-cpu me-1"></i> Smart Lab Ecosystem
+                        <i class="bi bi-cpu me-1"></i> Sit in Monitoring system
                     </span>
-                    <h1 class="display-3 text-body tracking-tight mb-3" style="letter-spacing: -1px; font-weight: 800;">
-                        The modern way to track <span class="text-primary">laboratory hours.</span>
+                   <h1 class="display-3 text-body tracking-tight mb-3" style="letter-spacing: -1px; font-weight: 800;">
+                        Smarter monitoring for <span class="text-primary">laboratory sit-ins</span>
                     </h1>
+
                     <p class="lead text-body-secondary fs-4 mx-auto mb-5 mt-4" style="max-width: 700px;">
-                        An elegant, automated check-in pipeline designed for students and administrators to view live terminal queues, track sit-in balances, and manage log schedules seamlessly.
+                        A modern sit-in monitoring system built to simplify laboratory management through real-time session tracking, automated reservations, terminal monitoring, and seamless student check-ins — all within one centralized platform.
                     </p>
                     <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-3 mb-5">
                         <a class="btn btn-primary btn-lg px-5 py-3 fw-semibold shadow-sm fs-6" href="login.php">
@@ -163,12 +226,136 @@ while ($row = mysqli_fetch_assoc($testimonials)) {
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
 
+    <section id="leaderboard" class="py-5 bg-body">
+        <div class="container px-5 my-5">
+            
+            <!-- Section Header Typography -->
+            <div class="text-center mb-5 pb-3">
+                <span class="text-primary fw-bold text-uppercase small tracking-wider" style="letter-spacing: 1px;">Top Performers</span>
+                <h2 class="display-5 fw-bold mt-1" style="letter-spacing: -1px;">Lab Hours Leaderboard</h2>
+                <p class="text-body-secondary mx-auto" style="max-width: 550px;">Celebrating the students dedicated to maximizing their hands-on system terminal experience and climbing the meme stack.</p>
+            </div>
+
+            <div class="row g-4 align-items-stretch">
+                
+                <!-- Left Side Column: Top 3 Podium Highlights Cards -->
+                <div class="col-xl-6 d-flex flex-column justify-content-center gap-3">
+                    <?php 
+                    $podium_count = min(3, count($top_players));
+                    if ($podium_count > 0):
+                        for ($i = 0; $i < $podium_count; $i++):
+                            $player = $top_players[$i];
+                            $rank = $i + 1;
+                            $rankInfo = getGamingRank($player['accumulated_points']);
+                            
+                            // Premium Gradient Badges for Podium Medals
+                            $gradients = [
+                                1 => "linear-gradient(135deg, #ffd700, #ffa500)", // Gold
+                                2 => "linear-gradient(135deg, #c0c0c0, #808080)", // Silver
+                                3 => "linear-gradient(135deg, #cd7f32, #8b4513)"  // Bronze
+                            ];
+                    ?>
+                            <!-- Dynamic Podium Card Component -->
+                            <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 d-flex align-items-center shadow-sm" style="transition: transform 0.2s ease-in-out;">
+                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4 me-4 shadow-sm" 
+                                    style="width: 3.5rem; height: 3.5rem; flex-shrink: 0; background: <?= $gradients[$rank]; ?>; color: #fff;">
+                                    <?= $rank ?>
+                                </div>
+                                <div class="me-auto overflow-hidden">
+                                    <h5 class="fw-bold mb-1 text-truncate h6 text-body"><?= htmlspecialchars($player['name']); ?></h5>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="text-body-secondary small text-truncate font-monospace"><?= htmlspecialchars($player['student_id']); ?></span>
+                                        <span class="badge border <?= $rankInfo['class']; ?> rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.65rem; padding: 0.25rem 0.5rem;">
+                                            <i class="bi <?= $rankInfo['icon']; ?>"></i>
+                                            <?= $rankInfo['title']; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-end ps-3">
+                                    <span class="d-block fw-extrabold text-primary fs-4 mb-0" style="font-weight: 800;"><?= number_format($player['accumulated_points'], 1); ?></span>
+                                    <small class="text-body-secondary fw-semibold text-uppercase" style="font-size: 0.65rem;">Total Points</small>
+                                </div>
+                            </div>
+                    <?php 
+                        endfor;
+                    else: 
+                    ?>
+                        <!-- Fallback Empty State if Data is Null -->
+                        <div class="p-5 text-center text-muted bg-body-tertiary border border-light-subtle rounded-4 shadow-sm">
+                            <i class="bi bi-shield-slash fs-2 text-secondary opacity-50 mb-2"></i>
+                            <p class="mb-0">No active students on the podium yet. Log into a terminal to get started!</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Right Side Column: Runner-Up Honor Roll Queue Matrix Table (Ranks 4-5) -->
+                <div class="col-xl-6">
+                    <div class="card bg-body-tertiary border-light-subtle shadow-sm rounded-4 h-100 overflow-hidden">
+                        <div class="card-header border-bottom border-light-subtle p-4 bg-transparent">
+                            <h5 class="fw-bold mb-0 h6 text-body"><i class="bi bi-list-ol me-2 text-primary"></i>Honor Roll Standings</h5>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-start">
+                                <thead>
+                                    <tr>
+                                        <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle ps-4" style="width: 15%;">Rank</th>
+                                        <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle">Student Details</th>
+                                        <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle pe-4 text-end" style="width: 25%;">Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                    if (count($top_players) > 3):
+                                        for ($i = 3; $i < count($top_players); $i++):
+                                            $player = $top_players[$i];
+                                            $rank = $i + 1;
+                                            $rankInfo = getGamingRank($player['accumulated_points']);
+                                    ?>
+                                            <!-- Dynamic Table Standings Row -->
+                                            <tr>
+                                                <td class="ps-4 border-light-subtle fw-bold text-body-secondary">#<?= $rank ?></td>
+                                                <td class="border-light-subtle">
+                                                    <div class="fw-bold text-body small"><?= htmlspecialchars($player['name']); ?></div>
+                                                    <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                                                        <small class="text-secondary font-monospace" style="font-size:0.72rem;"><?= htmlspecialchars($player['student_id']); ?></small>
+                                                        <span class="badge border <?= $rankInfo['class']; ?> rounded-pill d-inline-flex align-items-center gap-1" style="font-size: 0.6rem; padding: 0.15rem 0.4rem;">
+                                                            <i class="bi <?= $rankInfo['icon']; ?>"></i>
+                                                            <?= $rankInfo['title']; ?>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td class="pe-4 text-end border-light-subtle">
+                                                    <span class="badge bg-body border border-light-subtle text-primary rounded-pill px-3 py-1.5 font-monospace fw-bold">
+                                                        <?= number_format($player['accumulated_points'], 1); ?> pts
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                    <?php 
+                                        endfor;
+                                    else:
+                                    ?>
+                                        <!-- Fallback row if there are fewer than 4 students ranked -->
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted py-5 border-0">
+                                                <small class="d-block text-secondary opacity-75">No secondary runners-up data available yet.</small>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
     <!-- 3. DYNAMIC CLEAN TESTIMONIALS SECTION -->
-    <section id="community" class="py-5 bg-body">
+    <section id="community" class="py-5 bg-body-tertiary border-top border-light-subtle">
         <div class="container px-5 my-5">
             <div class="row justify-content-between align-items-center mb-5">
                 <div class="col-md-6 text-center text-md-start">
@@ -190,7 +377,7 @@ while ($row = mysqli_fetch_assoc($testimonials)) {
                 <?php else: ?>
                     <?php foreach ($featured_testimonials as $item): ?>
                         <div class="col-md-4">
-                            <div class="p-4 bg-body-tertiary border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between">
+                            <div class="p-4 bg-body border border-light-subtle rounded-4 h-100 d-flex flex-column justify-content-between shadow-sm">
                                 <div>
                                     <!-- Dynamic Star Rating Render engine -->
                                     <div class="text-warning small mb-3">
