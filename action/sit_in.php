@@ -19,7 +19,7 @@ function past_sit_in($conn, $date = null, $limit = null, $offset = null) {
         $sql .= " WHERE DATE(sr.login_time) = '$safe_date'";
     }
     
-    $sql .= " ORDER BY sr.login_time DESC";
+    $sql .= " ORDER BY sr.logout_time DESC";
     
     if ($limit !== null && $offset !== null) {
         $sql .= " LIMIT $limit OFFSET $offset";
@@ -82,25 +82,98 @@ if (isset($_POST['update_sitin_session'])) {
     }
 }
 
-// --- LOGOUT: Close Session and Release PC ---
+// --- LOGOUT: Close Session, Run Weighted Grading Matrix, and Release PC ---
 if (isset($_POST['logout_student'])) {
-    $record_id = $_POST['record_id'];
-    $student_pk = $_POST['student_pk_id']; 
+    $record_id = intval($_POST['record_id']);
+    $student_pk = intval($_POST['student_pk_id']); 
+    
+    // Catch new grading inputs sent from the admin modal interface
+    $task_status = (isset($_POST['task_status']) && $_POST['task_status'] === 'Completed') ? 'Completed' : 'Pending';
+    $behavior_score = isset($_POST['behavior_score']) ? intval($_POST['behavior_score']) : 10; // Default max score baseline
 
-    // 1. Close Sit-in Record
-    $sql = "UPDATE sit_in_records SET status = 'Completed', logout_time = NOW() WHERE id = ?";
+    // 1. Fetch check-in time to calculate exact duration dynamically
+    $time_sql = "SELECT login_time FROM sit_in_records WHERE id = ?";
+    $time_stmt = mysqli_prepare($conn, $time_sql);
+    mysqli_stmt_bind_param($time_stmt, "i", $record_id);
+    mysqli_stmt_execute($time_stmt);
+    $time_result = mysqli_stmt_get_result($time_stmt);
+    $record = mysqli_fetch_assoc($time_result);
+    
+    // Establish time objects to compute numeric hour intervals
+    $login_time = new DateTime($record['login_time']);
+    $logout_time = new DateTime(); // Represents NOW() equivalent timestamp
+    
+    $interval = $login_time->diff($logout_time);
+    $duration_hours = $interval->h + ($interval->i / 60) + ($interval->s / 3600);
+
+    // ================= INSTRUCTOR PERFORMANCE FORMULA MATRIX =================
+    // Component A: Behavior Score (60% weight) - Input scaled between 1 and 10
+    $behavior_points = $behavior_score * 0.60;
+
+    // Component B: Task Status Score (20% weight) - Binary evaluation check
+    $task_points = ($task_status === 'Completed') ? (10 * 0.20) : 0.0;
+
+    // Component C: Sit-In Hours Duration (20% weight)
+    // Formula Normalization: Assumes a 3-hour lab block is standard for a full 10-point yield.
+    $normalized_duration_score = ($duration_hours > 0) ? min(10, ($duration_hours / 3.0) * 10) : 0;
+    $duration_points = $normalized_duration_score * 0.20;
+
+    // Aggregate point values into a clean decimal total
+    $session_points_earned = round(($behavior_points + $task_points + $duration_points), 2);
+
+    // 2. CLOSE SIT-IN RECORD (Save metrics, timestamps, and active flags)
+    $sql = "UPDATE sit_in_records SET 
+            status = 'Completed', 
+            logout_time = NOW(),
+            task_status = ?,
+            behavior_score = ?,
+            points_earned_this_session = ?
+            WHERE id = ?";
+            
     $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $record_id);
+    mysqli_stmt_bind_param($stmt, "sidi", $task_status, $behavior_score, $session_points_earned, $record_id);
     mysqli_stmt_execute($stmt);
     
-    // 2. RELEASE RESERVATION: Change status to 'completed' so PC turns Green again
+    // 3. CREDIT POINTS TO STUDENT PROFILE & COMPILE EXTRA SESSION REWARDS
+    // REVISED: Fetching sit_ins and old sessions_earned to check for milestone crossovers
+    $student_sql = "SELECT accumulated_points, sessions_earned, sit_ins FROM students WHERE id = ?";
+    $student_stmt = mysqli_prepare($conn, $student_sql);
+    mysqli_stmt_bind_param($student_stmt, "i", $student_pk);
+    mysqli_stmt_execute($student_stmt);
+    $student_result = mysqli_stmt_get_result($student_stmt);
+    $student_data = mysqli_fetch_assoc($student_result);
+
+    $old_sessions_earned = isset($student_data['sessions_earned']) ? intval($student_data['sessions_earned']) : 0;
+    $current_sit_ins     = isset($student_data['sit_ins']) ? intval($student_data['sit_ins']) : 0;
+    
+    $new_accumulated_points = $student_data['accumulated_points'] + $session_points_earned;
+    
+    // Milestone Rule check: Every 50 accumulated points earns an addition to their session cap
+    $new_sessions_earned = floor($new_accumulated_points / 50);
+
+    // Calculate if they just unlocked a new milestone right now
+    $unlocked_bonus_this_session = $new_sessions_earned - $old_sessions_earned;
+    
+    // If they hit a milestone, top-up their available sit_ins balance automatically!
+    $new_sit_ins_balance = $current_sit_ins + $unlocked_bonus_this_session;
+
+    // Save recalculated values back down to the target student profile row
+    $update_student_sql = "UPDATE students SET 
+                           accumulated_points = ?, 
+                           sessions_earned = ?,
+                           sit_ins = ?
+                           WHERE id = ?";
+    $update_student_stmt = mysqli_prepare($conn, $update_student_sql);
+    mysqli_stmt_bind_param($update_student_stmt, "diii", $new_accumulated_points, $new_sessions_earned, $new_sit_ins_balance, $student_pk);
+    mysqli_stmt_execute($update_student_stmt);
+
+    // 4. RELEASE RESERVATION: Change status to 'completed' so PC turns Green again
     $sqlRes = "UPDATE reservations SET status = 'completed' WHERE student_pk_id = ? AND status = 'active'";
     $stmtRes = mysqli_prepare($conn, $sqlRes);
     mysqli_stmt_bind_param($stmtRes, "i", $student_pk);
-    mysqli_stmt_execute($stmtRes);
     
     if (mysqli_stmt_execute($stmtRes)) {
-        header("Location: ../admin_module/sit_in_list.php?session=stopped");
+        header("Location: ../admin_module/sit_in_list.php?session=stopped&points=" . $session_points_earned);
         exit();
     } else {
         die("Critical Error releasing PC: " . mysqli_error($conn));
