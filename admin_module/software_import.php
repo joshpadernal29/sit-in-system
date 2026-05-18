@@ -21,18 +21,31 @@ $target_labs = ['544', '542', '526'];
 ?>
 
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Import Software Assets</title>
+    
+    <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <style>
-        .main-content-wrapper { margin-left: 260px; transition: margin-left .3s ease; }
+        /* ================= BASE LAYOUT ADAPTATION ================= */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-content-wrapper { 
+            margin-left: 260px; 
+            transition: margin-left .3s ease; 
+        }
+        
         .sidebar.collapsed ~ .main-content-wrapper { margin-left: 80px; }
         
-        /* Drag and Drop Zone styling adjustments */
+        /* ================= DRAG & DROP ZONE COMPONENTS ================= */
         .dropzone-area {
             border: 2px dashed var(--bs-border-color);
             border-radius: 16px;
@@ -40,11 +53,20 @@ $target_labs = ['544', '542', '526'];
             background: var(--bs-body-tertiary);
             cursor: pointer;
         }
+        
         .dropzone-area.dragover, .dropzone-area:hover {
             border-color: var(--bs-primary) !important;
             background: var(--bs-secondary-bg-subtle);
         }
-        @media (max-width: 991px) { .main-content-wrapper { margin-left: 0 !important; } }
+
+        /* Adjust card header background handling across theme switches */
+        .card-header {
+            background-color: transparent !important;
+        }
+
+        @media (max-width: 991px) { 
+            .main-content-wrapper { margin-left: 0 !important; } 
+        }
     </style>
 </head>
 <body class="bg-body-tertiary text-body">
@@ -74,6 +96,7 @@ $target_labs = ['544', '542', '526'];
             <?php endif; ?>
         <?php endif; ?>
 
+        <!-- Top Header Action Section -->
         <div class="row mb-4">
             <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-body p-4 border border-light-subtle shadow-sm rounded-3">
                 <div>
@@ -81,7 +104,7 @@ $target_labs = ['544', '542', '526'];
                     <p class="text-secondary small mb-0">Batch upload software applications into global laboratory systems via standardized CSV templates.</p>
                 </div>
                 <div class="mt-3 mt-md-0">
-                    <a href="data:text/csv;charset=utf-8,Software Name,Developer,Version,Category,License Type%0AVisual Studio Code,Microsoft,1.87.2,Development,Open Source%0AAnalytics Suite,Google,4.5.0,Analytics,Proprietary Free" download="software_template.csv" class="btn btn-sm btn-outline-secondary rounded-2 px-3 fw-semibold">
+                    <a href="data:text/csv;charset=utf-8,Software Name,Developer,Version,Category,License Type%0AVisual Studio Code,Microsoft,1.87.2,Development,Open Source%0AAnalytics Suite,Google,4.5.0,Analytics,Proprietary Free" download="software_template.csv" class="btn btn-sm btn-outline-secondary rounded-2 px-3 fw-semibold header-download-btn">
                         <i class="bi bi-download me-1"></i> Download CSV Template
                     </a>
                 </div>
@@ -95,7 +118,6 @@ $target_labs = ['544', '542', '526'];
                     <div class="card-body p-4 d-flex flex-column">
                         <h5 class="fw-bold text-body mb-3">Upload Channel</h5>
                         
-                        <!-- Fixed Action Path targets process_software_import.php -->
                         <form action="../action/software_import_logic.php" method="POST" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column">
                             
                             <!-- Interactive Box Zone Frame -->
@@ -122,7 +144,7 @@ $target_labs = ['544', '542', '526'];
                                 </select>
                             </div>
 
-                            <button type="submit" name="execute_import" class="btn btn-dark w-100 py-2.5 rounded-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                            <button type="submit" name="execute_import" class="btn btn-dark w-100 py-2.5 rounded-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm submit-action-btn">
                                 <i class="bi bi-cloud-arrow-up-fill"></i>Import
                             </button>
                         </form>
@@ -133,7 +155,7 @@ $target_labs = ['544', '542', '526'];
             <!-- Right Panel: Database Repository View Container -->
             <div class="col-xl-8">
                 <div class="card bg-body border-light-subtle shadow-sm rounded-3 h-100">
-                    <div class="card-header bg-body border-bottom border-light-subtle p-4 d-flex justify-content-between align-items-center">
+                    <div class="card-header border-bottom border-light-subtle p-4 d-flex justify-content-between align-items-center">
                         <div>
                             <h5 class="fw-bold text-body mb-0">System Deployment Sync Logs</h5>
                             <small class="text-secondary">Displaying the most recent application profile imports.</small>
@@ -145,24 +167,24 @@ $target_labs = ['544', '542', '526'];
                     
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-body-tertiary">
+                            <thead>
                                 <tr>
-                                    <th class="text-secondary small text-uppercase py-3 ps-4 bg-body-tertiary">Software Handle</th>
-                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Developer</th>
-                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Version</th>
-                                    <th class="text-secondary small text-uppercase py-3 bg-body-tertiary">Lab Assigned</th>
-                                    <th class="text-secondary small text-uppercase py-3 pe-4 text-end bg-body-tertiary">License</th>
+                                    <th class="text-secondary small text-uppercase py-3 ps-4 bg-transparent border-bottom border-light-subtle">Software Handle</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle">Developer</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle">Version</th>
+                                    <th class="text-secondary small text-uppercase py-3 bg-transparent border-bottom border-light-subtle">Lab Assigned</th>
+                                    <th class="text-secondary small text-uppercase py-3 pe-4 text-end bg-transparent border-bottom border-light-subtle">License</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($recent_apps)): ?>
                                     <tr>
-                                        <td colspan="5" class="text-center py-5 text-secondary">
+                                        <td colspan="5" class="text-center py-5 text-secondary border-0">
                                             <i class="bi bi-folder-x display-4 text-muted opacity-50 mb-2"></i>
                                             <div>No software applications imported yet. Use the upload card channel.</div>
                                         </td>
                                     </tr>
-                                <?php align: else: ?>
+                                <?php else: ?>
                                     <?php foreach($recent_apps as $app): ?>
                                         <tr>
                                             <td class="ps-4 border-light-subtle">
@@ -193,24 +215,70 @@ $target_labs = ['544', '542', '526'];
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- LIVE MONITOR SCRIPT: Syncs Bootstrap 5 theme variant modes based on sidebar data attributes -->
 <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+        const downloadBtn = document.querySelector(".header-download-btn");
+        const submitBtn = document.querySelector(".submit-action-btn");
+
+        const syncBootstrapTheme = () => {
+            if (body.getAttribute("data-theme") === "dark") {
+                body.setAttribute("data-bs-theme", "dark");
+                
+                // Adjust contextual interactive buttons for dark scheme contrast
+                if (downloadBtn) {
+                    downloadBtn.classList.remove("btn-outline-secondary");
+                    downloadBtn.classList.add("btn-outline-light");
+                }
+                if (submitBtn) {
+                    submitBtn.classList.remove("btn-dark");
+                    submitBtn.classList.add("btn-light");
+                }
+            } else {
+                body.setAttribute("data-bs-theme", "light");
+                
+                // Revert to default light scheme variations
+                if (downloadBtn) {
+                    downloadBtn.classList.remove("btn-outline-light");
+                    downloadBtn.classList.add("btn-outline-secondary");
+                }
+                if (submitBtn) {
+                    submitBtn.classList.remove("btn-light");
+                    submitBtn.classList.add("btn-dark");
+                }
+            }
+        };
+
+        // Run live initialization check
+        syncBootstrapTheme();
+
+        // Listen for real-time sidebar toggle adjustments via root attribute mutation
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    syncBootstrapTheme();
+                }
+            });
+        });
+        observer.observe(body, { attributes: true });
+    });
+
+    // ================= DROPZONE LOGIC INTERFACE =================
     const dropZone = document.getElementById('dropZoneContainer');
     const fileInput = document.getElementById('csvFileInput');
-    const browseBtn = document.getElementById('browseBtn');
     const statusText = document.getElementById('uploadStatusText');
     const subText = document.getElementById('uploadSubText');
 
-    // Clicking anywhere on the box (or button) opens file picker
-    dropZone.addEventListener('click', (e) => {
+    dropZone.addEventListener('click', () => {
         fileInput.click();
     });
 
-    // Handle normal file browse input change
     fileInput.addEventListener('change', (e) => {
         updateVisualState(e.target.files);
     });
 
-    // Prevent default behaviors for drag events
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, (e) => {
             e.preventDefault();
@@ -218,7 +286,6 @@ $target_labs = ['544', '542', '526'];
         }, false);
     });
 
-    // Toggle highlight class states
     ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
     });
@@ -226,13 +293,11 @@ $target_labs = ['544', '542', '526'];
         dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
     });
 
-    // Capture dropped files and assign them to the form field array directly
     dropZone.addEventListener('drop', (e) => {
         const dt = e.dataTransfer;
         const files = dt.files;
 
         if(files.length > 0) {
-            // Confirm it's actually a CSV file before setting input value
             if (files[0].name.toLowerCase().endsWith('.csv')) {
                 fileInput.files = files; 
                 updateVisualState(files);
@@ -242,7 +307,6 @@ $target_labs = ['544', '542', '526'];
         }
     });
 
-    // Sync visual UI elements
     function updateVisualState(files) {
         if(files.length > 0) {
             statusText.innerText = "File Attached Successfully";

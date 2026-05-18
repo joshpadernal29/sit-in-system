@@ -34,6 +34,26 @@ $result = getAllTestimonials($conn);
             transition: background 0.3s, color 0.3s;
         }
 
+        /* LIGHT MODE THEME MAP VARIABLES */
+        body:not([data-theme="dark"]) {
+            --bg-body: #f5f7fb;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+            --bg-sidebar: #ffffff;
+            --bg-card: #f8f9fa;
+        }
+
+        /* DARK MODE THEME MAP VARIABLES */
+        body[data-theme="dark"] {
+            --bg-body: #121212;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border-color: #333333;
+            --bg-sidebar: #1e1e1e;
+            --bg-card: #252525;
+        }
+
         /* ================= MAIN CONTENT LAYOUT ================= */
         .main-content { 
             margin-left: 260px; 
@@ -108,12 +128,12 @@ $result = getAllTestimonials($conn);
                 <p class="text-muted small mb-0">Review and moderate student portal testimonials.</p>
             </div>
             <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                <div class="p-2 d-inline-block rounded-3 border shadow-sm" style="background: var(--bg-card); border-color: var(--border-color) !important;">
+                <div class="p-2 d-inline-block rounded-3 border shadow-sm target-filter-container" style="background: var(--bg-card); border-color: var(--border-color) !important;">
                     <form action="" method="GET">
                         <span class="text-muted small px-2">Show:</span>
                         <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary px-3" name="all_requests">All</button>
-                            <button class="btn btn-outline-secondary px-3" name="featured_requests">Featured</button>
+                            <button class="btn btn-outline-secondary px-3 target-filter-btn" name="all_requests">All</button>
+                            <button class="btn btn-outline-secondary px-3 target-filter-btn" name="featured_requests">Featured</button>
                         </div>
                     </form>
                 </div>
@@ -139,7 +159,7 @@ $result = getAllTestimonials($conn);
                             <?php while($row = mysqli_fetch_assoc($result)) : ?>
                                 <tr>
                                     <td class="ps-4">
-                                        <?= htmlspecialchars($row['fullname']) ?> <br>
+                                        <span class="fw-semibold text-main"><?= htmlspecialchars($row['fullname']) ?></span> <br>
                                         <small class="text-muted" style="font-size: 0.8rem;">
                                             <?= htmlspecialchars($row['student_id']) ?>
                                         </small>
@@ -178,12 +198,12 @@ $result = getAllTestimonials($conn);
                                                 <span class="d-none d-xl-inline">Feature</span>
                                             </button>
 
-                                            <button type="submit" name="action" value="unfeature" class="btn btn-sm btn-outline-secondary" title="Remove Feature Status">
+                                            <button type="submit" name="action" value="unfeature" class="btn btn-sm btn-outline-secondary target-unfeature-btn" title="Remove Feature Status">
                                                 <i class="bi bi-archive-fill"></i> 
                                                 <span class="d-none d-xl-inline">Unfeature</span>
                                             </button>
 
-                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-light border text-danger" title="Delete Permanently" onclick="return confirm('Delete permanently?')">
+                                            <button type="submit" name="action" value="delete" class="btn btn-sm btn-light border text-danger target-delete-btn" title="Delete Permanently" onclick="return confirm('Delete permanently?')">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </form>
@@ -215,5 +235,65 @@ $result = getAllTestimonials($conn);
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- LIVE MONITOR SCRIPT: Listens to live theme toggles from your sidebar configuration -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const body = document.body;
+        const unfeatureBtns = document.querySelectorAll(".target-unfeature-btn");
+        const deleteBtns = document.querySelectorAll(".target-delete-btn");
+        const filterBtns = document.querySelectorAll(".target-filter-btn");
+
+        const syncBootstrapTheme = () => {
+            if (body.getAttribute("data-theme") === "dark") {
+                body.setAttribute("data-bs-theme", "dark");
+                
+                // Adjust contextual buttons for dark background readability
+                unfeatureBtns.forEach(btn => {
+                    btn.classList.remove("btn-outline-secondary");
+                    btn.classList.add("btn-outline-light");
+                });
+                deleteBtns.forEach(btn => {
+                    btn.classList.remove("btn-light", "border");
+                    btn.classList.add("btn-outline-danger");
+                });
+                filterBtns.forEach(btn => {
+                    btn.classList.remove("btn-outline-secondary");
+                    btn.classList.add("btn-outline-light");
+                });
+            } else {
+                body.setAttribute("data-bs-theme", "light");
+                
+                // Revert to light mode button themes
+                unfeatureBtns.forEach(btn => {
+                    btn.classList.remove("btn-outline-light");
+                    btn.classList.add("btn-outline-secondary");
+                });
+                deleteBtns.forEach(btn => {
+                    btn.classList.remove("btn-outline-danger");
+                    btn.classList.add("btn-light", "border");
+                });
+                filterBtns.forEach(btn => {
+                    btn.classList.remove("btn-outline-light");
+                    btn.classList.add("btn-outline-secondary");
+                });
+            }
+        };
+
+        // Initial execution on layout render
+        syncBootstrapTheme();
+
+        // Observe attribute mutations coming from sidebar action triggers
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "data-theme") {
+                    syncBootstrapTheme();
+                }
+            });
+        });
+
+        observer.observe(body, { attributes: true });
+    });
+</script>
 </body>
 </html>
