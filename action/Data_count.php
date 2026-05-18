@@ -146,6 +146,9 @@ function getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit){
             sr.login_time,
             sr.logout_time,
             sr.language,
+            sr.task_status,
+            sr.behavior_score,
+            sr.points_earned_this_session,
             COALESCE(f.id,0) AS feedback_submitted,
             TIMESTAMPDIFF(MINUTE,sr.login_time,sr.logout_time)/60 AS duration_hours
         FROM sit_in_records sr
@@ -153,11 +156,11 @@ function getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit){
         WHERE sr.student_pk_id=?";
 
     if(!empty($date_filter)){
-        $sql.=" AND DATE(sr.login_time)=?";
+        $sql .= " AND DATE(sr.login_time)=?";
     }
 
-    $sql.=" ORDER BY sr.login_time DESC LIMIT ?,?";
-    $stmt=mysqli_prepare($conn,$sql);
+    $sql .= " ORDER BY sr.login_time DESC LIMIT ?,?";
+    $stmt = mysqli_prepare($conn,$sql);
 
     if($stmt){
         if(!empty($date_filter)){
@@ -167,10 +170,10 @@ function getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit){
         }
 
         mysqli_stmt_execute($stmt);
-        $result=mysqli_stmt_get_result($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
-        while($row=mysqli_fetch_assoc($result)){
-            $history[]=$row;
+        while($row = mysqli_fetch_assoc($result)){
+            $history[] = $row;
         }
         mysqli_stmt_close($stmt);
     }
