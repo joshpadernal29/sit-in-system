@@ -29,7 +29,6 @@ if (!empty($sit_in_rate)) {
     }
 } else {
     // SAFEGUARD: If it's a new student with 0 records, inject a baseline zero row.
-    // Today's date as a string for Axis #0, and 0 as an integer for Axis #1.
     $data[] = [date('Y-m-d'), 0];
 }
 
@@ -60,6 +59,15 @@ foreach($history as $h){
     $total_hours+=$h['duration_hours'];
 }
 
+// ================= GAMIFIED REWARD CALCULATIONS =================
+// Fetch dynamic point variables safely from your updated student row reference array
+$accumulated_points = isset($student['accumulated_points']) ? floatval($student['accumulated_points']) : 0.0;
+$sessions_earned    = isset($student['sessions_earned']) ? intval($student['sessions_earned']) : 0;
+
+// Milestone targets: compute remaining points needed to hit the next 50-point credit tier
+$points_per_milestone = 50;
+$current_tier_progress = fmod($accumulated_points, $points_per_milestone);
+$progress_percentage   = ($current_tier_progress / $points_per_milestone) * 100;
 ?>
 
 <!DOCTYPE html>
@@ -160,7 +168,7 @@ observer.observe(document.documentElement, { attributes: true, attributeFilter: 
     border-radius:14px;
     padding:18px;
     box-shadow:0 6px 20px rgba(0,0,0,.04);
-    height:100px;
+    min-height:105px;
     display:flex;
     flex-direction:column;
     justify-content:center;
@@ -238,41 +246,77 @@ observer.observe(document.documentElement, { attributes: true, attributeFilter: 
     <!-- PAGE TITLE -->
     <div class="mb-4">
         <h4 class="fw-bold text-body mb-0">Student Dashboard</h4>
-        <small class="text-secondary">Overview of your laboratory activity</small>
+        <small class="text-secondary">Overview of your laboratory activity and rewards balance</small>
+    </div>
+
+    <!-- REVISIONS INCLUDED: DYNAMIC ACCUMULATED REWARD POOLS AND MILESTONES -->
+    <div class="row g-4 mb-4">
+        
+        <!-- 1. Accumulated Performance Balance Points Card -->
+        <div class="col-md-6 col-xl-3">
+            <div class="kpi-card bg-body border border-light-subtle">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="kpi-label text-secondary">Performance Points</div>
+                    <i class="bi bi-award text-primary fs-5"></i>
+                </div>
+                <div class="kpi-value text-body mt-1"><?= number_format($accumulated_points, 2); ?></div>
+                
+                <!-- Dynamic progress metric to visually track milestones -->
+                <div class="mt-2">
+                    <div class="d-flex justify-content-between text-muted mb-1" style="font-size: 0.65rem;">
+                        <span>Next Bonus Tier</span>
+                        <span class="font-monospace fw-bold"><?= round($current_tier_progress, 1); ?> / 50</span>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" role="progressbar" style="width: <?= $progress_percentage; ?>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Earned Bonus Sessions Card -->
+        <div class="col-md-6 col-xl-3">
+            <div class="kpi-card bg-body border border-light-subtle">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="kpi-label text-secondary">Bonus Unlocked</div>
+                    <i class="bi bi-gift text-success fs-5"></i>
+                </div>
+                <div class="kpi-value text-success mt-1">+<?= $sessions_earned; ?></div>
+                <small class="text-muted text-truncate" style="font-size:0.65rem; margin-top: 4px;">Sessions earned from actions</small>
+            </div>
+        </div>
+
+        <!-- 3. Dynamic Remaining Sessions Allotment Card -->
+        <div class="col-md-6 col-xl-3">
+            <div class="kpi-card bg-body border border-light-subtle">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="kpi-label text-secondary">Remaining Sessions</div>
+                    <i class="bi bi-cpu text-info fs-5"></i>
+                </div>
+                <!-- Displays the live active sessions column value from your database -->
+                <div class="kpi-value text-primary mt-1"><?= htmlspecialchars($student['sit_ins']); ?></div>
+                <small class="text-muted text-truncate" style="font-size:0.65rem; margin-top: 4px;">Includes unlocked reward offsets</small>
+            </div>
+        </div>
+
+        <!-- 4. Total Accumulated Lab Hours Card -->
+        <div class="col-md-6 col-xl-3">
+            <div class="kpi-card bg-body border border-light-subtle">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="kpi-label text-secondary">Total Lab Hours</div>
+                    <i class="bi bi-hourglass-split text-secondary fs-5"></i>
+                </div>
+                <div class="kpi-value text-body mt-1"><?= number_format($total_hours, 1) ?></div>
+                <small class="text-muted text-truncate" style="font-size:0.65rem; margin-top: 4px;">Active track duration summaries</small>
+            </div>
+        </div>
+
     </div>
 
     <div class="row g-4">
 
-        <!-- LEFT CONTENT -->
+        <!-- LEFT CONTENT (CHARTS) -->
         <div class="col-lg-9">
-
-            <!-- KPI ROW -->
-            <div class="row g-3 mb-4">
-
-                <div class="col-md-4">
-                    <div class="kpi-card bg-body border border-light-subtle">
-                        <div class="kpi-label text-secondary">Remaining Sessions</div>
-                        <div class="kpi-value text-primary"><?= htmlspecialchars($student['sit_ins']); ?></div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="kpi-card bg-body border border-light-subtle">
-                        <div class="kpi-label text-secondary">Total Lab Hours</div>
-                        <div class="kpi-value text-body"><?= number_format($total_hours,1) ?></div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="kpi-card bg-body border border-light-subtle">
-                        <div class="kpi-label text-secondary">Status</div>
-                        <div class="kpi-value text-success">Verified</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- CHARTS -->
             <div class="row g-4">
 
                 <div class="col-md-7">
@@ -294,12 +338,10 @@ observer.observe(document.documentElement, { attributes: true, attributeFilter: 
                 </div>
 
             </div>
-
         </div>
 
         <!-- RIGHT RULES -->
         <div class="col-lg-3">
-
             <div class="rules-column bg-body border border-light-subtle">
 
                 <div class="text-center mb-3">
@@ -318,7 +360,6 @@ observer.observe(document.documentElement, { attributes: true, attributeFilter: 
                 </div>
 
             </div>
-
         </div>
 
     </div>
