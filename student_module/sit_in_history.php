@@ -24,6 +24,7 @@ if($page>$total_pages && $total_pages>0){
 
 $start_from=($page-1)*$limit;
 
+// Fetch paginated history records
 $history=getStudentHistory($conn,$student_pk,$date_filter,$start_from,$limit);
 
 $sql="SELECT sit_ins FROM students WHERE student_id=?";
@@ -42,11 +43,18 @@ $used_sessions=$total_records;
 $remaining=max(0,$max_sessions-$used_sessions);
 $percentage=($used_sessions/$max_sessions)*100;
 
-$total_hours=0;
+// Dynamic global metric aggregation query for accurate calculation regardless of pagination limits
+$hours_sql = "SELECT SUM(duration_hours) as total_accumulated_hours FROM sit_in_records WHERE student_pk_id = ?";
+$hours_sql = "SELECT SUM(TIMESTAMPDIFF(SECOND, login_time, logout_time) / 3600) as total_accumulated_hours 
+              FROM sit_in_records 
+              WHERE student_pk_id = ? AND logout_time IS NOT NULL";
+$hours_stmt = mysqli_prepare($conn, $hours_sql);
+mysqli_stmt_bind_param($hours_stmt, "i", $student_pk);
+mysqli_stmt_execute($hours_stmt);
+$hours_res = mysqli_stmt_get_result($hours_stmt);
+$hours_row = mysqli_fetch_assoc($hours_res);
 
-foreach($history as $h){
-    $total_hours+=$h['duration_hours'];
-}
+$total_hours = $hours_row['total_accumulated_hours'] ?? 0;
 ?>
 
 <!DOCTYPE html>
@@ -174,7 +182,7 @@ foreach($history as $h){
         }
 
         .table{
-            min-width:850px;
+            min-width:1000px; /* Bumped slightly to scale for points columns */
         }
 
     }
@@ -202,7 +210,7 @@ foreach($history as $h){
                     </h2>
 
                     <p class="opacity-75 mb-0">
-                        Monitor your laboratory sessions and activities.
+                        Monitor your laboratory sessions, point allocations, and activities.
                     </p>
 
                 </div>
@@ -325,7 +333,9 @@ foreach($history as $h){
                             <th class="text-secondary bg-body-tertiary">Laboratory</th>
                             <th class="text-secondary bg-body-tertiary">Focus</th>
                             <th class="text-secondary bg-body-tertiary">Duration</th>
-                            <th class="text-secondary bg-body-tertiary">Status</th>
+                            <th class="text-center text-secondary bg-body-tertiary">Task Status</th>
+                            <th class="text-center text-secondary bg-body-tertiary">Behavior</th>
+                            <th class="text-end text-secondary bg-body-tertiary">Points</th>
                             <th class="text-center text-secondary bg-body-tertiary">Action</th>
                         </tr>
 
@@ -337,7 +347,7 @@ foreach($history as $h){
 
                             <tr>
 
-                                <td colspan="6" class="text-center py-5">
+                                <td colspan="8" class="text-center py-5">
 
                                     <i class="bi bi-clock-history display-5 text-secondary opacity-25"></i>
 
@@ -401,22 +411,37 @@ foreach($history as $h){
 
                                 </td>
 
-                                <td class="border-light-subtle">
-
-                                    <?php if($record['logout_time']): ?>
-
-                                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
-                                            Completed
+                                <!-- 1. Gamified Component: Task Status Metrics -->
+                                <td class="text-center border-light-subtle">
+                                    <?php if(!$record['logout_time']): ?>
+                                        <span class="badge bg-light text-secondary rounded-pill border border-light-subtle px-3 py-2">Active Session</span>
+                                    <?php elseif(($record['task_status'] ?? 'Pending') === 'Completed'): ?>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Completed
                                         </span>
-
                                     <?php else: ?>
-
-                                        <span class="badge bg-warning-subtle text-warning rounded-pill px-3 py-2">
-                                            Active
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-2">
+                                            <i class="bi bi-hourglass-split me-1"></i>Pending
                                         </span>
-
                                     <?php endif; ?>
+                                </td>
 
+                                <!-- 2. Gamified Component: Behavior Matrix Performance -->
+                                <td class="text-center border-light-subtle fw-bold font-monospace text-muted">
+                                    <?php if($record['logout_time']): ?>
+                                        <?= isset($record['behavior_score']) ? $record['behavior_score'] . ' / 10' : '10 / 10'; ?>
+                                    <?php else: ?>
+                                        <span class="text-secondary opacity-50">—</span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <!-- 3. Gamified Component: Extracted Point Total Yield -->
+                                <td class="text-end border-light-subtle fw-bold font-monospace text-primary">
+                                    <?php if($record['logout_time']): ?>
+                                        +<?= isset($record['points_earned_this_session']) ? number_format($record['points_earned_this_session'], 2) : '0.00'; ?>
+                                    <?php else: ?>
+                                        <span class="text-secondary opacity-50 small font-sans-serif">Pending</span>
+                                    <?php endif; ?>
                                 </td>
 
                                 <td class="text-center border-light-subtle">
