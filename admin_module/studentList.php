@@ -1,295 +1,313 @@
 <?php
-// session start if there is no session active
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 include("../action/crud_functions.php");
-// call function to read students from db
 $students = getStudents($conn);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registry | UC Admin</title>
 
-<title>Student Registry | UC Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* --- CORE THEME ADAPTATION --- */
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
 
-<style>
-/* 1. FIX: Ensures the Header Dropdown is always above the table content */
-header, .navbar {
-    z-index: 1050 !important;
-    position: relative;
-}
+        .main-text { color: var(--text-main) !important; }
+        .text-muted-custom { color: var(--text-muted) !important; }
 
-/* 2. FIX: Allows dropdowns to "pop out" of the card and table */
-.card { overflow: visible !important; }
-.table-responsive { 
-    overflow-x: auto; 
-    overflow-y: visible !important; 
-}
+        /* Card & Layout Styling */
+        .card-custom {
+            background-color: var(--bg-sidebar) !important;
+            border: 1px solid var(--border-color) !important;
+        }
 
-/* Redesign Styles */
-.student-id {
-    font-family: 'Monaco', 'Consolas', monospace;
-    color: #0d6efd;
-    font-size: 0.85rem;
-    background: #f0f7ff;
-    padding: 2px 8px;
-    border-radius: 4px;
-}
+        /* --- THE TABLE FIX --- */
+        /* Force Bootstrap to release the white background */
+        .table-custom {
+            --bs-table-bg: transparent !important; 
+            --bs-table-color: var(--text-main) !important;
+            --bs-table-border-color: var(--border-color) !important;
+            background-color: transparent !important;
+            color: var(--text-main) !important;
+        }
 
-.table thead th {
-    background-color: #f8f9fa;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
-}
+        .table-custom td, .table-custom th {
+            background-color: transparent !important; /* Let the card background show through */
+            color: var(--text-main) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
 
-.bg-success-subtle { background-color: rgba(25, 135, 84, 0.1) !important; color: #198754 !important; }
-.bg-info-subtle { background-color: rgba(13, 202, 240, 0.1) !important; color: #0dcaf0 !important; }
-.bg-warning-subtle { background-color: rgba(255, 193, 7, 0.1) !important; color: #ffc107 !important; }
+        .table-custom thead th {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
 
-.btn-white { background: #fff; border: 1px solid #dee2e6; }
-.btn-white:hover { background: #f8f9fa; }
+        [data-theme="dark"] .table-custom thead th {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
 
-tr { transition: background 0.2s; }
-tr:hover { background-color: rgba(13, 110, 253, 0.02) !important; }
+        .student-row:hover td {
+            background-color: rgba(13, 110, 253, 0.05) !important;
+        }
 
-/* =======================
-   ✅ SIDEBAR COMPAT FIX
-======================= */
-:root{
-    --sidebar-width: 260px;
-    --sidebar-collapsed: 80px;
-}
+        /* --- UI ELEMENTS --- */
+        .student-id {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #0d6efd;
+            background: rgba(13, 110, 253, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
 
-main.container-fluid{
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    transition: margin-left .3s ease, width .3s ease;
-}
+        .form-control-custom {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-color) !important;
+        }
 
-/* when sidebar collapsed */
-.sidebar.collapsed ~ main.container-fluid{
-    margin-left: var(--sidebar-collapsed);
-    width: calc(100% - var(--sidebar-collapsed));
-}
+        .input-group-text-custom {
+            background-color: var(--bg-body) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-muted);
+        }
 
-/* mobile */
-@media (max-width: 991px){
-    main.container-fluid{
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
-}
-</style>
+        .btn-white { 
+            background: var(--bg-sidebar); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-main);
+        }
+
+        /* Status Badges */
+        .bg-success-subtle { background-color: rgba(25, 135, 84, 0.2) !important; color: #198754 !important; }
+        .bg-info-subtle { background-color: rgba(13, 202, 240, 0.2) !important; color: #0dcaf0 !important; }
+        .bg-warning-subtle { background-color: rgba(255, 193, 7, 0.2) !important; color: #ffc107 !important; }
+
+        /* Sidebar Layout Fix */
+        main.container-fluid {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            transition: 0.3s ease;
+        }
+        .sidebar.collapsed ~ main.container-fluid {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+        @media (max-width: 991px) {
+            main.container-fluid { margin-left: 0 !important; width: 100% !important; }
+        }
+
+        /* --- SEARCH BAR DARK MODE FIX --- */
+        /* 1. The input text color */
+        .form-control-custom {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important; /* Forces text to be visible */
+            border: 1px solid var(--border-color) !important;
+        }
+
+        /* 2. The placeholder text color (the "Search ID or name..." hint) */
+        .form-control-custom::placeholder {
+            color: var(--text-muted) !important;
+            opacity: 0.7;
+        }
+
+        /* 3. The search icon container */
+        .input-group-text-custom {
+            background-color: var(--bg-body) !important;
+            color: var(--text-muted) !important; /* Ensures the icon is visible */
+            border: 1px solid var(--border-color) !important;
+        }
+
+        /* 4. Focus state (so you can see where you are typing) */
+        .form-control-custom:focus {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            border-color: #0d6efd !important; /* Standard Bootstrap Blue */
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-<!-- SIDEBAR -->
-<?php include("../includes/admin_sidebar.php"); ?>
+    <?php include("../includes/admin_sidebar.php"); ?>
 
-<!-- MAIN CONTENT -->
-<main class="container-fluid py-4 px-lg-5">
+    <main class="container-fluid py-4 px-lg-5">
 
-    <div class="row align-items-center mb-4">
-        <div class="col-md-6">
-            <h4 class="fw-bold mb-1">Student Registry</h4>
-        </div>
-
-        <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
-
-            <!-- CHANGED: Added id="searchInput" to the input element -->
-            <div class="input-group shadow-sm" style="max-width: 280px;">
-                <span class="input-group-text bg-white border-end-0">
-                    <i class="bi bi-search"></i>
-                </span>
-                <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Search ID or name...">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <h4 class="fw-bold mb-1 main-text">Student Registry</h4>
+                <p class="text-muted-custom small mb-0">Overview of all verified students in the system.</p>
             </div>
 
-            <a class="btn btn-primary shadow-sm" href="add_student.php">
-                <i class="bi bi-plus-lg me-1"></i> Add
-            </a>
+            <div class="col-md-6 d-flex justify-content-md-end gap-2 mt-3 mt-md-0">
+                <div class="input-group shadow-sm" style="max-width: 280px;">
+                    <span class="input-group-text input-group-text-custom border-end-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="searchInput" class="form-control form-control-custom border-start-0 ps-0" placeholder="Search ID or name...">
+                </div>
 
-            <form action="../action/crud_functions.php" method="post"> 
-                <button class="btn btn-outline-danger shadow-sm" name="reset_session" type="submit"
-                    onclick="return confirm('Reset all student Sessions?');">
-                    Reset Session
-                </button>
-            </form>
+                <a class="btn btn-primary shadow-sm" href="add_student.php">
+                    <i class="bi bi-plus-lg me-1"></i> Add
+                </a>
 
+                <form action="../action/crud_functions.php" method="post"> 
+                    <button class="btn btn-outline-danger shadow-sm" name="reset_session" type="submit"
+                        onclick="return confirm('Reset all student Sessions?');">
+                        Reset Session
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <!-- TABLE CARD -->
-    <div class="card border-0 shadow-sm rounded-4">
+        <!-- TABLE CARD -->
+        <div class="card card-custom border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4 py-3">Student ID</th>
+                            <th class="py-3">Student Profile</th>
+                            <th class="py-3">Course-Year</th>
+                            <th class="py-3 text-center">Sessions</th>
+                            <th class="pe-4 py-3 text-end">Action</th>
+                        </tr>
+                    </thead>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+                    <tbody id="studentTableBody">
+                        <?php if (!empty($students)): ?>
+                            <?php foreach($students as $student): ?>
+                            <tr class="student-row">
+                                <td class="ps-4">
+                                    <span class="student-id fw-bold search-id">
+                                        <?php echo htmlspecialchars($student['student_id']); ?>
+                                    </span>
+                                </td>
 
-                <thead>
-                    <tr>
-                        <th class="ps-4 py-3 text-muted fw-bold">Student ID</th>
-                        <th class="py-3 text-muted fw-bold">Student Profile</th>
-                        <th class="py-3 text-muted fw-bold">Course-Year</th>
-                        <th class="py-3 text-muted fw-bold text-center">Sessions</th>
-                        <th class="pe-4 py-3 text-muted fw-bold text-end">Action</th>
-                    </tr>
-                </thead>
-
-                <!-- CHANGED: Added id="studentTableBody" to map rows -->
-                <tbody id="studentTableBody">
-                    <?php if (!empty($students)): ?>
-                        <?php foreach($students as $student): ?>
-                        <tr class="student-row">
-                            <!-- CHANGED: Added custom data attributes for seamless searching -->
-                            <td class="ps-4">
-                                <span class="student-id fw-bold search-id">
-                                    <?php echo htmlspecialchars($student['student_id']); ?>
-                                </span>
-                            </td>
-
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($student['firstname'].'+'.$student['lastname']); ?>&background=0d6efd&color=fff&size=32" 
-                                         class="rounded-circle me-3 border">
-
-                                    <div class="lh-1">
-                                        <div class="fw-bold text-dark mb-1 search-name">
-                                            <?php echo htmlspecialchars($student['firstname'] . " " . $student['lastname']); ?>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($student['firstname'].'+'.$student['lastname']); ?>&background=0d6efd&color=fff&size=32" 
+                                             class="rounded-circle me-3 border">
+                                        <div class="lh-1">
+                                            <div class="fw-bold main-text mb-1 search-name">
+                                                <?php echo htmlspecialchars($student['firstname'] . " " . $student['lastname']); ?>
+                                            </div>
+                                            <small class="text-muted-custom">Verified Registry</small>
                                         </div>
-                                        <small class="text-muted">Verified Registry</small>
                                     </div>
-                                </div>
-                            </td>
+                                </td>
 
-                            <td>
-                                <div class="small fw-semibold text-dark">
-                                    <?php echo htmlspecialchars($student['course']); ?>
-                                </div>
-                                <div class="text-muted" style="font-size: 0.75rem;">
-                                    Year: <?php echo htmlspecialchars($student['year_level']); ?>
-                                </div>
-                            </td>
+                                <td>
+                                    <div class="small fw-semibold main-text">
+                                        <?php echo htmlspecialchars($student['course']); ?>
+                                    </div>
+                                    <div class="text-muted-custom" style="font-size: 0.75rem;">
+                                        Year: <?php echo htmlspecialchars($student['year_level']); ?>
+                                    </div>
+                                </td>
 
-                            <td class="text-center">
-                                <?php 
-                                    $sit_ins = (int)$student['sit_ins'];
-                                    $status = ($sit_ins > 10) ? 'success' : (($sit_ins > 5) ? 'info' : 'warning');
-                                ?>
-                                <span class="badge rounded-pill bg-<?php echo $status; ?>-subtle px-3 py-2">
-                                    <?php echo $sit_ins; ?> Sit-ins
-                                </span>
-                            </td>
+                                <td class="text-center">
+                                    <?php 
+                                        $sit_ins = (int)$student['sit_ins'];
+                                        $status = ($sit_ins > 10) ? 'success' : (($sit_ins > 5) ? 'info' : 'warning');
+                                    ?>
+                                    <span class="badge rounded-pill bg-<?php echo $status; ?>-subtle px-3 py-2">
+                                        <?php echo $sit_ins; ?> Sit-ins
+                                    </span>
+                                </td>
 
-                            <td class="pe-4 text-end">
-                                <div class="btn-group">
-                                    <a href="edit_student.php?id=<?php echo $student['id']; ?>" 
-                                       class="btn btn-sm btn-white text-primary px-3">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-
-                                    <a href="delete_student.php?id=<?php echo $student['id']; ?>" 
-                                       class="btn btn-sm btn-white text-danger px-3">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </div>
-                            </td>
-
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr id="noDataRow">
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="edit_student.php?id=<?php echo $student['id']; ?>" 
+                                           class="btn btn-sm btn-white text-primary px-3">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="delete_student.php?id=<?php echo $student['id']; ?>" 
+                                           class="btn btn-sm btn-white text-danger px-3">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-people text-muted opacity-25" style="font-size: 3rem;"></i>
+                                    <p class="text-muted-custom mt-2">No students found in the database.</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        
+                        <tr id="noMatchRow" style="display: none;">
                             <td colspan="5" class="text-center py-5">
-                                <i class="bi bi-people text-muted opacity-25" style="font-size: 3rem;"></i>
-                                <p class="text-muted mt-2">No students found in the database.</p>
+                                <i class="bi bi-search text-muted opacity-25" style="font-size: 3rem;"></i>
+                                <p class="text-muted-custom mt-2">No results match your search.</p>
                             </td>
                         </tr>
-                    <?php endif; ?>
-                    
-                    <!-- Fallback row if filtering yields no UI matching items -->
-                    <tr id="noMatchRow" style="display: none;">
-                        <td colspan="5" class="text-center py-5">
-                            <i class="bi bi-search text-muted opacity-25" style="font-size: 3rem;"></i>
-                            <p class="text-muted mt-2">No results match your search.</p>
-                        </td>
-                    </tr>
-                </tbody>
+                    </tbody>
+                </table>
+            </div>
 
-            </table>
-        </div>
-
-        <!-- PAGINATION (UNCHANGED LOGIC) -->
-        <div class="card-footer bg-white border-top py-3 px-4 rounded-bottom-4">
-            <div class="d-flex justify-content-between align-items-center">
-
-                <p class="text-muted small mb-0">
-                    Total: <strong><?php echo count($students); ?></strong> Students
-                </p>
-
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#"><i class="bi bi-chevron-left"></i></a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#"><i class="bi bi-chevron-right"></i></a>
-                        </li>
-                    </ul>
-                </nav>
-
+            <div class="card-footer bg-transparent border-top py-3 px-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="text-muted-custom small mb-0">
+                        Total: <strong class="main-text"><?php echo count($students); ?></strong> Students
+                    </p>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link bg-transparent border-0 text-muted" href="#"><i class="bi bi-chevron-left"></i></a></li>
+                            <li class="page-item active"><a class="page-link shadow-none" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link bg-transparent border-0 main-text" href="#"><i class="bi bi-chevron-right"></i></a></li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
+    </main>
 
-    </div>
-</main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Live Search
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#studentTableBody .student-row');
+        const noMatchRow = document.getElementById('noMatchRow');
+        let matchesFound = 0;
 
-<!-- NEW: Real-time Javascript Search Engine Feature -->
-<script>
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const filter = this.value.toLowerCase().trim();
-    const rows = document.querySelectorAll('#studentTableBody .student-row');
-    const noMatchRow = document.getElementById('noMatchRow');
-    let matchesFound = 0;
+        rows.forEach(row => {
+            const studentId = row.querySelector('.search-id').textContent.toLowerCase();
+            const studentName = row.querySelector('.search-name').textContent.toLowerCase();
 
-    rows.forEach(row => {
-        const studentId = row.querySelector('.search-id').textContent.toLowerCase();
-        const studentName = row.querySelector('.search-name').textContent.toLowerCase();
+            if (studentId.includes(filter) || studentName.includes(filter)) {
+                row.style.display = '';
+                matchesFound++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
 
-        // Check if input matches either ID or Name
-        if (studentId.includes(filter) || studentName.includes(filter)) {
-            row.style.display = '';
-            matchesFound++;
-        } else {
-            row.style.display = 'none';
+        if (noMatchRow) {
+            noMatchRow.style.display = (matchesFound === 0 && rows.length > 0) ? '' : 'none';
         }
     });
-
-    // Handle "No Match Found" display logic
-    if (noMatchRow) {
-        if (matchesFound === 0 && rows.length > 0) {
-            noMatchRow.style.display = '';
-        } else {
-            noMatchRow.style.display = 'none';
-        }
-    }
-});
-</script>
+    </script>
 </body>
 </html>

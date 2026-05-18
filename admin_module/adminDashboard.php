@@ -1,19 +1,18 @@
 <?php
-// session start if there is no session active
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 include("../action/Data_count.php");
 
-// get language used data
+// Fetch language data
 $Php = languageUsed($conn, 'PHP');
 $Java = languageUsed($conn, 'JAVA');
 $C = languageUsed($conn, 'C');
 $Csharp = languageUsed($conn, 'C#');
 $CPlusPlus = languageUsed($conn, 'C++');
 
-// get posts/annoucements
+// Get announcements
 $posts = getPost($conn, 1);
 ?>
 
@@ -27,12 +26,75 @@ $posts = getPost($conn, 1);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <style>
+        /* --- DASHBOARD THEME ADAPTATION --- */
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .main-text { color: var(--text-main); }
+        .text-muted-custom { color: var(--text-muted) !important; }
+
+        /* Card Styling */
+        .card-custom {
+            background-color: var(--bg-sidebar) !important;
+            border: 1px solid var(--border-color) !important;
+            transition: transform 0.2s ease, background 0.3s;
+        }
+        .card-custom:hover { transform: translateY(-3px); }
+
+        /* Modal & Form Styling for Dark Mode */
+        .modal-content {
+            background-color: var(--bg-sidebar);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .modal-header, .modal-footer {
+            border-color: var(--border-color);
+            background-color: var(--bg-body) !important;
+        }
+        .form-control, .form-select {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+        .input-group-text {
+            background-color: var(--bg-card) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-muted) !important;
+        }
+
+        /* Sidebar Layout Fix */
+        main.container-fluid {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            transition: 0.3s ease;
+            padding: 2rem;
+        }
+        .sidebar.collapsed ~ main.container-fluid {
+            margin-left: 80px;
+            width: calc(100% - 80px);
+        }
+        @media (max-width: 991px) {
+            main.container-fluid { margin-left: 0 !important; width: 100% !important; }
+        }
+
+        .vr { background-color: var(--border-color); opacity: 0.5; }
+    </style>
+
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', { 'packages': ['corechart'] });
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
+            // Detect theme for chart colors
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#e0e0e0' : '#495057';
+            const gridColor = isDark ? '#333333' : '#e9ecef';
+
             var data = google.visualization.arrayToDataTable([
                 ['Language', 'Students'],
                 ['C', <?php echo $C ?>],
@@ -43,79 +105,87 @@ $posts = getPost($conn, 1);
             ]);
 
             var options = {
-                pieHole: 0.4, // Modern Donut Style
+                pieHole: 0.4,
                 colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14'],
-                legend: { position: 'bottom' },
+                legend: { position: 'bottom', textStyle: { color: textColor } },
                 chartArea: { width: '100%', height: '80%' },
-                backgroundColor: 'transparent'
+                backgroundColor: 'transparent',
+                pieSliceBorderColor: isDark ? '#1e1e1e' : '#ffffff'
             };
 
             var chart = new google.visualization.PieChart(document.getElementById('piechart'));
             chart.draw(data, options);
         }
+
+        // Redraw chart when theme is toggled
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('#themeToggle')) {
+                setTimeout(drawChart, 350); // Small delay to wait for CSS transition
+            }
+        });
     </script>
 </head>
 
-<body class="bg-light">
+<body>
     <?php include("../includes/admin_sidebar.php"); ?>
 
-    <main class="container py-4">
-        <div class="col-md-6">
-            <h4 class="fw-bold mb-3">Admin Dashboard</h4>
+    <main class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="fw-bold main-text">Admin Dashboard</h4>
+                <p class="text-muted-custom">Overview of lab activities and announcements.</p>
+            </div>
         </div>
+
+        <!-- Stat Cards -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3"> <!--MAKE THIS DYNAMIC-->
+                <div class="card card-custom border-0 shadow-sm p-3">
                     <div class="d-flex align-items-center">
                         <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
                             <i class="bi bi-people-fill text-primary fs-4"></i>
                         </div>
                         <div>
-                            <small class="text-muted fw-bold text-uppercase">Registered</small>
-                            <h4 class="mb-0 fw-bold">
-                                <?php echo  $total_students = countStudents($conn); ?>
-                            </h4>
+                            <small class="text-muted-custom fw-bold text-uppercase">Registered Students</small>
+                            <h4 class="mb-0 fw-bold main-text"><?php echo countStudents($conn); ?></h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4"> <!--MAKE THIS DYNAMIC-->
-                <div class="card border-0 shadow-sm p-3">
+            <div class="col-md-4">
+                <div class="card card-custom border-0 shadow-sm p-3">
                     <div class="d-flex align-items-center">
                         <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
                             <i class="bi bi-person-video3 text-success fs-4"></i>
                         </div>
                         <div>
-                            <small class="text-muted fw-bold text-uppercase">Current Sit-in</small>
-                            <h4 class="mb-0 fw-bold">
-                                <?php echo $current_sitting_in = currentSitIns($conn); ?>
-                            </h4>
+                            <small class="text-muted-custom fw-bold text-uppercase">Current Sit-in</small>
+                            <h4 class="mb-0 fw-bold main-text"><?php echo currentSitIns($conn); ?></h4>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4"><!--MAKE THIS DYNAMIC-->
-                <div class="card border-0 shadow-sm p-3">
+            <div class="col-md-4">
+                <div class="card card-custom border-0 shadow-sm p-3">
                     <div class="d-flex align-items-center">
                         <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
                             <i class="bi bi-clock-history text-warning fs-4"></i>
                         </div>
                         <div>
-                            <small class="text-muted fw-bold text-uppercase">Total Sessions</small>
-                            <h4 class="mb-0 fw-bold">
-                                <?php echo $total_sessions = getTotalSessions($conn); ?>
-                            </h4>
+                            <small class="text-muted-custom fw-bold text-uppercase">Total Sessions</small>
+                            <h4 class="mb-0 fw-bold main-text"><?php echo getTotalSessions($conn); ?></h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--MAKE THIS DYNAMIC-->
+
         <div class="row g-4">
+            <!-- Chart Section -->
             <div class="col-12 col-lg-7">
-                <div class="card border-0 shadow-sm h-100 rounded-4">
-                    <div class="card-header bg-white py-3 border-0">
-                        <h5 class="mb-0 fw-bold text-dark">
+                <div class="card card-custom border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-header bg-transparent py-3 border-0">
+                        <h5 class="mb-0 fw-bold main-text">
                             <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Programming Preference
                         </h5>
                     </div>
@@ -124,273 +194,114 @@ $posts = getPost($conn, 1);
                     </div>
                 </div>
             </div>
-            <!--MAKE THIS DYNAMIC-->
+
+            <!-- Announcements Section -->
             <div class="col-12 col-lg-5">
-                <div class="card border-0 shadow-sm h-100 rounded-4">
-                    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold">
+                <div class="card card-custom border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-header bg-transparent py-3 border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold main-text">
                             <i class="bi bi-megaphone-fill text-danger me-2"></i>Broadcasts
                         </h5>
-                        <button type="button" class="btn btn-primary shadow-sm d-flex align-items-center gap-2"
-                            data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
-                            <i class="bi bi-megaphone-fill"></i> Post Announcement
+                        <button type="button" class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
+                            <i class="bi bi-plus-lg"></i> Post
                         </button>
                     </div>
 
                     <div class="card-body overflow-auto" style="max-height: 400px;">
-                    <!--if posts is not empyt-->
-                    <?php if(!empty($posts)): ?>
-                        <!--foreach loop to show annoucements here-->
-                        <?php foreach ($posts as $post): ?>
-                            <?php 
-                                // helper for announcement priority color
-                                $priority_color = 'bg-success'; // default: general priority
-                                if ($post['priority'] === 'urgent') {
-                                    $priority_color = 'bg-danger';
-                                }
-                                if ($post['priority'] === 'academic') {
-                                    $priority_color = 'bg-info';
-                                }                        
-                            ?>
-
-                            <div class="d-flex mb-4">
-                                <div class="me-3 text-center">
-                                    <!--change color based on the priority/importance-->
-                                    <div class="<?php echo $priority_color ?> rounded-circle mb-1" style="width:12px; height:12px;"></div>
-                                    <div class="vr h-100"></div>
+                        <?php if(!empty($posts)): ?>
+                            <?php foreach ($posts as $post): ?>
+                                <?php 
+                                    $p_color = ($post['priority'] === 'urgent') ? 'bg-danger' : (($post['priority'] === 'academic') ? 'bg-info' : 'bg-success');
+                                ?>
+                                <div class="d-flex mb-4">
+                                    <div class="me-3 text-center">
+                                        <div class="<?php echo $p_color ?> rounded-circle mb-1" style="width:12px; height:12px;"></div>
+                                        <div class="vr h-100"></div>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0 main-text"><?php echo htmlspecialchars($post['title']) ?></h6>
+                                        <small class="text-muted-custom d-block mb-2">
+                                            <?php echo date("F j, Y . g:i a", strtotime($post['date_posted'])); ?>
+                                        </small>
+                                        <p class="small text-muted-custom mb-0"><?php echo htmlspecialchars($post['message']) ?></p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h6 class="fw-bold mb-0"><?php echo $post['title'] ?></h6> <!--post title-->
-                                    <small class="text-muted d-block mb-2"> <!--date and time-->
-                                    <?php
-                                    // format time to 12 hour format
-                                    $time = strtotime($post['date_posted']);
-                                    echo date("F j, Y . g:i a", $time);
-                                    ?>
-                                    </small>
-                                    <p class="small text-muted mb-0"><?php echo $post['message'] ?></p> <!--post message-->
-                                </div>
-                            </div>
-                        <?php endforeach ?>
-                    <?php else: ?>
-                        <p class="text-center text-muted py-4">No recent Annoucements...</p>
-                    <?php endif ?>
+                            <?php endforeach ?>
+                        <?php else: ?>
+                            <p class="text-center text-muted-custom py-4">No recent Announcements...</p>
+                        <?php endif ?>
                     </div>
-                    <!--post card end here--> 
                 </div>
             </div>
         </div>
     </main>
 
-    <style>
-        .card {
-            transition: transform 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-        }
-
-        .vr {
-            width: 2px;
-            background-color: #dee2e6;
-            opacity: 1;
-        }
-
-        /* ===== SIDEBAR BALANCED CENTER FIX ===== */
-        main.container{
-            margin-left:260px;
-            max-width:calc(100% - 260px);
-            transition:.3s ease;
-        }
-
-        /* when sidebar collapses */
-        .sidebar.collapsed ~ main.container{
-            margin-left:80px;
-            max-width:calc(100% - 80px);
-        }
-
-        /* center content inside available space */
-        main.container{
-            display:block;
-        }
-
-        /* optional: center inner grid visually */
-        main.container > .row{
-            justify-content:center;
-        }
-
-        .sidebar{
-            position:fixed;
-            left:0;
-            top:0;
-            height:100vh;
-            z-index:1000;
-        }
-
-    </style>
-
-    <!--modal-->
-    <div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-labelledby="announcementModalLabel"
-        aria-hidden="true">
+    <!-- Post Announcement Modal -->
+    <div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-
-                <div class="modal-header bg-light border-bottom-0 py-3 px-4">
-                    <div class="d-flex align-items-center">
-                        <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
-                            <i class="bi bi-megaphone text-primary fs-5"></i>
-                        </div>
-                        <div>
-                            <h5 class="modal-title fw-bold text-dark" id="announcementModalLabel">New
-                                Announcement</h5>
-                            <p class="text-muted small mb-0">Broadcast a message to all students.</p>
-                        </div>
-                    </div>
+            <div class="modal-content shadow-lg rounded-4">
+                <div class="modal-header border-0 py-3 px-4">
+                    <h5 class="modal-title fw-bold">New Announcement</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
                 <div class="modal-body p-4">
                     <form action="../action/announcement.php" method="POST">
-
                         <div class="mb-3">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Announcement
-                                Title</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white border-end-0"><i
-                                        class="bi bi-type-h1 text-muted"></i></span>
-                                <input type="text" name="title" class="form-control border-start-0 ps-0"
-                                    placeholder="e.g. System Maintenance" required>
-                            </div>
+                            <label class="form-label small fw-bold text-muted-custom text-uppercase">Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. System Maintenance" required>
                         </div>
-
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Category</label>
-                                <select name="category" class="form-select bg-light border-0">
+                                <label class="form-label small fw-bold text-muted-custom text-uppercase">Category</label>
+                                <select name="category" class="form-select">
                                     <option value="General">General</option>
                                     <option value="Urgent">Urgent</option>
                                     <option value="Academic">Academic</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-muted text-uppercase">Target
-                                    Audience</label>
-                                <select name="target" class="form-select bg-light border-0">
+                                <label class="form-label small fw-bold text-muted-custom text-uppercase">Target</label>
+                                <select name="target" class="form-select">
                                     <option value="all">All Students</option>
                                     <option value="BSIT">BSIT Only</option>
                                     <option value="BSCS">BSCS Only</option>
                                 </select>
                             </div>
                         </div>
-
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Message
-                                Content</label>
-                            <textarea name="message" class="form-control bg-light border-0" rows="4"
-                                placeholder="Write your announcement here..." required></textarea>
+                            <label class="form-label small fw-bold text-muted-custom text-uppercase">Message</label>
+                            <textarea name="message" class="form-control" rows="4" placeholder="Write content here..." required></textarea>
                         </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" name="post_now" class="btn btn-primary py-2 fw-bold shadow-sm">
-                                <i class="bi bi-send-fill me-2"></i> Post Announcement
-                            </button>
-        
-                            <button type="button" class="btn btn-outline-secondary text-decoration-none small"
-                                data-bs-dismiss="modal">
-                                Discard Draft
-                            </button>
-                        </div>
+                        <button type="submit" name="post_now" class="btn btn-primary w-100 py-2 fw-bold">Post Now</button>
                     </form>
                 </div>
-
-                <div class="modal-footer bg-light border-top-0 py-2 justify-content-center">
-                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i> This will appear on
-                        the Student Dashboard.</small>
-                </div>
             </div>
         </div>
     </div>
 
-    <style>
-        .modal-content {
-            overflow: hidden;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            background-color: #fff !important;
-            border-color: #0d6efd !important;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-        }
-
-        .input-group-text {
-            color: #6c757d;
-            transition: all 0.2s;
-        }
-
-        .input-group:focus-within .input-group-text {
-            border-color: #0d6efd;
-            color: #0d6efd;
-        }
-
-        /* FIX: Prevents the background table from shifting when modal opens */
-        body.modal-open {
-            padding-right: 0 !important;
-        }
-    </style>
-    <!--end of modal-->
-
-    <!--toast message succesful posting of announcement-->
+    <!-- Toast Success Message -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="margin-top: 60px;">
-        <div id="successToast" class="toast border-0 shadow-lg rounded-4" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex align-items-center p-2">
-                <div class="bg-success bg-opacity-10 p-2 rounded-3 me-3 ms-2">
-                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+        <div id="successToast" class="toast border-0 shadow-lg rounded-4" role="alert">
+            <div class="d-flex align-items-center p-3 card-custom">
+                <i class="bi bi-check-circle-fill text-success fs-5 me-3"></i>
+                <div class="toast-body p-0">
+                    <strong class="main-text d-block">Success!</strong>
+                    <span class="text-muted-custom small">Announcement posted successfully.</span>
                 </div>
-                <div class="toast-body ps-0">
-                    <strong class="d-block text-dark">Success!</strong>
-                    <span class="text-muted small">Announcement posted successfully.</span>
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
 
-    <style>
-        #successToast {
-            background-color: #ffffff;
-            min-width: 300px;
-        }
-        .toast-container {
-            z-index: 2000; 
-        }
-    </style>
-    <!--end of toast message-->
-
-    <!--main end-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!--for toast message trigger-->
-    <script> 
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Check if the URL has ?status=success
             const urlParams = new URLSearchParams(window.location.search);
-            
             if (urlParams.get('status') === 'success') {
-                // Initialize the Bootstrap Toast
-                const toastEl = document.getElementById('successToast');
-                const toast = new bootstrap.Toast(toastEl, {
-                    delay: 5000 // Visible for 5 seconds
-                });
-                
-                // Show toast message
+                const toast = new bootstrap.Toast(document.getElementById('successToast'));
                 toast.show();
-
-                // Clean the URL (Optional: removes ?status=success from address bar)
-                //window.history.replaceState({}, document.title, window.location.pathname);
             }
         });
     </script>
 </body>
-
 </html>

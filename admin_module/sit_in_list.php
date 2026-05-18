@@ -24,11 +24,86 @@ $total_pages = ceil($total_rows / $limit);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 12px; border: none; }
-        .table thead th { background-color: #212529; color: white; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
-        .status-pulse { width: 8px; height: 8px; background: #198754; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); } 100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } }
+        /* --- CORE THEME ADAPTATION --- */
+        body { 
+            background-color: var(--bg-body) !important; 
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .main-text { color: var(--text-main) !important; }
+        .text-muted-custom { color: var(--text-muted) !important; }
+
+        /* Card Styling */
+        .card-custom { 
+            background-color: var(--bg-sidebar) !important; 
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px; 
+            overflow: hidden;
+        }
+
+        /* --- TABLE DARK MODE FIXES --- */
+        .table-custom {
+            --bs-table-bg: transparent !important;
+            --bs-table-color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .table-custom thead th { 
+            background-color: rgba(0, 0, 0, 0.2) !important; 
+            color: var(--text-muted) !important; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .table-custom thead th {
+            background-color: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .table-custom td {
+            color: var(--text-main) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        /* Status & UI Elements */
+        .status-pulse { 
+            width: 8px; 
+            height: 8px; 
+            background: #198754; 
+            border-radius: 50%; 
+            display: inline-block; 
+            animation: pulse 2s infinite; 
+        }
+
+        @keyframes pulse { 
+            0% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7); } 
+            70% { box-shadow: 0 0 0 10px rgba(25, 135, 84, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(25, 135, 84, 0); } 
+        }
+
+        .badge-lab {
+            background-color: rgba(13, 110, 253, 0.15) !important;
+            color: #0d6efd !important;
+            border: 1px solid rgba(13, 110, 253, 0.3);
+        }
+
+        code {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e83e8c; /* Classic code pink, visible on dark */
+        }
+
+        /* Sidebar Spacing */
+        .main-content {
+            margin-left: 260px; /* Adjust based on your sidebar width */
+            transition: 0.3s ease;
+        }
+        @media (max-width: 991px) {
+            .main-content { margin-left: 0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -36,24 +111,23 @@ $total_pages = ceil($total_rows / $limit);
     <!-- SIDEBAR COMPONENT -->
     <?php include("../includes/admin_sidebar.php"); ?>
 
-    <!-- MAIN CONTENT CONTAINER (Compatible with your fixed layout styles) -->
+    <!-- MAIN CONTENT CONTAINER -->
     <div class="main-content">
-        <main class="container-fluid py-4" style="max-width: 1400px;">
+        <main class="container-fluid py-4 px-lg-5">
             
             <!-- HEADER -->
             <div class="mb-4">
-                <h2 class="fw-bold mb-0">Active Sit-in Records</h2>
+                <h2 class="fw-bold mb-0 main-text">Active Sit-in Records</h2>
                 <div class="d-flex align-items-center mt-1">
                     <span class="status-pulse me-2"></span>
-                    <span class="text-success small fw-bold"><?php echo $total_rows; ?> Students In Lab</span>
+                    <span class="text-success small fw-bold"><?php echo $total_rows; ?> Students Currently in Lab</span>
                 </div>
             </div>
 
             <!-- TABLE CARD -->
-            <div class="card shadow-sm">
-                <!-- Wrapped table container cleanly for reliable mobile horizontal scrolling -->
-                <div class="table-responsive" style="border-radius: 12px;">
-                    <table class="table table-hover align-middle mb-0">
+            <div class="card card-custom shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-custom table-hover align-middle mb-0">
                         <thead>
                             <tr>
                                 <th class="ps-4">Student ID</th>
@@ -67,22 +141,37 @@ $total_pages = ceil($total_rows / $limit);
                             <?php if($total_rows > 0): 
                                 while($row = mysqli_fetch_assoc($active_list)): ?>
                             <tr>
-                                <td class="ps-4 fw-bold"><?php echo htmlspecialchars($row['student_id_str']); ?></td>
-                                <td><span class="badge bg-primary-subtle text-primary px-3 rounded-pill">Lab <?php echo $row['lab']; ?></span></td>
-                                <td><code><?php echo htmlspecialchars($row['language']); ?></code></td>
-                                <td><?php echo date('h:i A', strtotime($row['login_time'])); ?></td>
+                                <td class="ps-4 fw-bold main-text">
+                                    <?php echo htmlspecialchars($row['student_id_str']); ?>
+                                </td>
+                                <td>
+                                    <span class="badge badge-lab px-3 rounded-pill">
+                                        Lab <?php echo $row['lab']; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <code><?php echo htmlspecialchars($row['language']); ?></code>
+                                </td>
+                                <td class="main-text">
+                                    <?php echo date('h:i A', strtotime($row['login_time'])); ?>
+                                </td>
                                 <td class="text-center">
                                     <form action="../action/sit_in.php" method="POST" onsubmit="return confirm('End Session?');">
                                         <input type="hidden" name="record_id" value="<?php echo $row['id']; ?>">
                                         <input type="hidden" name="student_pk_id" value="<?php echo $row['student_pk_id']; ?>">
-                                        <button type="submit" name="logout_student" class="btn btn-danger btn-sm px-3 rounded-pill">
-                                            Logout Student
+                                        <button type="submit" name="logout_student" class="btn btn-danger btn-sm px-3 rounded-pill shadow-sm">
+                                            <i class="bi bi-box-arrow-right me-1"></i> Logout
                                         </button>
                                     </form>
                                 </td>
                             </tr>
                             <?php endwhile; else: ?>
-                            <tr><td colspan="5" class="text-center py-5 text-muted">No active sessions.</td></tr>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted-custom">
+                                    <i class="bi bi-clock-history opacity-25 d-block mb-2" style="font-size: 3rem;"></i>
+                                    No active sessions found.
+                                </td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
