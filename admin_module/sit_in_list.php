@@ -93,12 +93,21 @@ $total_pages = ceil($total_rows / $limit);
             background-color: rgba(255, 255, 255, 0.05);
             padding: 2px 6px;
             border-radius: 4px;
-            color: #e83e8c; /* Classic code pink, visible on dark */
+            color: #e83e8c;
         }
+
+        /* Modal Theme Overrides for custom background variables */
+        .modal-content-custom {
+            background-color: var(--bg-sidebar) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+        .modal-header-custom { border-bottom: 1px solid var(--border-color) !important; }
+        .modal-footer-custom { border-top: 1px solid var(--border-color) !important; }
 
         /* Sidebar Spacing */
         .main-content {
-            margin-left: 260px; /* Adjust based on your sidebar width */
+            margin-left: 260px; 
             transition: 0.3s ease;
         }
         @media (max-width: 991px) {
@@ -134,6 +143,7 @@ $total_pages = ceil($total_rows / $limit);
                                 <th>Lab</th>
                                 <th>Language</th>
                                 <th>Time In</th>
+                                <th class="text-center">Task Status</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
@@ -155,19 +165,84 @@ $total_pages = ceil($total_rows / $limit);
                                 <td class="main-text">
                                     <?php echo date('h:i A', strtotime($row['login_time'])); ?>
                                 </td>
+                                
+                                <!-- NEW: Live Inline Task Status View Badge -->
                                 <td class="text-center">
-                                    <form action="../action/sit_in.php" method="POST" onsubmit="return confirm('End Session?');">
-                                        <input type="hidden" name="record_id" value="<?php echo $row['id']; ?>">
-                                        <input type="hidden" name="student_pk_id" value="<?php echo $row['student_pk_id']; ?>">
-                                        <button type="submit" name="logout_student" class="btn btn-danger btn-sm px-3 rounded-pill shadow-sm">
-                                            <i class="bi bi-box-arrow-right me-1"></i> Logout
-                                        </button>
-                                    </form>
+                                    <?php if (isset($row['task_status']) && $row['task_status'] === 'Completed'): ?>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 rounded-pill fw-bold" style="font-size: 0.75rem;">
+                                            <i class="bi bi-check-circle-fill me-1"></i> Completed
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 rounded-pill fw-bold" style="font-size: 0.75rem;">
+                                            <i class="bi bi-hourglass-split me-1"></i> Pending
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+
+                                <td class="text-center">
+                                    <!-- Modal Trigger Button replaces direct form submit -->
+                                    <button type="button" class="btn btn-danger btn-sm px-3 rounded-pill shadow-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#logoutGradingModal<?php echo $row['id']; ?>">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                    </button>
                                 </td>
                             </tr>
+
+                            <!-- DYNAMIC ACTION GRADING MODAL PER STUDENT ROW -->
+                            <div class="modal fade" id="logoutGradingModal<?php echo $row['id']; ?>" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content modal-content-custom shadow-lg">
+                                        <div class="modal-header modal-header-custom p-4">
+                                            <h5 class="modal-title fw-bold"><i class="bi bi-award text-primary me-2"></i>Session Evaluation & Logout</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <form action="../action/sit_in.php" method="POST">
+                                            <div class="modal-body p-4">
+                                                <p class="text-muted-custom small mb-4">Grade operational tasks and station management parameters before finalizing the logout for student <strong><?php echo htmlspecialchars($row['student_id_str']); ?></strong>.</p>
+                                                
+                                                <!-- Hidden Form Passports -->
+                                                <input type="hidden" name="record_id" value="<?php echo $row['id']; ?>">
+                                                <input type="hidden" name="student_pk_id" value="<?php echo $row['student_pk_id']; ?>">
+
+                                                <!-- 1. Task Completed Dropdown Selection (20% Weight Formula Component) -->
+                                                <div class="mb-4 p-3 rounded-3" style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                                                    <label class="form-label mb-1 fw-bold small main-text d-block">Task Completion Flag</label>
+                                                    <small class="text-muted-custom d-block mb-2" style="font-size: 0.75rem;">Did the student complete their assigned laboratory tasks?</small>
+                                                    <select name="task_status" class="form-select bg-transparent main-text border-secondary-subtle" style="font-size: 0.9rem;">
+                                                        <option value="Pending" class="bg-dark text-white" <?php echo (!isset($row['task_status']) || $row['task_status'] === 'Pending') ? 'selected' : ''; ?>>❌ Pending / Unfinished (0 pts)</option>
+                                                        <option value="Completed" class="bg-dark text-white" <?php echo (isset($row['task_status']) && $row['task_status'] === 'Completed') ? 'selected' : ''; ?>>✅ Verified Completed (10 pts)</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- 2. Behavioral Condition Slider Module (60% Weight Formula Component) -->
+                                                <div class="mb-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <label class="form-label mb-0 small fw-bold text-muted-custom text-uppercase">Workspace / Behavior Grade</label>
+                                                        <span class="badge bg-primary rounded-pill font-monospace fw-bold" id="sliderValLabel<?php echo $row['id']; ?>">10 / 10</span>
+                                                    </div>
+                                                    <input type="range" name="behavior_score" class="form-range" min="1" max="10" value="10" 
+                                                           id="behaviorSlider<?php echo $row['id']; ?>" 
+                                                           oninput="document.getElementById('sliderValLabel<?php echo $row['id']; ?>').innerText = this.value + ' / 10'">
+                                                    <div class="d-flex justify-content-between text-muted-custom" style="font-size: 0.65rem;">
+                                                        <span>Left Station Messy</span>
+                                                        <span>Clean & Arranged</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer modal-footer-custom p-3" style="background-color: rgba(0,0,0,0.15);">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary px-3 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" name="logout_student" class="btn btn-sm btn-danger px-4 rounded-pill fw-bold">
+                                                    Process Score & Logout
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
                             <?php endwhile; else: ?>
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted-custom">
+                                <td colspan="6" class="text-center py-5 text-muted-custom">
                                     <i class="bi bi-clock-history opacity-25 d-block mb-2" style="font-size: 3rem;"></i>
                                     No active sessions found.
                                 </td>
@@ -177,6 +252,19 @@ $total_pages = ceil($total_rows / $limit);
                     </table>
                 </div>
             </div>
+
+            <!-- Optional: Pagination Render Block to map with your config calculations -->
+            <?php if ($total_pages > 1): ?>
+                <nav class="mt-4">
+                    <ul class="pagination pagination-sm justify-content-end mb-0">
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link border-secondary-subtle bg-transparent main-text" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
             
         </main>
     </div>
