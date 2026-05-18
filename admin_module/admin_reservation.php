@@ -86,10 +86,96 @@ $logsResult = getSystemLogs($conn);
         body {
             overflow-x: hidden;
         }
+
+       /* ================= COMPLETE DASHBOARD DARK MODE OVERRIDES ================= */
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Card & Card Content Adjustments */
+        .card, 
+        .card-body, 
+        .bg-white, 
+        .bg-light,
+        #softwareAppGrid .bg-light {
+            background-color: var(--bg-sidebar) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Specific component containers (like queue items) */
+        .card-body .bg-light {
+            background-color: var(--bg-body) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Fix for Tab Navigation Buttons */
+        .nav-pills .nav-link:not(.active) {
+            color: var(--text-main) !important;
+            background-color: var(--bg-sidebar) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* ================= TABLES DARK MODE FIX ================= */
+        .table {
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Forces table headers to match theme background */
+        .table > thead {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+        }
+
+        .table th {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Fixes normal cells and stripes */
+        .table > tbody > tr > td {
+            background-color: var(--bg-sidebar) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        /* Overrides Bootstrap's hardcoded .table-striped background color formula */
+        .table-striped > tbody > tr:nth-of-type(odd) > * {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            box-shadow: inset 0 0 0 9999px var(--bg-body) !important;
+        }
+
+        /* Form controls & select elements */
+        .form-select, .modal-content {
+            background-color: var(--bg-sidebar) !important;
+            color: var(--text-main) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .form-select:focus {
+            background-color: var(--bg-sidebar) !important;
+            color: var(--text-main) !important;
+        }
+
+        /* Utility Class Neutralizers */
+        .text-dark {
+            color: var(--text-main) !important;
+        }
+        .text-muted, .text-secondary {
+            color: var(--text-muted) !important;
+        }
+        .border-dark {
+            border-color: var(--border-color) !important;
+        }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
 
     <?php include("../includes/admin_sidebar.php"); ?>
 
@@ -159,7 +245,7 @@ $logsResult = getSystemLogs($conn);
                                     <span class="fw-bold"><i class="bi bi-cpu me-2"></i>Available Lab Software Suite</span>
                                     <span class="badge bg-light text-dark shadow-sm" id="softwareCountLabel">0 Apps Configured</span>
                                 </div>
-                                <div class="card-body bg-white" style="max-height: 280px; overflow-y: auto;">
+                                <div class="card-body" style="max-height: 280px; overflow-y: auto;">
                                     <div class="row g-2" id="softwareAppGrid">
                                         <!-- Real-time elements are appended here asynchronously -->
                                     </div>
@@ -339,6 +425,12 @@ $logsResult = getSystemLogs($conn);
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Check local storage theme configuration before rendering layout elements
+        if (localStorage.getItem("theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+            document.body?.setAttribute("data-theme", "dark");
+        }
+
         async function syncAdminDashboard() {
             const lab = document.getElementById('labSwitcher').value;
             document.getElementById('labHeading').innerText = lab + " MONITORING";
@@ -410,16 +502,16 @@ $logsResult = getSystemLogs($conn);
                     const card = document.createElement('div');
                     card.className = "col-md-6 col-lg-4";
                     card.innerHTML = `
-                        <div class="p-2 border rounded bg-light shadow-sm d-flex align-items-center h-100">
-                            <div class="p-2 rounded bg-dark-subtle me-2">
-                                <i class="bi bi-box-seam-fill text-dark small"></i>
+                        <div class="p-2 border rounded shadow-sm d-flex align-items-center h-100" style="background: var(--bg-card); border-color: var(--border-color) !important;">
+                            <div class="p-2 rounded me-2" style="background: var(--nav-hover);">
+                                <i class="bi bi-box-seam-fill small" style="color: var(--text-main);"></i>
                             </div>
                             <div class="overflow-hidden flex-grow-1">
-                                <div class="fw-bold text-dark text-truncate small mb-0">${app.software_name}</div>
-                                <div class="text-secondary text-truncate" style="font-size:0.7rem;">${app.developer}</div>
+                                <div class="fw-bold text-truncate small mb-0" style="color: var(--text-main);">${app.software_name}</div>
+                                <div class="text-truncate" style="font-size:0.7rem; color: var(--text-muted);">${app.developer}</div>
                                 <div class="mt-1 d-flex gap-1 flex-wrap">
-                                    <span class="badge bg-white text-dark border software-tag">v${app.version}</span>
-                                    <span class="badge bg-secondary-subtle text-dark border software-tag">${app.license_type}</span>
+                                    <span class="badge text-dark border software-tag" style="background: var(--bg-sidebar); color: var(--text-main) !important; border-color: var(--border-color) !important;">v${app.version}</span>
+                                    <span class="badge text-dark border software-tag" style="background: var(--nav-hover); color: var(--text-main) !important; border-color: var(--border-color) !important;">${app.license_type}</span>
                                 </div>
                             </div>
                         </div>`;
@@ -447,7 +539,7 @@ $logsResult = getSystemLogs($conn);
                 d.classList.replace("btn-success", "btn-primary");
             } else if (isUnavail) {
                 d.classList.replace("btn-success", "btn-warning");
-                d.classList.add("text-dark");
+                d.style.color = "#212529"; // Keeps visibility readable on yellow background regardless of root theme status
             }
 
             d.onclick = () => openPcModal(id);
