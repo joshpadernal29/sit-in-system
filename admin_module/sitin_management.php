@@ -62,9 +62,35 @@ if (isset($_GET['search_id'])) {
         /* Verification Alert Box */
         .alert-reservation {
             background-color: rgba(255, 193, 7, 0.1);
-            border: 1px solid #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            border-left: 5px solid #ffc107;
+            color: var(--text-main);
+            transition: 0.3s ease;
+        }
+
+        /* Keep icon yellow */
+        .alert-reservation i {
             color: #ffc107;
         }
+
+        /* Make all text inside follow theme color */
+        .alert-reservation h6,
+        .alert-reservation p,
+        .alert-reservation strong {
+            color: var(--text-main);
+        }
+
+        /* LIGHT MODE */
+        body.light-mode .alert-reservation {
+            background-color: #fff8e1;
+        }
+
+        /* DARK MODE */
+        body.dark-mode .alert-reservation {
+            background-color: rgba(255, 193, 7, 0.15);
+        }
+
+
 
         @media (max-width: 991px) {
             main.container-fluid { margin-left: 0 !important; width: 100% !important; }
