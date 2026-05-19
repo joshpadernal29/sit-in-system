@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_reservation_st
     
     if ($intended_action === 'cancel') {
         // Only allow cancellation if the request is still pending
-        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected', action = 'rejected' WHERE id = ? AND student_pk_id = ? AND status = 'pending'");
+        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected', action = 'rejected' WHERE id = ? AND student_pk_id = ? AND LOWER(status) = 'pending'");
         $stmt->bind_param("ii", $target_res_id, $student_pk);
         $stmt->execute();
         $stmt->close();
     } elseif ($intended_action === 'disable') {
         // Change approved request to un-active / discarded state context
-        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected' WHERE id = ? AND student_pk_id = ? AND status = 'approved'");
+        $stmt = $conn->prepare("UPDATE reservations SET status = 'rejected' WHERE id = ? AND student_pk_id = ? AND (LOWER(status) = 'approved' OR LOWER(status) = 'active')");
         $stmt->bind_param("ii", $target_res_id, $student_pk);
         $stmt->execute();
         $stmt->close();
@@ -85,11 +85,9 @@ $stmt_log->close();
         
         <!-- HEADER PANEL -->
         <div class="row mb-4">
-            <!-- FIXED: Added border-light-subtle to replace harsh black line markers -->
             <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-center bg-body p-4 border border-light-subtle shadow-sm">
                 <div>
                     <h3 class="fw-bold text-body mb-1 text-uppercase">Laboratory Floor Plan</h3>
-                    <!-- FIXED: Modified text-secondary to text-body-secondary for safe adaptation -->
                     <p class="text-body-secondary small mb-0">Select an <span class="text-success fw-bold">Available</span> PC unit to submit a reservation request.</p>
                 </div>
                 <div class="d-flex gap-3 mt-3 mt-md-0">
@@ -132,7 +130,6 @@ $stmt_log->close();
                         <table class="table table-hover align-middle mb-0 text-body" style="font-size: 0.85rem;">
                             <thead>
                                 <tr>
-                                    <!-- FIXED: Swapped light-explicit headers to adaptive bg-body-tertiary metrics -->
                                     <th class="text-body-secondary small text-uppercase py-3 ps-3 bg-body-tertiary border-bottom border-light-subtle">PC Node</th>
                                     <th class="text-body-secondary small text-uppercase py-3 bg-body-tertiary border-bottom border-light-subtle">Lab System</th>
                                     <th class="text-body-secondary small text-uppercase py-3 bg-body-tertiary border-bottom border-light-subtle">Date & Time</th>
@@ -143,7 +140,6 @@ $stmt_log->close();
                             <tbody>
                                 <?php if (empty($reservation_logs)): ?>
                                     <tr>
-                                        <!-- FIXED: Replaced explicit text-muted utilities -->
                                         <td colspan="5" class="text-center py-4 text-body-secondary small bg-body">
                                             <i class="bi bi-calendar-x display-6 opacity-25 mb-2 d-block"></i>
                                             No recent registration logs compiled for this workspace.
@@ -151,6 +147,7 @@ $stmt_log->close();
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($reservation_logs as $log): ?>
+                                        <?php $db_status = strtolower(trim($log['status'])); ?>
                                         <tr>
                                             <td class="ps-3 fw-bold border-light-subtle bg-body">PC-<?= htmlspecialchars($log['pc_number']) ?></td>
                                             <td class="border-light-subtle text-uppercase fw-semibold bg-body">LAB <?= htmlspecialchars($log['lab_name']) ?></td>
@@ -158,9 +155,9 @@ $stmt_log->close();
                                                 <?= htmlspecialchars($log['schedule_date']) ?> @ <?= htmlspecialchars($log['schedule_time']) ?>
                                             </td>
                                             <td class="border-light-subtle bg-body">
-                                                <?php if ($log['status'] === 'pending'): ?>
+                                                <?php if ($db_status === 'pending'): ?>
                                                     <span class="badge bg-primary text-white rounded-0 text-uppercase" style="font-size:0.65rem;">Pending Approval</span>
-                                                <?php elseif ($log['status'] === 'approved' || $log['status'] === 'active'): ?>
+                                                <?php elseif ($db_status === 'approved' || $db_status === 'active' || $db_status === 'accepted'): ?>
                                                     <span class="badge bg-success text-white rounded-0 text-uppercase" style="font-size:0.65rem;">Approved / Live</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-secondary text-white rounded-0 text-uppercase" style="font-size:0.65rem;"><?= htmlspecialchars($log['status']) ?></span>
@@ -170,19 +167,18 @@ $stmt_log->close();
                                                 <form method="POST" action="" onsubmit="return confirm('Are you sure you want to execute this state amendment?');" class="m-0 p-0">
                                                     <input type="hidden" name="reservation_id" value="<?= $log['id'] ?>">
                                                     
-                                                    <?php if ($log['status'] === 'pending'): ?>
+                                                    <?php if ($db_status === 'pending'): ?>
                                                         <button type="submit" name="update_reservation_state" value="cancel" class="btn btn-sm btn-outline-danger rounded-0 py-0 px-2 fw-bold" style="font-size:0.75rem;">
                                                             <i class="bi bi-x-square me-1"></i>CANCEL
-                                                        </button>
-                                                    <?php elseif ($log['status'] === 'approved'): ?>
+                        </button>
+                                                    <?php elseif ($db_status === 'approved' || $db_status === 'active' || $db_status === 'accepted'): ?>
                                                         <button type="submit" name="update_reservation_state" value="disable" class="btn btn-sm btn-outline-secondary rounded-0 py-0 px-2 fw-bold" style="font-size:0.75rem;">
                                                             <i class="bi bi-slash-circle me-1"></i>DISABLE
-                                                        </button>
+                        </button>
                                                     <?php else: ?>
-                                                        <!-- FIXED: Locked button template now renders correctly against unified dark/light themes -->
                                                         <button type="button" class="btn btn-sm btn-secondary opacity-50 border-0 text-white rounded-0 py-0 px-2 disabled small" style="font-size:0.75rem;">
                                                             LOCKED
-                                                        </button>
+                        </button>
                                                     <?php endif; ?>
                                                 </form>
                                             </td>
@@ -198,7 +194,6 @@ $stmt_log->close();
             <!-- RIGHT COLUMN: LAB ENVIRONMENT SOFTWARE APPLICATIONS PROFILES -->
             <div class="col-xl-4">
                 <div class="card border border-light-subtle rounded-0 shadow-sm h-100">
-                    <!-- FIXED: Modified bg-dark to native theme headers for high visibility -->
                     <div class="card-header bg-body border-bottom border-light-subtle py-3 d-flex justify-content-between align-items-center">
                         <span class="fw-bold small text-uppercase text-body"><i class="bi bi-cpu-fill me-2 text-info"></i>Lab Software Available</span>
                         <span class="badge bg-secondary text-white rounded-0 shadow-sm small" id="softwareCountLabel">0 Apps</span>
@@ -218,7 +213,6 @@ $stmt_log->close();
     <div class="modal fade" id="resModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-body text-body border border-light-subtle rounded-0 shadow-lg">
-                <!-- FIXED: Changed background to match current body criteria safely -->
                 <div class="modal-header bg-body border-bottom border-light-subtle py-3">
                     <h5 class="modal-title fw-bold text-uppercase text-body"><i class="bi bi-pencil-square me-2 text-primary"></i>Apply for Reservation</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -254,6 +248,7 @@ $stmt_log->close();
                                 <option value="Python">Python</option>
                                 <option value="C#">C#</option>
                                 <option value="C++">C++</option>
+                                <option value="N/A">None</option>
                             </select>
                         </div>
 
@@ -296,7 +291,7 @@ $stmt_log->close();
             const response = await fetch(`../action/get_lab_status.php?lab=${lab}`);
             const data = await response.json();
             
-            studentHasPending = (data.student_pending && data.student_pending.includes(studentId));
+            studentHasPending = (data.student_pending && data.student_pending.map(String).includes(studentId.toString()));
 
             const gridContainer = document.getElementById('studentGridContainer');
             gridContainer.innerHTML = ''; 
@@ -340,7 +335,6 @@ $stmt_log->close();
         }
     }
 
-    // FIXED: Formatted JavaScript string generator to adapt correctly to dark/light environments
     async function fetchSoftwareInventory(labId) {
         try {
             const response = await fetch(`../action/get_lab_software.php?lab=${labId}`);
