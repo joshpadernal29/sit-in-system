@@ -209,3 +209,47 @@ function getTotalRecords($conn,$student_pk,$date_filter){
 
     return $row['total'];
 }
+
+/* ==========================================
+   NEW ANALYTICS FUNCTIONS FOR ADMIN PANEL
+   ========================================== */
+
+/**
+ * Fetches sit-in volume grouped by day of the week for the past 7 days.
+ * Returns an array with structure: ['Mon' => int, 'Tue' => int, ...]
+ */
+function getWeeklyTrafficData($conn) {
+    // Establish structural day values initialized to 0
+    $weekly_data = [
+        'Mon' => 0, 
+        'Tue' => 0, 
+        'Wed' => 0, 
+        'Thu' => 0, 
+        'Fri' => 0, 
+        'Sat' => 0
+    ];
+
+    // Query extracting day abbreviations ('Mon', 'Tue') within a 7-day window
+    $sql = "SELECT DATE_FORMAT(login_time, '%a') AS day_name, COUNT(*) AS session_count 
+            FROM sit_in_records 
+            WHERE login_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+            GROUP BY DAYOFWEEK(login_time), day_name";
+            
+    $stmt = mysqli_prepare($conn, $sql);
+
+    if ($stmt) {
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        // Map query details dynamically back into tracking matrix
+        while ($row = mysqli_fetch_assoc($result)) {
+            $day = $row['day_name'];
+            if (array_key_exists($day, $weekly_data)) {
+                $weekly_data[$day] = (int)$row['session_count'];
+            }
+        }
+        mysqli_stmt_close($stmt);
+    }
+
+    return $weekly_data;
+}

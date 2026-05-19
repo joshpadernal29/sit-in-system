@@ -14,6 +14,10 @@ $CPlusPlus = languageUsed($conn, 'C++');
 
 // Get announcements
 $posts = getPost($conn, 1);
+
+// Get Weekly Traffic Data (Instantiated dynamically via Data_count)
+// Expected format from Data_count.php: ['Mon' => 12, 'Tue' => 19, ...]
+$weekly_traffic = getWeeklyTrafficData($conn); 
 ?>
 
 <!DOCTYPE html>
@@ -82,45 +86,110 @@ $posts = getPost($conn, 1);
         }
 
         .vr { background-color: var(--border-color); opacity: 0.5; }
+
+        /* --- DARK MODE MODAL & INPUT CONTRAST FIX --- */
+        [data-theme="dark"] .modal-content {
+            background-color: var(--bg-sidebar) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        /* Force dark-mode inputs to have clean background, bright text, and distinct borders */
+        [data-theme="dark"] .form-control, 
+        [data-theme="dark"] .form-select {
+            background-color: #1a1a1a !important; /* Forces a solid, readable dark gray instead of pure black */
+            color: #ffffff !important;
+            border: 1px solid #444444 !important;
+        }
+
+        [data-theme="dark"] .form-control:focus, 
+        [data-theme="dark"] .form-select:focus {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+
+        /* Style the placeholder text so it's readable against dark backgrounds */
+        [data-theme="dark"] .form-control::placeholder {
+            color: #aaaaaa !important;
+            opacity: 1;
+        }
+
+        /* Invert close button to white */
+        [data-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(1) brightness(2) !important;
+        }
     </style>
 
     <script src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', { 'packages': ['corechart'] });
-        google.charts.setOnLoadCallback(drawChart);
+        google.charts.setOnLoadCallback(drawCharts);
 
-        function drawChart() {
-            // Detect theme for chart colors
+        function drawCharts() {
+            // Detect theme for chart color synchronization
             const isDark = document.body.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#e0e0e0' : '#495057';
             const gridColor = isDark ? '#333333' : '#e9ecef';
 
-            var data = google.visualization.arrayToDataTable([
+            // 1. Programming Preferences Pie Chart
+            var programmingData = google.visualization.arrayToDataTable([
                 ['Language', 'Students'],
-                ['C', <?php echo $C ?>],
-                ['C#', <?php echo $Csharp ?>],
-                ['C++', <?php echo $CPlusPlus ?>],
-                ['Java', <?php echo $Java ?>],
-                ['PHP', <?php echo $Php ?>]
+                ['C', <?php echo (int)$C; ?>],
+                ['C#', <?php echo (int)$Csharp; ?>],
+                ['C++', <?php echo (int)$CPlusPlus; ?>],
+                ['Java', <?php echo (int)$Java; ?>],
+                ['PHP', <?php echo (int)$Php; ?>]
             ]);
 
-            var options = {
+            var pieOptions = {
                 pieHole: 0.4,
                 colors: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14'],
                 legend: { position: 'bottom', textStyle: { color: textColor } },
-                chartArea: { width: '100%', height: '80%' },
+                chartArea: { width: '90%', height: '75%' },
                 backgroundColor: 'transparent',
                 pieSliceBorderColor: isDark ? '#1e1e1e' : '#ffffff'
             };
 
-            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-            chart.draw(data, options);
+            var pieChart = new google.visualization.PieChart(document.getElementById('piechart'));
+            pieChart.draw(programmingData, pieOptions);
+
+            // 2. Weekly Lab Traffic Line Chart (NEW ANALYTICS)
+            var trafficData = google.visualization.arrayToDataTable([
+                ['Day', 'Sessions'],
+                ['Mon', <?php echo isset($weekly_traffic['Mon']) ? (int)$weekly_traffic['Mon'] : 0; ?>],
+                ['Tue', <?php echo isset($weekly_traffic['Tue']) ? (int)$weekly_traffic['Tue'] : 0; ?>],
+                ['Wed', <?php echo isset($weekly_traffic['Wed']) ? (int)$weekly_traffic['Wed'] : 0; ?>],
+                ['Thu', <?php echo isset($weekly_traffic['Thu']) ? (int)$weekly_traffic['Thu'] : 0; ?>],
+                ['Fri', <?php echo isset($weekly_traffic['Fri']) ? (int)$weekly_traffic['Fri'] : 0; ?>],
+                ['Sat', <?php echo isset($weekly_traffic['Sat']) ? (int)$weekly_traffic['Sat'] : 0; ?>]
+            ]);
+
+            var lineOptions = {
+                curveType: 'function',
+                colors: ['#198754'],
+                backgroundColor: 'transparent',
+                legend: { position: 'none' },
+                chartArea: { width: '85%', height: '75%' },
+                hAxis: { textStyle: { color: textColor } },
+                vAxis: { 
+                    textStyle: { color: textColor },
+                    gridlines: { color: gridColor },
+                    baselineColor: gridColor
+                }
+            };
+
+            var lineChart = new google.visualization.LineChart(document.getElementById('trafficChart'));
+            lineChart.draw(trafficData, lineOptions);
         }
 
-        // Redraw chart when theme is toggled
+        // Re-render graphs on Theme Toggle click events
         document.addEventListener('click', function(e) {
             if (e.target.closest('#themeToggle')) {
-                setTimeout(drawChart, 350); // Small delay to wait for CSS transition
+                setTimeout(drawCharts, 350); 
             }
         });
     </script>
@@ -133,11 +202,11 @@ $posts = getPost($conn, 1);
         <div class="row mb-4">
             <div class="col-12">
                 <h4 class="fw-bold main-text">Admin Dashboard</h4>
-                <p class="text-muted-custom">Overview of lab activities and announcements.</p>
+                <p class="text-muted-custom">Overview of lab activities and system insights.</p>
             </div>
         </div>
 
-        <!-- Stat Cards -->
+        <!-- Stat Cards Row -->
         <div class="row g-3 mb-4">
             <div class="col-md-4">
                 <div class="card card-custom border-0 shadow-sm p-3">
@@ -180,9 +249,10 @@ $posts = getPost($conn, 1);
             </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Chart Section -->
-            <div class="col-12 col-lg-7">
+        <!-- Analytics Dashboard Panels -->
+        <div class="row g-4 mb-4">
+            <!-- Pie Chart Section -->
+            <div class="col-12 col-lg-6">
                 <div class="card card-custom border-0 shadow-sm h-100 rounded-4">
                     <div class="card-header bg-transparent py-3 border-0">
                         <h5 class="mb-0 fw-bold main-text">
@@ -190,24 +260,40 @@ $posts = getPost($conn, 1);
                         </h5>
                     </div>
                     <div class="card-body pt-0">
-                        <div id="piechart" style="width: 100%; height: 350px;"></div>
+                        <div id="piechart" style="width: 100%; height: 320px;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Announcements Section -->
-            <div class="col-12 col-lg-5">
+            <!-- Weekly Activity Line Chart Section -->
+            <div class="col-12 col-lg-6">
                 <div class="card card-custom border-0 shadow-sm h-100 rounded-4">
+                    <div class="card-header bg-transparent py-3 border-0">
+                        <h5 class="mb-0 fw-bold main-text">
+                            <i class="bi bi-graph-up text-success me-2"></i>Weekly Sit-In Traffic Trend
+                        </h5>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div id="trafficChart" style="width: 100%; height: 320px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Announcements / Broadcasts Footer Row -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card card-custom border-0 shadow-sm rounded-4">
                     <div class="card-header bg-transparent py-3 border-0 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold main-text">
-                            <i class="bi bi-megaphone-fill text-danger me-2"></i>Broadcasts
+                            <i class="bi bi-megaphone-fill text-danger me-2"></i>Broadcasts & Notices
                         </h5>
                         <button type="button" class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">
                             <i class="bi bi-plus-lg"></i> Post
                         </button>
                     </div>
 
-                    <div class="card-body overflow-auto" style="max-height: 400px;">
+                    <div class="card-body overflow-auto" style="max-height: 300px;">
                         <?php if(!empty($posts)): ?>
                             <?php foreach ($posts as $post): ?>
                                 <?php 
@@ -221,7 +307,7 @@ $posts = getPost($conn, 1);
                                     <div>
                                         <h6 class="fw-bold mb-0 main-text"><?php echo htmlspecialchars($post['title']) ?></h6>
                                         <small class="text-muted-custom d-block mb-2">
-                                            <?php echo date("F j, Y . g:i a", strtotime($post['date_posted'])); ?>
+                                            <?php echo date("F j, Y • g:i a", strtotime($post['date_posted'])); ?>
                                         </small>
                                         <p class="small text-muted-custom mb-0"><?php echo htmlspecialchars($post['message']) ?></p>
                                     </div>
@@ -239,7 +325,7 @@ $posts = getPost($conn, 1);
     <!-- Post Announcement Modal -->
     <div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-content shadow-lg rounded-4 main-text">
                 <div class="modal-header border-0 py-3 px-4">
                     <h5 class="modal-title fw-bold">New Announcement</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

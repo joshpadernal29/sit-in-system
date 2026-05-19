@@ -39,7 +39,7 @@ WHERE
     accumulated_points >= 50;
 
 -- query students
-SELECT name, student_id, accumulated_points 
-FROM students 
-ORDER BY accumulated_points DESC 
-LIMIT 10;
+-- SELECT name, student_id, accumulated_points 
+-- FROM students 
+-- ORDER BY accumulated_points DESC 
+-- LIMIT 10;
