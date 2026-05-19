@@ -256,7 +256,7 @@ $total_pages = ceil($total_rows / $limit);
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="lab-badge">Lab <?php echo htmlspecialchars($row['lab']); ?></span>
+                            <span class="lab-badge"><?php echo htmlspecialchars($row['lab']); ?></span>
                         </td>
                         <td class="text-center">
                             <div class="fw-semibold"><?php echo date('M d, Y', $login_ts); ?></div>
