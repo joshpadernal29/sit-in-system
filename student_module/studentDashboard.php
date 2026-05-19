@@ -10,10 +10,13 @@ include("../action/Data_count.php");
 // get language used data
 $language_used = progLanguage($conn,$student_id);
 
-// prepare pie chart data
+// prepare pie chart data (ignoring case-insensitive N/A and blank values)
 $rows = [];
 foreach ($language_used as $row) {
-    $rows[] = "['" . $row['language'] . "', " . $row['language_count'] . "]";
+    $trimmed_lang = strtoupper(trim($row['language']));
+    if ($trimmed_lang !== 'N/A' && $trimmed_lang !== '') {
+        $rows[] = "['" . htmlspecialchars($row['language'], ENT_QUOTES) . "', " . $row['language_count'] . "]";
+    }
 }
 $chartDataString = implode(',', $rows);
 
@@ -104,7 +107,7 @@ function drawCharts() {
         curveType: 'function',
         legend: { position: 'none' },
         colors: ['#0d6efd'],
-        chartArea: { width: '92%', height: '80%' },
+        chartArea: { width: '85%', height: '80%' },
         vAxis: { 
             minValue: 0,
             textStyle: { color: textColor },
