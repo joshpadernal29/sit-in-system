@@ -165,6 +165,7 @@ if (isset($_GET['search_id'])) {
                                         <option value="Python">Python</option>
                                         <option value="PHP" selected>PHP</option>
                                         <option value="C#">C#</option>
+                                        <option value="N/A">N/A</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
