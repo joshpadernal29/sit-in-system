@@ -18,6 +18,11 @@ if ($result = $conn->query($preview_query)) {
 }
 
 $target_labs = ['544', '542', '526'];
+
+// Predefined configuration lists for database data uniformity
+$categories = ['Development', 'Analytics', 'Design', 'Security', 'Office Productivity', 'Utilities'];
+$developers = ['Microsoft', 'Google', 'Adobe', 'JetBrains', 'Docker Inc.', 'Oracle'];
+$license_types = ['Open Source', 'Proprietary Free', 'Commercial License', 'Subscription Based'];
 ?>
 
 <!DOCTYPE html>
@@ -59,7 +64,6 @@ $target_labs = ['544', '542', '526'];
             background: var(--bs-secondary-bg-subtle);
         }
 
-        /* Adjust card header background handling across theme switches */
         .card-header {
             background-color: transparent !important;
         }
@@ -80,17 +84,17 @@ $target_labs = ['544', '542', '526'];
         <?php if (isset($_GET['status'])): ?>
             <?php if ($_GET['status'] == 'success'): ?>
                 <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i> <strong>Mass Import Successful!</strong> Data rows parsed and saved into laboratory nodes.
+                    <i class="bi bi-check-circle-fill me-2"></i> <strong>Operation Successful!</strong> Application profiles processed and saved.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php elseif ($_GET['status'] == 'empty'): ?>
                 <div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Import Warning:</strong> The uploaded file was empty or contained unparseable line data profiles.
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Import Warning:</strong> No executable data was provided or parsed.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php elseif ($_GET['status'] == 'error'): ?>
                 <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4" role="alert">
-                    <i class="bi bi-x-circle-fill me-2"></i> <strong>System Failure:</strong> Could not complete transaction loop operations. Please verify template column formatting.
+                    <i class="bi bi-x-circle-fill me-2"></i> <strong>System Failure:</strong> Could not complete transaction operations.
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             <?php endif; ?>
@@ -101,7 +105,7 @@ $target_labs = ['544', '542', '526'];
             <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-body p-4 border border-light-subtle shadow-sm rounded-3">
                 <div>
                     <h3 class="fw-bold text-body mb-1 text-uppercase"><i class="bi bi-box-arrow-in-up-right me-2 text-primary"></i>Import Software Registry</h3>
-                    <p class="text-secondary small mb-0">Batch upload software applications into global laboratory systems via standardized CSV templates.</p>
+                    <p class="text-secondary small mb-0">Batch upload software applications via CSV templates or configure profile assets locally using unified parameters.</p>
                 </div>
                 <div class="mt-3 mt-md-0">
                     <a href="data:text/csv;charset=utf-8,Software Name,Developer,Version,Category,License Type%0AVisual Studio Code,Microsoft,1.87.2,Development,Open Source%0AAnalytics Suite,Google,4.5.0,Analytics,Proprietary Free" download="software_template.csv" class="btn btn-sm btn-outline-secondary rounded-2 px-3 fw-semibold header-download-btn">
@@ -112,48 +116,121 @@ $target_labs = ['544', '542', '526'];
         </div>
 
         <div class="row g-4">
-            <!-- Left Interaction Panel: Dropzone File Uploader -->
-            <div class="col-xl-4">
+            <!-- Left Panel Container -->
+            <div class="col-xl-5">
                 <div class="card bg-body border-light-subtle shadow-sm rounded-3 h-100">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h5 class="fw-bold text-body mb-3">Upload Channel</h5>
-                        
-                        <form action="../action/software_import_logic.php" method="POST" enctype="multipart/form-data" class="flex-grow-1 d-flex flex-column">
-                            
-                            <!-- Interactive Box Zone Frame -->
-                            <div class="dropzone-area p-5 text-center my-auto d-flex flex-column align-items-center justify-content-center" id="dropZoneContainer">
-                                <i class="bi bi-filetype-csv text-primary display-3 mb-3"></i>
-                                <h6 class="fw-bold text-body" id="uploadStatusText">Drag & Drop CSV File</h6>
-                                <p class="text-secondary small px-3 mb-3" id="uploadSubText">Or click to browse files on your computer.</p>
-                                
-                                <!-- Hidden form control payload tag -->
-                                <input type="file" name="csv_file" id="csvFileInput" class="d-none" accept=".csv" required>
-                                
-                                <button type="button" id="browseBtn" class="btn btn-sm btn-primary px-4 rounded-pill fw-semibold shadow-sm">
-                                    Browse Files
+                    <div class="card-header border-bottom border-light-subtle p-3">
+                        <ul class="nav nav-pills nav-justified" id="importMethodTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active fw-bold small text-uppercase py-2" id="csv-upload-tab" data-bs-toggle="tab" data-bs-target="#csvUploadPane" type="button" role="tab" aria-controls="csvUploadPane" aria-selected="true">
+                                    <i class="bi bi-file-earmark-arrow-up me-2"></i>CSV BULK IMPORT
                                 </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link fw-bold small text-uppercase py-2" id="manual-entry-tab" data-bs-toggle="tab" data-bs-target="#manualEntryPane" type="button" role="tab" aria-controls="manualEntryPane" aria-selected="false">
+                                    <i class="bi bi-pencil-square me-2"></i>SINGLE IMPORT
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        <div class="tab-content h-100" id="importMethodTabContent">
+                            
+                            <!-- TAB 1: CSV FILE ATTACHMENT DROPZONE -->
+                            <div class="tab-pane fade show active h-100" id="csvUploadPane" role="tabpanel" aria-labelledby="csv-upload-tab">
+                                <form action="../action/software_import_logic.php" method="POST" enctype="multipart/form-data" class="d-flex flex-column h-100">
+                                    <div class="dropzone-area p-5 text-center my-auto d-flex flex-column align-items-center justify-content-center" id="dropZoneContainer">
+                                        <i class="bi bi-filetype-csv text-primary display-4 mb-3"></i>
+                                        <h6 class="fw-bold text-body" id="uploadStatusText">Drag & Drop CSV File</h6>
+                                        <p class="text-secondary small px-2 mb-3" id="uploadSubText">Or click to browse standard local assets.</p>
+                                        <input type="file" name="csv_file" id="csvFileInput" class="d-none" accept=".csv" required>
+                                        <button type="button" id="browseBtn" class="btn btn-sm btn-primary px-4 rounded-pill fw-semibold shadow-sm">Browse Files</button>
+                                    </div>
+                                    <div class="mt-4">
+                                        <label class="form-label small fw-bold text-secondary text-uppercase">Target Lab Deployment</label>
+                                        <select name="target_lab" class="form-select bg-body text-body border-secondary-subtle rounded-2 shadow-none mb-3">
+                                            <option value="all">Deploy Globally (All Labs)</option>
+                                            <?php foreach($target_labs as $lab): ?>
+                                                <option value="<?= $lab; ?>">LAB <?= $lab; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <button type="submit" name="execute_import" class="btn btn-primary w-100 py-2.5 rounded-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm submit-action-btn">
+                                        <i class="bi bi-cloud-arrow-up-fill"></i>IMPORT SOFTWARE
+                                    </button>
+                                </form>
                             </div>
 
-                            <div class="mt-4">
-                                <label class="form-label small fw-bold text-secondary text-uppercase">Target Lab Deployment</label>
-                                <select name="target_lab" class="form-select bg-body text-body border-secondary-subtle rounded-2 shadow-none mb-3">
-                                    <option value="all">Deploy Globally (All Labs)</option>
-                                    <?php foreach($target_labs as $lab): ?>
-                                        <option value="<?= $lab; ?>">LAB <?= $lab; ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                            <!-- TAB 2: UNIFORM DATA DIRECT ENTRY FORM PANEL -->
+                            <div class="tab-pane fade h-100" id="manualEntryPane" role="tabpanel" aria-labelledby="manual-entry-tab">
+                                <form action="../action/software_import_logic.php" method="POST" class="d-flex flex-column justify-content-between h-100">
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">Software Application Handle</label>
+                                            <input type="text" name="software_name" class="form-control bg-body text-body border-secondary-subtle rounded-2 shadow-none" placeholder="e.g. IntelliJ IDEA" required>
+                                        </div>
+                                        
+                                        <!-- UPDATED: Hybrid Autocomplete Input for Developer Selection & Custom Entry -->
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">Developer / Company</label>
+                                            <input type="text" name="developer" list="developerOptions" class="form-control bg-body text-body border-secondary-subtle rounded-2 shadow-none" placeholder="Type or select..." required autocomplete="off">
+                                            <datalist id="developerOptions">
+                                                <?php foreach($developers as $dev): ?>
+                                                    <option value="<?= $dev; ?>"></option>
+                                                <?php endforeach; ?>
+                                            </datalist>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">Version Profile</label>
+                                            <input type="text" name="version" class="form-control bg-body text-body border-secondary-subtle rounded-2 shadow-none" placeholder="e.g. 2026.1" required>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">Unified Category</label>
+                                            <select name="category" class="form-select bg-body text-body border-secondary-subtle rounded-2 shadow-none" required>
+                                                <option value="" disabled selected>Select Category</option>
+                                                <?php foreach($categories as $cat): ?>
+                                                    <option value="<?= $cat; ?>"><?= $cat; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">License Classification</label>
+                                            <select name="license_type" class="form-select bg-body text-body border-secondary-subtle rounded-2 shadow-none" required>
+                                                <option value="" disabled selected>Select License</option>
+                                                <?php foreach($license_types as $lic): ?>
+                                                    <option value="<?= $lic; ?>"><?= $lic; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label class="form-label small fw-bold text-secondary text-uppercase">Target Lab Deployment</label>
+                                            <select name="target_lab" class="form-select bg-body text-body border-secondary-subtle rounded-2 shadow-none">
+                                                <option value="all">Deploy Globally (All Labs)</option>
+                                                <?php foreach($target_labs as $lab): ?>
+                                                    <option value="<?= $lab; ?>">LAB <?= $lab; ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" name="execute_manual_entry" class="btn btn-primary w-100 py-2.5 rounded-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                        <i class="bi bi-hdd-network-fill"></i>IMPORT SOFTWARE
+                                    </button>
+                                </form>
                             </div>
 
-                            <button type="submit" name="execute_import" class="btn btn-dark w-100 py-2.5 rounded-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm submit-action-btn">
-                                <i class="bi bi-cloud-arrow-up-fill"></i>Import
-                            </button>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Right Panel: Database Repository View Container -->
-            <div class="col-xl-8">
+            <div class="col-xl-7">
                 <div class="card bg-body border-light-subtle shadow-sm rounded-3 h-100">
                     <div class="card-header border-bottom border-light-subtle p-4 d-flex justify-content-between align-items-center">
                         <div>
@@ -181,7 +258,7 @@ $target_labs = ['544', '542', '526'];
                                     <tr>
                                         <td colspan="5" class="text-center py-5 text-secondary border-0">
                                             <i class="bi bi-folder-x display-4 text-muted opacity-50 mb-2"></i>
-                                            <div>No software applications imported yet. Use the upload card channel.</div>
+                                            <div>No software applications imported yet. Use the control channels.</div>
                                         </td>
                                     </tr>
                                 <?php else: ?>
@@ -216,7 +293,6 @@ $target_labs = ['544', '542', '526'];
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- LIVE MONITOR SCRIPT: Syncs Bootstrap 5 theme variant modes based on sidebar data attributes -->
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const body = document.body;
@@ -226,8 +302,6 @@ $target_labs = ['544', '542', '526'];
         const syncBootstrapTheme = () => {
             if (body.getAttribute("data-theme") === "dark") {
                 body.setAttribute("data-bs-theme", "dark");
-                
-                // Adjust contextual interactive buttons for dark scheme contrast
                 if (downloadBtn) {
                     downloadBtn.classList.remove("btn-outline-secondary");
                     downloadBtn.classList.add("btn-outline-light");
@@ -238,8 +312,6 @@ $target_labs = ['544', '542', '526'];
                 }
             } else {
                 body.setAttribute("data-bs-theme", "light");
-                
-                // Revert to default light scheme variations
                 if (downloadBtn) {
                     downloadBtn.classList.remove("btn-outline-light");
                     downloadBtn.classList.add("btn-outline-secondary");
@@ -251,10 +323,8 @@ $target_labs = ['544', '542', '526'];
             }
         };
 
-        // Run live initialization check
         syncBootstrapTheme();
 
-        // Listen for real-time sidebar toggle adjustments via root attribute mutation
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.attributeName === "data-theme") {
@@ -271,44 +341,41 @@ $target_labs = ['544', '542', '526'];
     const statusText = document.getElementById('uploadStatusText');
     const subText = document.getElementById('uploadSubText');
 
-    dropZone.addEventListener('click', () => {
-        fileInput.click();
-    });
+    if (dropZone) {
+        dropZone.addEventListener('click', () => fileInput.click());
 
-    fileInput.addEventListener('change', (e) => {
-        updateVisualState(e.target.files);
-    });
+        fileInput.addEventListener('change', (e) => updateVisualState(e.target.files));
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        }, false);
-    });
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
-    });
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
-    });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
 
-    dropZone.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-
-        if(files.length > 0) {
-            if (files[0].name.toLowerCase().endsWith('.csv')) {
-                fileInput.files = files; 
-                updateVisualState(files);
-            } else {
-                alert("Invalid format! Please upload a structured .csv template file.");
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if(files.length > 0) {
+                if (files[0].name.toLowerCase().endsWith('.csv')) {
+                    fileInput.files = files; 
+                    updateVisualState(files);
+                } else {
+                    alert("Invalid format! Please upload a structured .csv template file.");
+                }
             }
-        }
-    });
+        });
+    }
 
     function updateVisualState(files) {
-        if(files.length > 0) {
+        if(files.length > 0 && statusText && subText) {
             statusText.innerText = "File Attached Successfully";
             subText.innerText = files[0].name + " (" + Math.round(files[0].size/1024) + " KB)";
             subText.classList.remove('text-secondary');
