@@ -239,7 +239,7 @@ $logsResult = getSystemLogs($conn);
                                 </div>
                             </div>
 
-                            <!-- NEW ADDITION: LAB ENVIRONMENT SOFTWARE APPLICATIONS PROFILES -->
+                            <!-- LAB ENVIRONMENT SOFTWARE APPLICATIONS PROFILES -->
                             <div class="card border border-dark shadow-sm">
                                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                                     <span class="fw-bold"><i class="bi bi-cpu me-2"></i>Available Lab Software Suite</span>
@@ -502,11 +502,20 @@ $logsResult = getSystemLogs($conn);
                     const card = document.createElement('div');
                     card.className = "col-md-6 col-lg-4";
                     card.innerHTML = `
-                        <div class="p-2 border rounded shadow-sm d-flex align-items-center h-100" style="background: var(--bg-card); border-color: var(--border-color) !important;">
+                        <div class="p-2 border rounded shadow-sm d-flex align-items-center h-100 position-relative" style="background: var(--bg-card); border-color: var(--border-color) !important;">
+                            
+                            <!-- Updated: Passing app.id instead of string name -->
+                            <button type="button" class="btn btn-link text-danger p-1 position-absolute top-0 end-0 me-1 mt-1 z-3" 
+                                    style="line-height: 1; text-decoration: none;" 
+                                    onclick="deleteLabSoftware('${labId}', '${app.id}', '${app.software_name.replace(/'/g, "\\'")}')" 
+                                    title="Remove from lab">
+                                <i class="bi bi-trash3-fill small"></i>
+                            </button>
+
                             <div class="p-2 rounded me-2" style="background: var(--nav-hover);">
                                 <i class="bi bi-box-seam-fill small" style="color: var(--text-main);"></i>
                             </div>
-                            <div class="overflow-hidden flex-grow-1">
+                            <div class="overflow-hidden flex-grow-1 pe-3">
                                 <div class="fw-bold text-truncate small mb-0" style="color: var(--text-main);">${app.software_name}</div>
                                 <div class="text-truncate" style="font-size:0.7rem; color: var(--text-muted);">${app.developer}</div>
                                 <div class="mt-1 d-flex gap-1 flex-wrap">
@@ -519,6 +528,40 @@ $logsResult = getSystemLogs($conn);
                 });
             } catch (err) {
                 console.error("Failed loading software manifest profile logs:", err);
+            }
+        }
+
+        async function deleteLabSoftware(labId, softwareId, softwareName) {
+            if (!confirm(`Are you sure you want to remove "${softwareName}"?`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("software_id", softwareId);
+            formData.append("action", "delete_software");
+
+            try {
+                const response = await fetch("../action/admin_pc_control.php", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const responseText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch(e) {
+                    console.error("Malformed server response:", responseText);
+                    return;
+                }
+
+                if (response.ok && result.success) {
+                    fetchSoftwareInventory(labId); // Refresh layout
+                } else {
+                    alert("Server Error: " + (result.error || "Unknown error occurred."));
+                }
+            } catch (err) {
+                console.error("Error removing software:", err);
             }
         }
 

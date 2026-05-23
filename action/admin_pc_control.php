@@ -79,8 +79,6 @@ function getSystemLogs($conn) {
 }
 
 // Handle Reservation Action (Approve/Reject)
-// capture the action from the url querystring
-
 // for approve request
 if (isset($_POST['approve'])) {
     $student_pk = (int)$_POST['request_id']; // student pk
@@ -99,8 +97,38 @@ if (isset($_POST['reject'])) {
 }
 
 
-// admin pc control (admin can: set pc to available,unavailable,maintenance)
+// Asynchronous Admin Management Routing Block
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+    // 1. ROUTE INTERCEPT: Handle Application Entry Deletions
+    if (isset($_POST['action']) && $_POST['action'] === 'delete_software') {
+        $software_id = (int)($_POST['software_id'] ?? 0);
+
+        if ($software_id <= 0) {
+            echo json_encode(["success" => false, "error" => "Invalid software ID configuration."]);
+            exit;
+        }
+
+        // REPLACE 'softwares' with your exact table name
+        // REPLACE 'id' with your primary key column name if it's different (e.g. software_id)
+        $sql = "DELETE FROM software_applications  WHERE id = ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "i", $software_id);
+            if (mysqli_stmt_execute($stmt)) {
+                echo json_encode(["success" => true]);
+            } else {
+                echo json_encode(["success" => false, "error" => mysqli_error($conn)]);
+            }
+            mysqli_stmt_close($stmt);
+        } else {
+            echo json_encode(["success" => false, "error" => "Failed to prepare query statement."]);
+        }
+        exit;
+    }
+
+    // 2. DEFAULT ROUTE: Admin physical PC status state tracking
     $lab    = $_POST['lab_name'] ?? '';
     $pc     = $_POST['pc_number'] ?? '';
     $status = $_POST['status'] ?? ''; 
@@ -131,3 +159,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     mysqli_stmt_close($stmt);
 }
+?>

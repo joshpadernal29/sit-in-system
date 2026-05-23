@@ -10,7 +10,7 @@ if (empty($lab)) {
 }
 
 // Select apps matching either this specific lab context or globally flagged environments
-$query = "SELECT software_name, developer, version, license_type 
+$query = "SELECT id,software_name, developer, version, license_type 
           FROM software_applications 
           WHERE target_lab = '$lab' OR target_lab = 'all' 
           ORDER BY software_name ASC";
